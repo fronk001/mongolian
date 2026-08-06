@@ -1,0 +1,75 @@
+id	mn	en	drill	reviewed	note
+201	байна	is / are	no	NO — needs sign-off	
+202	байхгүй	there is no / is not	no	NO — needs sign-off	
+203	би	I	no	NO — needs sign-off	
+204	чи	you (informal)	no	NO — needs sign-off	
+205	та	you (polite)	no	NO — needs sign-off	
+206	энэ	this	no	NO — needs sign-off	
+207	тэр	that	no	NO — needs sign-off	
+208	үүнийг	this (object form)	no	NO — needs sign-off	
+209	надад	to me	no	NO — needs sign-off	
+210	минь	my	no	NO — needs sign-off	
+211	чинь	your	no	NO — needs sign-off	
+212	манай	our	no	NO — needs sign-off	
+213	дээр	on / above	no	NO — needs sign-off	
+214	дараа	after	no	NO — needs sign-off	
+215	дараагийн	next	no	NO — needs sign-off	
+216	ойролцоо	near	no	NO — needs sign-off	
+217	энд	here	no	NO — needs sign-off	
+218	хаана	where	no	NO — needs sign-off	
+219	хэн	who	no	NO — needs sign-off	
+220	юу	what	no	NO — needs sign-off	
+221	вэ	question particle	no	NO — needs sign-off	
+222	бэ	question particle	no	NO — needs sign-off	
+223	уу	yes/no question particle	no	NO — needs sign-off	'уу' is both the yes/no question particle and a form of уух (to drink). 'Та цай уух уу?' contains both. The matcher cannot tell them apart and will prefer уух.
+224	бүр	every	no	NO — needs sign-off	
+225	бүү	do not (prohibitive)	no	NO — needs sign-off	
+226	одоо	now	no	NO — needs sign-off	
+227	өнөөдөр	today	no	NO — needs sign-off	
+228	өнөө	this (of time)	no	NO — needs sign-off	
+229	хамтдаа	together	no	NO — needs sign-off	
+230	гэдэг	called / that is	no	NO — needs sign-off	
+231	өрөө	room	yes	NO — needs sign-off	
+232	зочны өрөө	living room	yes	NO — needs sign-off	
+233	гал тогоо	kitchen	yes	NO — needs sign-off	
+234	байшин	house	yes	NO — needs sign-off	
+235	цонх	window	yes	NO — needs sign-off	
+236	өдөр	day	yes	NO — needs sign-off	
+237	өглөө	morning	yes	NO — needs sign-off	
+238	орой	evening	yes	NO — needs sign-off	
+239	гараг	day of the week	yes	NO — needs sign-off	
+240	бямба	Saturday	yes	NO — needs sign-off	
+241	ням	Sunday	yes	NO — needs sign-off	
+242	цаг	hour / time	yes	NO — needs sign-off	
+243	долоо	seven	yes	NO — needs sign-off	
+244	хоног	day (24 hours)	yes	NO — needs sign-off	
+245	ээж	mother	yes	NO — needs sign-off	
+246	аав	father	yes	NO — needs sign-off	
+247	хүүхэд	child	yes	NO — needs sign-off	
+248	тоос	dust	yes	NO — needs sign-off	
+249	хувцас	clothes	yes	NO — needs sign-off	
+250	хог	rubbish / trash	yes	NO — needs sign-off	
+251	зөөлөн	soft	yes	NO — needs sign-off	
+252	урт	long	yes	NO — needs sign-off	
+253	өндөр	tall / high	yes	NO — needs sign-off	
+254	хурдан	fast	yes	NO — needs sign-off	
+255	нээлттэй	open	yes	NO — needs sign-off	
+256	дуртай	to like / fond of	yes	NO — needs sign-off	
+257	унтах	to sleep	yes	NO — needs sign-off	
+258	идэх	to eat	yes	NO — needs sign-off	
+259	уух	to drink	yes	NO — needs sign-off	
+260	нээх	to open	yes	NO — needs sign-off	
+261	хаах	to close	yes	NO — needs sign-off	
+262	өгөх	to give	yes	NO — needs sign-off	
+263	авах	to take / to buy	yes	NO — needs sign-off	
+264	хаях	to throw away	yes	NO — needs sign-off	
+265	сорох	to vacuum / to suck	yes	NO — needs sign-off	
+266	арчих	to wipe	yes	NO — needs sign-off	
+267	хийх	to do / to make	yes	NO — needs sign-off	
+268	явах	to go	yes	NO — needs sign-off	
+269	тавих	to put	yes	NO — needs sign-off	
+270	ярих	to tell / to speak	yes	NO — needs sign-off	
+271	алхах	to walk	yes	NO — needs sign-off	
+272	хүсэх	to want	yes	NO — needs sign-off	
+273	өнгөрүүлэх	to spend (time)	yes	NO — needs sign-off	
+-	сороогоч				sentences.json spells the vacuum verb two ways: 'Тоос сорогч хаана байна?' vs 'Тоос сороогоч.' — one is likely a typo. Sarnai to confirm which.

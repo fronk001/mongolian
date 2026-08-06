@@ -52,6 +52,33 @@ the build only copies, concatenates CSS, generates icons, and stamps sw.js.
 - Interface chrome is Mongolian; telemetry labels are uppercase Latin mono.
 - `core/` must stay DOM-free so it can be tested in plain Node.
 
+## Content schema
+
+`words.json` — `{id, mn, en}` plus two optional fields:
+
+- `drill: false` — closed-class grammar (байна, би, энэ, дээр…). Counts toward
+  comprehensibility and is never the i+1 element, but is never introduced as a
+  flashcard. Absent means drillable.
+- `reviewed: false` — machine-written, not yet confirmed by Luna or Sarnai.
+  Export the outstanding ones with `py tools/extend-lexicon.py --sheet`.
+
+Entries may be multi-word (`тоос сорогч`, `оройн хоол`). `tools/coverage.py`
+matches those as phrases before falling back to single tokens — otherwise the
+parts get reported as missing and someone adds a duplicate `машин`.
+
+`sentences.json` — `{mn, en, ids}`, where `ids` is **every** word the sentence
+contains, not just the one it was written to teach. Comprehensibility is
+computed over this list, so a partial list makes the readout meaningless. The
+scheduler derives what a sentence *teaches* from what is due or new.
+`partial: true` marks a sentence still containing unlisted vocabulary.
+
+Re-check coverage after any content edit:
+
+```
+py tools/coverage.py               # 94% of tokens, 162/164 sentences covered
+py tools/coverage.py --unmatched   # what is still missing
+```
+
 ## State
 
 `localStorage['mng_study_v2']` — see `blank()` in `src/core/progress.js`.

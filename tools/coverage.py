@@ -36,12 +36,19 @@ SUFFIXES = [
     "ийнх", "ыгаа", "ийгээ", "аасаа", "ээсээ", "оосоо", "өөсөө",
     "аар", "ээр", "оор", "өөр", "аас", "ээс", "оос", "өөс",
     "тай", "тэй", "той", "төй", "ийг", "ыг", "ийн", "ын", "ний", "ны",
+    "гийн", "гийг", "гүй", "н", "ан", "эн", "он", "өн",
     "даа", "дээ", "доо", "дөө", "нд", "ад", "эд", "од", "өд", "д", "т", "г",
+    "анд", "энд", "онд", "өнд", "ганд", "гэнд", "руу", "рүү",
+    # plural
+    "ууд", "үүд", "нууд", "нүүд", "нар", "нэр",
     # verb
     "дагаа", "дэгээ", "даг", "дэг", "дог", "дөг",
-    "аач", "ээч", "ооч", "өөч", "лаа", "лээ", "лоо", "лөө",
+    "аач", "ээч", "ооч", "өөч", "ач", "эч", "оч", "өч",
+    "лаа", "лээ", "лоо", "лөө",
     "сан", "сэн", "сон", "сөн", "на", "нэ", "но", "нө",
-    "ж", "ч", "х", "я", "ё", "е", "ъя",
+    "аад", "ээд", "оод", "өөд", "гаач", "гээч", "гооч", "гөөч",
+    "аарай", "ээрэй", "оорой", "өөрэй", "аарэй", "уулаа", "үүлээ",
+    "ж", "ч", "х", "я", "ё", "е", "ъя", "ъё",
     # possessive / reflexive
     "маа", "мээ", "аа", "ээ", "оо", "өө",
 ]
@@ -62,31 +69,39 @@ def stem_match(tok: str, mn: str) -> bool:
     mn = mn.lower()
     if tok == mn:
         return True
-    if len(tok) < len(mn):
-        return False
 
     VOWELS = "аэиоөуүы"
     # Verbs are listed in the -х infinitive; the stem is what precedes it.
-    # (stem, vowel it dropped or None)
-    stems = {(mn, None)}
+    # (stem, dropped vowel or None, why it dropped)
+    stems = {(mn, None, None)}
     if mn.endswith("х"):
-        stems.add((mn[:-1], None))
-    for s, _ in list(stems):
+        stems.add((mn[:-1], None, None))
+    for s, _, _ in list(stems):
+        if len(s) < 3:
+            continue
         # A trailing vowel drops before a suffix: хаалга -> хаалгыг.
-        if len(s) > 3 and s[-1] in VOWELS:
-            stems.add((s[:-1], s[-1]))
-        # Fleeting vowel in a final -Vн syllable: буйдан -> буйдныг.
-        if len(s) > 3 and s[-1] == "н" and s[-2] in VOWELS:
-            stems.add((s[:-2] + "н", s[-2]))
+        if s[-1] in VOWELS:
+            stems.add((s[:-1], s[-1], "final"))
+            # -и becomes -ь in the imperative: тавих -> тавь, ярих -> ярь.
+            if s[-1] == "и":
+                stems.add((s[:-1] + "ь", None, None))
+        # Fleeting vowel: the vowel of a final -VC syllable drops before a
+        # suffix. буйдан -> буйдныг, хуудас -> хувцсаа, ургамал -> ургамлыг.
+        elif s[-2] in VOWELS:
+            stems.add((s[:-2] + s[-1], s[-2], "fleeting"))
 
-    for stem, dropped in stems:
-        if len(stem) < 3 or not tok.startswith(stem):
+    for stem, dropped, why in stems:
+        # 2 is the floor, not 3: үг (word) is a real entry and үг + ийг must
+        # still resolve. Short stems are safe because the leftover must be a
+        # listed ending.
+        if len(stem) < 2 or len(tok) < len(stem) or not tok.startswith(stem):
             continue
         rest = tok[len(stem):]
-        # If the "suffix" just puts the dropped vowel back, this is not an
-        # inflection — it is a different word. будах/буда -> буд + аа = будаа
-        # (rice), which is not a form of "to paint".
-        if dropped and rest[:1] == dropped:
+        # If a dropped *final* vowel is simply put back, this is not an
+        # inflection but a different word: будах/буда -> буд + аа = будаа
+        # (rice), which is no form of "to paint". A fleeting vowel is exempt —
+        # хувцас -> хувцс + аа = хувцсаа really is "my clothes".
+        if why == "final" and dropped and rest[:1] == dropped:
             continue
         if rest == "" or rest in SUFFIXES:
             return True
@@ -107,18 +122,48 @@ def load():
 
 
 def analyse(words, sents):
+    """
+    Match a sentence's tokens against the lexicon.
+
+    words.json mixes single words with multi-word entries ("тоос сорогч",
+    "угаалгын машин", "оройн хоол"). Those have to be matched as phrases
+    against a token span, or their parts get reported as missing vocabulary
+    and someone adds a duplicate "машин" alongside "угаалгын машин".
+    Longest phrase wins, and its tokens are consumed.
+    """
+    phrases = sorted(
+        ((w, w["mn"].lower().split()) for w in words if " " in w["mn"]),
+        key=lambda p: -len(p[1]),
+    )
+    singles = [w for w in words if " " not in w["mn"]]
+
     rows = []
     for s in sents:
         toks = tokens(s["mn"])
         matched, unmatched = [], []
-        for t in toks:
-            hits = [w for w in words if stem_match(t, w["mn"])]
+        i = 0
+        while i < len(toks):
+            hit = None
+            for w, parts in phrases:
+                n = len(parts)
+                if i + n <= len(toks) and all(
+                    stem_match(toks[i + k], parts[k]) for k in range(n)
+                ):
+                    hit = (w, n)
+                    break
+            if hit:
+                w, n = hit
+                matched.append((" ".join(toks[i:i + n]), w))
+                i += n
+                continue
+            hits = [w for w in singles if stem_match(toks[i], w["mn"])]
             if hits:
-                # longest dictionary form wins: prefers 'хаалга' over a short
-                # word that happens to share a prefix
-                matched.append((t, max(hits, key=lambda w: len(w["mn"]))))
+                # longest dictionary form wins, so 'хаалга' beats a short word
+                # that happens to share a prefix
+                matched.append((toks[i], max(hits, key=lambda w: len(w["mn"]))))
             else:
-                unmatched.append(t)
+                unmatched.append(toks[i])
+            i += 1
         rows.append({"s": s, "toks": toks, "matched": matched, "unmatched": unmatched})
     return rows
 
@@ -137,6 +182,32 @@ def main() -> int:
         print(f"{'count':>5}  {'token':<16}  example")
         for tok, n in c.most_common():
             print(f"{n:>5}  {tok:<16}  {ex[tok]}")
+        return 0
+
+    if "--apply-tags" in sys.argv:
+        # `ids` becomes every word the sentence actually contains, not just the
+        # one it was written to teach. Comprehensibility is computed over this
+        # list, so a partial list makes the readout meaningless; the scheduler
+        # already derives what a sentence *teaches* from what is due or new.
+        out, changed, partial = [], 0, 0
+        for r in rows:
+            ids = sorted({w["id"] for _, w in r["matched"]})
+            s = dict(r["s"])
+            if ids != s["ids"]:
+                changed += 1
+            s["ids"] = ids
+            if r["unmatched"]:
+                # Honest marker: this sentence contains vocabulary the lexicon
+                # does not know, so its comprehensibility is an overestimate.
+                s["partial"] = True
+                partial += 1
+            else:
+                s.pop("partial", None)
+            out.append(s)
+        Path(DATA / "sentences.json").write_text(
+            json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        print(f"retagged {changed} of {len(out)} sentences")
+        print(f"{partial} marked partial (still contain unknown tokens)")
         return 0
 
     if "--propose" in sys.argv:

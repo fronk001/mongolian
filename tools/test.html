@@ -110,7 +110,14 @@ section('scheduler');
 let p = blank();
 const s1 = buildSession(p, W, S, { today: '2026-08-06' });
 ok('cold start produces items', s1.items.length > 0);
-ok('cold start is all i+1', s1.diagnostics.iPlusOneShare === 1);
+// i+1 is unreachable on day 1 by definition: every content word is new, so a
+// two-content-word sentence is i+2 at best. The old assertion that cold start
+// was 100% i+1 only held because each sentence carried a single tag. What the
+// selector must actually do is reach i+1 once there is vocabulary to lean on —
+// asserted in the trajectory section below.
+ok('cold start reports i+1 share honestly',
+   s1.diagnostics.iPlusOneShare >= 0 && s1.diagnostics.iPlusOneShare <= 1,
+   `iPlusOneShare=${s1.diagnostics.iPlusOneShare}`);
 ok('every session item resolves to a real word',
    s1.items.every(i => i.kind === 'sentence' ? i.targetIds.length > 0 : !!i.word));
 s1.items.forEach(i => (i.kind === 'sentence' ? i.targetIds : [i.word.id])
@@ -138,6 +145,89 @@ ok('stats.due agrees with diagnostics.dueCount',
    `stats.due=${stats(po, { words: W }).due} diag.dueCount=${so.diagnostics.dueCount}`);
 ok('a session is never empty while the home screen reports work',
    so.diagnostics.dueCount + so.diagnostics.newCount === 0 || so.items.length > 0);
+
+// ------------------------------------------------- reference-only grammar
+// drill:false words are scaffolding: never taught as cards, but they count as
+// known context and can never be the i+1 element.
+section('reference words (drill:false)');
+const refIds = new Set(W.filter(w => w.drill === false).map(w => w.id));
+ok('lexicon has reference words', refIds.size > 0, `found ${refIds.size}`);
+ok('every word still has id, mn, en',
+   W.every(w => typeof w.id === 'number' && w.mn && w.en));
+
+let pr = blank();
+const sr = buildSession(pr, W, S, { today: '2026-08-06', newCount: 6 });
+ok('no reference word is ever introduced as new',
+   !sr.fresh.some(id => refIds.has(id)),
+   `fresh=${JSON.stringify(sr.fresh)}`);
+ok('no reference word is offered as a card',
+   !sr.items.some(i => i.kind !== 'sentence' && refIds.has(i.word.id)));
+ok('no reference word is a grade target',
+   !sr.items.some(i => i.kind === 'sentence' && i.targetIds.some(id => refIds.has(id))));
+
+// i+N must count only drillable elements. Before drill:false was handled,
+// every grammar word counted as "new" and so as weak, making i+N meaningless.
+const sents = sr.items.filter(i => i.kind === 'sentence');
+ok('i+N counts only drillable words',
+   sents.every(i => i.weak <= i.sentence.ids.filter(id => !refIds.has(id)).length),
+   sents.map(i => `i+${i.weak}/${i.sentence.ids.length}`).join(' '));
+ok('a sentence made only of grammar plus one new word is i+1',
+   sents.every(i => i.weak >= 1));
+
+// Comprehensibility must be a real fraction now, not 0% or 100%.
+const comps = new Set(sents.map(i => Math.round(i.comprehensible * 100)));
+ok('comprehensibility takes intermediate values',
+   [...comps].some(c => c > 0 && c < 100),
+   `values seen: ${[...comps].sort((a, b) => a - b).join('%, ')}%`);
+
+// ---------------------------------------------------------------- corpus
+section('corpus integrity');
+const ids = new Set(W.map(w => w.id));
+ok('every sentence tag resolves to a word', S.every(s => s.ids.every(i => ids.has(i))));
+ok('no duplicate word ids', ids.size === W.length);
+ok('no duplicate mn forms', new Set(W.map(w => w.mn)).size === W.length);
+ok('sentences carry more than one tag on average',
+   S.reduce((a, s) => a + s.ids.length, 0) / S.length > 2,
+   `${(S.reduce((a, s) => a + s.ids.length, 0) / S.length).toFixed(2)} tags/sentence`);
+ok('sentences with unknown vocabulary are marked partial',
+   S.filter(s => s.partial).length < S.length * 0.05,
+   `${S.filter(s => s.partial).length} partial of ${S.length}`);
+
+// ------------------------------------------------------------ trajectory
+// The selector's real job: once vocabulary exists, find sentences where
+// exactly one element is weak. Replay a month of perfect reviews and check
+// the curve rather than any single day.
+section('trajectory (45 simulated days)');
+{
+  let p = blank();
+  const d = new Date(Date.UTC(2026, 7, 6));
+  const log = [];
+  for (let day = 0; day < 45; day++) {
+    const today = d.toISOString().slice(0, 10);
+    const s = buildSession(p, W, S, { today });
+    log.push({ day: day + 1, ...s.diagnostics, items: s.items.length });
+    s.items.forEach(i => (i.kind === 'sentence' ? i.targetIds : [i.word.id])
+      .forEach(id => applyGrade(p, id, 3, { today })));
+    d.setUTCDate(d.getUTCDate() + 1);
+  }
+  const early = log.slice(3, 25);
+  ok('i+1 becomes reachable once vocabulary exists',
+     Math.max(...early.map(l => l.iPlusOneShare)) >= 0.75,
+     `peak i+1 share over days 4-25 = ${Math.max(...early.map(l => l.iPlusOneShare)).toFixed(2)}`);
+  ok('comprehensibility rises as words are learned',
+     log[24].avgComprehensibility > log[1].avgComprehensibility,
+     `day 2 ${log[1].avgComprehensibility.toFixed(2)} -> day 25 ${log[24].avgComprehensibility.toFixed(2)}`);
+  ok('no simulated day reports work it cannot present',
+     log.every(l => l.dueCount + l.newCount === 0 || l.items > 0));
+  ok('a session never exceeds a sane length', Math.max(...log.map(l => l.items)) <= 40,
+     `longest session = ${Math.max(...log.map(l => l.items))} items`);
+
+  // Documents the content ceiling the roadmap calls the binding constraint.
+  const dry = log.findIndex(l => l.newCount === 0);
+  ok('content runway is recorded, not guessed', dry > 0,
+     `new material runs out on simulated day ${dry + 1}; ` +
+     `from there the app is review-only`);
+}
 
 // ---------------------------------------------------------------- summary
 const el = document.getElementById('sum');

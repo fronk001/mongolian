@@ -26,15 +26,22 @@ export function buildSession(p, words, sentences, opts = {}) {
     const it = p.items[id];
     R[id] = fsrs.retrievability(Math.max(0, daysBetween(it.last || today, today)), it.s);
   }
-  const isKnown = id => (R[id] ?? 0) >= KNOWN_R;
-  const isWeak  = id => p.items[id] && (R[id] ?? 0) < WEAK_R;
-  const isNew   = id => !p.items[id];
+  // Closed-class grammar (drill:false) is scaffolding, not material under
+  // instruction: it is never introduced, never scheduled, and never the i+1
+  // element. It still counts as known context, or every sentence containing
+  // «байна» would read as incomprehensible forever — and because such a word
+  // is never in p.items, isNew() would otherwise call all of them weak.
+  const drillable = id => byId[id] ? byId[id].drill !== false : true;
+
+  const isKnown = id => !drillable(id) || (R[id] ?? 0) >= KNOWN_R;
+  const isWeak  = id => drillable(id) && p.items[id] && (R[id] ?? 0) < WEAK_R;
+  const isNew   = id => drillable(id) && !p.items[id];
 
   // --- due reviews, most overdue first ----------------------------------
   // Items whose word has since left words.json are dropped: they can never be
   // presented, so counting them would show due work that cannot be started.
   const due = Object.keys(p.items)
-    .filter(id => p.items[id].due <= today && byId[id])
+    .filter(id => p.items[id].due <= today && byId[id] && drillable(id))
     .map(Number)
     .sort((a, b) => (R[a] ?? 0) - (R[b] ?? 0));
 
@@ -45,7 +52,7 @@ export function buildSession(p, words, sentences, opts = {}) {
   // schedule compounds and the day becomes unmanageable.
   const room = Math.max(0, p.dailyNewCap - Math.floor(backlog / 6));
   const fresh = words
-    .filter(w => !introduced.has(w.id))
+    .filter(w => w.drill !== false && !introduced.has(w.id))
     .slice(0, opts.newCount ?? room)
     .map(w => w.id);
 
