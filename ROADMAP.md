@@ -29,20 +29,39 @@ history is kept).
 
 ---
 
-## 2. More content — **now the binding constraint**
+## 2. More content — **still the binding constraint**
 
-90-day simulation: every one of the 111 words is tracked by day 31, and from
-day 46 there are days with fewer than three items. The i+1 selector starves
-because there aren't enough sentences to find one with exactly one weak element.
+### 2a. Tagging — **DONE**
 
-This is now more urgent than any new feature. Options:
+Sentences used to carry one tag each, so comprehensibility could only read 0%
+or 100% and i+N only i+0 or i+1. Both were presented as instrument telemetry
+while measuring essentially nothing.
 
-- Extend Luna's packs past word 200, in the existing pipe-delimited format.
-- Add a paste-in importer that auto-computes i+1 difficulty against the known-word
-  set and rejects sentences that are too far above level.
-- Tag sentences with *all* their words, not just target words. Comprehensibility
-  is currently computed over tagged ids only, which overstates it for sentences
-  containing untagged vocabulary.
+The lexicon went 111 → 184 entries (73 words the sentences already used but
+never declared), sentences were retagged with every word they contain
+(1.00 → 2.91 tags each), and 94% of tokens now resolve, with 162 of 164
+sentences fully covered. Closed-class grammar is marked `drill:false`: it
+counts toward comprehensibility but is never queued as a flashcard.
+
+All 73 new entries are `reviewed:false` pending Luna or Sarnai —
+`py tools/extend-lexicon.py --sheet`.
+
+### 2b. More sentences — the remaining constraint
+
+Measured over 45 simulated days (`tools/test.html`, trajectory section):
+i+1 share reaches 1.00 by day 5, then decays as vocabulary outgrows the
+corpus. **New material runs out on day 31**; from about day 35 the app is
+review-only at 4–5 items a day. 164 sentences over 154 drillable words is
+roughly one sentence per word — no repeat-exposure headroom.
+
+More sentences now buy more than more words: the selector needs several
+candidates per target to find one where exactly one element is weak.
+
+- Extend Luna's packs, in the existing pipe-delimited format.
+- Add a paste-in importer that runs `coverage.py` over new sentences and
+  rejects ones whose comprehensibility is too far below level.
+- Two corpus items need a native speaker: `сорогч` / `сороогоч` / `соордог`
+  spell the vacuum verb three ways.
 
 ---
 
