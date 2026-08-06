@@ -1,0 +1,1025 @@
+[
+ {
+  "id": 90,
+  "mn": "хаалга",
+  "en": "door"
+ },
+ {
+  "id": 91,
+  "mn": "шал",
+  "en": "floor"
+ },
+ {
+  "id": 92,
+  "mn": "хана",
+  "en": "wall"
+ },
+ {
+  "id": 93,
+  "mn": "тааз",
+  "en": "ceiling"
+ },
+ {
+  "id": 94,
+  "mn": "шат",
+  "en": "stairs"
+ },
+ {
+  "id": 95,
+  "mn": "хашаа",
+  "en": "yard/fence"
+ },
+ {
+  "id": 96,
+  "mn": "ширээ",
+  "en": "table"
+ },
+ {
+  "id": 97,
+  "mn": "сандал",
+  "en": "chair"
+ },
+ {
+  "id": 98,
+  "mn": "орон",
+  "en": "bed"
+ },
+ {
+  "id": 99,
+  "mn": "буйдан",
+  "en": "sofa/couch"
+ },
+ {
+  "id": 100,
+  "mn": "шүүгээ",
+  "en": "cabinet/closet"
+ },
+ {
+  "id": 101,
+  "mn": "толь",
+  "en": "mirror"
+ },
+ {
+  "id": 102,
+  "mn": "дэр",
+  "en": "pillow"
+ },
+ {
+  "id": 103,
+  "mn": "хөнжил",
+  "en": "blanket"
+ },
+ {
+  "id": 104,
+  "mn": "хивс",
+  "en": "carpet/rug"
+ },
+ {
+  "id": 105,
+  "mn": "зураг",
+  "en": "picture/painting"
+ },
+ {
+  "id": 106,
+  "mn": "чийдэн",
+  "en": "lamp/light"
+ },
+ {
+  "id": 107,
+  "mn": "зуух",
+  "en": "stove/oven"
+ },
+ {
+  "id": 108,
+  "mn": "хөргөгч",
+  "en": "refrigerator"
+ },
+ {
+  "id": 109,
+  "mn": "угаалгын машин",
+  "en": "washing machine"
+ },
+ {
+  "id": 110,
+  "mn": "тоос сорогч",
+  "en": "vacuum cleaner"
+ },
+ {
+  "id": 111,
+  "mn": "түлхүүр",
+  "en": "key"
+ },
+ {
+  "id": 112,
+  "mn": "цахилгаан",
+  "en": "electricity/power"
+ },
+ {
+  "id": 113,
+  "mn": "дулаан",
+  "en": "warm"
+ },
+ {
+  "id": 114,
+  "mn": "гэрэл",
+  "en": "light"
+ },
+ {
+  "id": 115,
+  "mn": "зүйл",
+  "en": "thing/item"
+ },
+ {
+  "id": 116,
+  "mn": "хайрцаг",
+  "en": "box"
+ },
+ {
+  "id": 117,
+  "mn": "уут",
+  "en": "bag"
+ },
+ {
+  "id": 118,
+  "mn": "цоож",
+  "en": "lock"
+ },
+ {
+  "id": 119,
+  "mn": "хонх",
+  "en": "bell/doorbell"
+ },
+ {
+  "id": 120,
+  "mn": "тагт",
+  "en": "balcony"
+ },
+ {
+  "id": 121,
+  "mn": "цэвэрлэх",
+  "en": "to clean"
+ },
+ {
+  "id": 122,
+  "mn": "угаах",
+  "en": "to wash"
+ },
+ {
+  "id": 123,
+  "mn": "аяга угаах",
+  "en": "to do the dishes"
+ },
+ {
+  "id": 124,
+  "mn": "шал арчих",
+  "en": "to mop the floor"
+ },
+ {
+  "id": 125,
+  "mn": "тоос сорох",
+  "en": "to vacuum"
+ },
+ {
+  "id": 126,
+  "mn": "тоос арчих",
+  "en": "to dust"
+ },
+ {
+  "id": 127,
+  "mn": "хувцас угаах",
+  "en": "to do laundry"
+ },
+ {
+  "id": 128,
+  "mn": "индүүдэх",
+  "en": "to iron"
+ },
+ {
+  "id": 129,
+  "mn": "хоол хийх",
+  "en": "to cook"
+ },
+ {
+  "id": 130,
+  "mn": "хог хаях",
+  "en": "to take out the trash"
+ },
+ {
+  "id": 131,
+  "mn": "ор засах",
+  "en": "to make the bed"
+ },
+ {
+  "id": 132,
+  "mn": "цонх цэвэрлэх",
+  "en": "to clean the windows"
+ },
+ {
+  "id": 133,
+  "mn": "засах",
+  "en": "to fix/repair"
+ },
+ {
+  "id": 134,
+  "mn": "будах",
+  "en": "to paint"
+ },
+ {
+  "id": 135,
+  "mn": "эмх цэгцтэй",
+  "en": "tidy/organized"
+ },
+ {
+  "id": 136,
+  "mn": "эмх замбараагүй",
+  "en": "messy"
+ },
+ {
+  "id": 137,
+  "mn": "бохир",
+  "en": "dirty"
+ },
+ {
+  "id": 138,
+  "mn": "цэвэр",
+  "en": "clean"
+ },
+ {
+  "id": 139,
+  "mn": "хуурай",
+  "en": "dry"
+ },
+ {
+  "id": 140,
+  "mn": "нойтон",
+  "en": "wet"
+ },
+ {
+  "id": 141,
+  "mn": "хоол",
+  "en": "food/meal"
+ },
+ {
+  "id": 142,
+  "mn": "өглөөний хоол",
+  "en": "breakfast"
+ },
+ {
+  "id": 143,
+  "mn": "үдийн хоол",
+  "en": "lunch"
+ },
+ {
+  "id": 144,
+  "mn": "оройн хоол",
+  "en": "dinner"
+ },
+ {
+  "id": 145,
+  "mn": "мах",
+  "en": "meat"
+ },
+ {
+  "id": 146,
+  "mn": "загас",
+  "en": "fish"
+ },
+ {
+  "id": 147,
+  "mn": "хүнсний ногоо",
+  "en": "vegetables"
+ },
+ {
+  "id": 148,
+  "mn": "жимс",
+  "en": "fruit"
+ },
+ {
+  "id": 149,
+  "mn": "будаа",
+  "en": "rice/grain"
+ },
+ {
+  "id": 150,
+  "mn": "талх",
+  "en": "bread"
+ },
+ {
+  "id": 151,
+  "mn": "өндөг",
+  "en": "egg"
+ },
+ {
+  "id": 152,
+  "mn": "сүү",
+  "en": "milk"
+ },
+ {
+  "id": 153,
+  "mn": "цай",
+  "en": "tea"
+ },
+ {
+  "id": 154,
+  "mn": "кофе",
+  "en": "coffee"
+ },
+ {
+  "id": 155,
+  "mn": "давс",
+  "en": "salt"
+ },
+ {
+  "id": 156,
+  "mn": "чихэр",
+  "en": "sugar/candy"
+ },
+ {
+  "id": 157,
+  "mn": "тос",
+  "en": "oil/butter"
+ },
+ {
+  "id": 158,
+  "mn": "хутга",
+  "en": "knife"
+ },
+ {
+  "id": 159,
+  "mn": "тавиур",
+  "en": "plate/shelf"
+ },
+ {
+  "id": 160,
+  "mn": "аяга",
+  "en": "cup/bowl"
+ },
+ {
+  "id": 161,
+  "mn": "муур",
+  "en": "cat"
+ },
+ {
+  "id": 162,
+  "mn": "зулзага муур",
+  "en": "kitten"
+ },
+ {
+  "id": 163,
+  "mn": "тэжээвэр амьтан",
+  "en": "pet"
+ },
+ {
+  "id": 164,
+  "mn": "тоглоом",
+  "en": "toy"
+ },
+ {
+  "id": 165,
+  "mn": "тоглох",
+  "en": "to play"
+ },
+ {
+  "id": 166,
+  "mn": "хумхих",
+  "en": "to scratch"
+ },
+ {
+  "id": 167,
+  "mn": "сүүл",
+  "en": "tail"
+ },
+ {
+  "id": 168,
+  "mn": "сарвуу",
+  "en": "paw"
+ },
+ {
+  "id": 169,
+  "mn": "хоол өгөх",
+  "en": "to feed"
+ },
+ {
+  "id": 170,
+  "mn": "эмнэлэг",
+  "en": "vet/clinic"
+ },
+ {
+  "id": 171,
+  "mn": "ном",
+  "en": "book"
+ },
+ {
+  "id": 172,
+  "mn": "унших",
+  "en": "to read"
+ },
+ {
+  "id": 173,
+  "mn": "хуудас",
+  "en": "page"
+ },
+ {
+  "id": 174,
+  "mn": "түүх",
+  "en": "story/history"
+ },
+ {
+  "id": 175,
+  "mn": "зохиолч",
+  "en": "author/writer"
+ },
+ {
+  "id": 176,
+  "mn": "номын сан",
+  "en": "library"
+ },
+ {
+  "id": 177,
+  "mn": "номын дэлгүүр",
+  "en": "bookstore"
+ },
+ {
+  "id": 178,
+  "mn": "бичих",
+  "en": "to write"
+ },
+ {
+  "id": 179,
+  "mn": "үг",
+  "en": "word"
+ },
+ {
+  "id": 180,
+  "mn": "өгүүлбэр",
+  "en": "sentence"
+ },
+ {
+  "id": 181,
+  "mn": "цэцэрлэг",
+  "en": "garden"
+ },
+ {
+  "id": 182,
+  "mn": "цэцэг",
+  "en": "flower"
+ },
+ {
+  "id": 183,
+  "mn": "ургамал",
+  "en": "plant"
+ },
+ {
+  "id": 184,
+  "mn": "мод",
+  "en": "tree"
+ },
+ {
+  "id": 185,
+  "mn": "навч",
+  "en": "leaf"
+ },
+ {
+  "id": 186,
+  "mn": "үр",
+  "en": "seed"
+ },
+ {
+  "id": 187,
+  "mn": "хөрс",
+  "en": "soil/earth"
+ },
+ {
+  "id": 188,
+  "mn": "усалах",
+  "en": "to water plants"
+ },
+ {
+  "id": 189,
+  "mn": "тарих",
+  "en": "to plant/to sow"
+ },
+ {
+  "id": 190,
+  "mn": "ургах",
+  "en": "to grow"
+ },
+ {
+  "id": 191,
+  "mn": "өвс",
+  "en": "grass"
+ },
+ {
+  "id": 192,
+  "mn": "зүлэг",
+  "en": "lawn"
+ },
+ {
+  "id": 193,
+  "mn": "сайн",
+  "en": "good"
+ },
+ {
+  "id": 194,
+  "mn": "муу",
+  "en": "bad"
+ },
+ {
+  "id": 195,
+  "mn": "том",
+  "en": "big"
+ },
+ {
+  "id": 196,
+  "mn": "жижиг",
+  "en": "small"
+ },
+ {
+  "id": 197,
+  "mn": "шинэ",
+  "en": "new"
+ },
+ {
+  "id": 198,
+  "mn": "хуучин",
+  "en": "old (things)"
+ },
+ {
+  "id": 199,
+  "mn": "гоё",
+  "en": "beautiful/nice"
+ },
+ {
+  "id": 200,
+  "mn": "сайхан",
+  "en": "lovely/pretty"
+ },
+ {
+  "id": 201,
+  "mn": "байна",
+  "en": "is / are",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 202,
+  "mn": "байхгүй",
+  "en": "there is no / is not",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 203,
+  "mn": "би",
+  "en": "I",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 204,
+  "mn": "чи",
+  "en": "you (informal)",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 205,
+  "mn": "та",
+  "en": "you (polite)",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 206,
+  "mn": "энэ",
+  "en": "this",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 207,
+  "mn": "тэр",
+  "en": "that",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 208,
+  "mn": "үүнийг",
+  "en": "this (object form)",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 209,
+  "mn": "надад",
+  "en": "to me",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 210,
+  "mn": "минь",
+  "en": "my",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 211,
+  "mn": "чинь",
+  "en": "your",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 212,
+  "mn": "манай",
+  "en": "our",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 213,
+  "mn": "дээр",
+  "en": "on / above",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 214,
+  "mn": "дараа",
+  "en": "after",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 215,
+  "mn": "дараагийн",
+  "en": "next",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 216,
+  "mn": "ойролцоо",
+  "en": "near",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 217,
+  "mn": "энд",
+  "en": "here",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 218,
+  "mn": "хаана",
+  "en": "where",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 219,
+  "mn": "хэн",
+  "en": "who",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 220,
+  "mn": "юу",
+  "en": "what",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 221,
+  "mn": "вэ",
+  "en": "question particle",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 222,
+  "mn": "бэ",
+  "en": "question particle",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 223,
+  "mn": "уу",
+  "en": "yes/no question particle",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 224,
+  "mn": "бүр",
+  "en": "every",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 225,
+  "mn": "бүү",
+  "en": "do not (prohibitive)",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 226,
+  "mn": "одоо",
+  "en": "now",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 227,
+  "mn": "өнөөдөр",
+  "en": "today",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 228,
+  "mn": "өнөө",
+  "en": "this (of time)",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 229,
+  "mn": "хамтдаа",
+  "en": "together",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 230,
+  "mn": "гэдэг",
+  "en": "called / that is",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 231,
+  "mn": "өрөө",
+  "en": "room",
+  "reviewed": false
+ },
+ {
+  "id": 232,
+  "mn": "зочны өрөө",
+  "en": "living room",
+  "reviewed": false
+ },
+ {
+  "id": 233,
+  "mn": "гал тогоо",
+  "en": "kitchen",
+  "reviewed": false
+ },
+ {
+  "id": 234,
+  "mn": "байшин",
+  "en": "house",
+  "reviewed": false
+ },
+ {
+  "id": 235,
+  "mn": "цонх",
+  "en": "window",
+  "reviewed": false
+ },
+ {
+  "id": 236,
+  "mn": "өдөр",
+  "en": "day",
+  "reviewed": false
+ },
+ {
+  "id": 237,
+  "mn": "өглөө",
+  "en": "morning",
+  "reviewed": false
+ },
+ {
+  "id": 238,
+  "mn": "орой",
+  "en": "evening",
+  "reviewed": false
+ },
+ {
+  "id": 239,
+  "mn": "гараг",
+  "en": "day of the week",
+  "reviewed": false
+ },
+ {
+  "id": 240,
+  "mn": "бямба",
+  "en": "Saturday",
+  "reviewed": false
+ },
+ {
+  "id": 241,
+  "mn": "ням",
+  "en": "Sunday",
+  "reviewed": false
+ },
+ {
+  "id": 242,
+  "mn": "цаг",
+  "en": "hour / time",
+  "reviewed": false
+ },
+ {
+  "id": 243,
+  "mn": "долоо",
+  "en": "seven",
+  "reviewed": false
+ },
+ {
+  "id": 244,
+  "mn": "хоног",
+  "en": "day (24 hours)",
+  "reviewed": false
+ },
+ {
+  "id": 245,
+  "mn": "ээж",
+  "en": "mother",
+  "reviewed": false
+ },
+ {
+  "id": 246,
+  "mn": "аав",
+  "en": "father",
+  "reviewed": false
+ },
+ {
+  "id": 247,
+  "mn": "хүүхэд",
+  "en": "child",
+  "reviewed": false
+ },
+ {
+  "id": 248,
+  "mn": "тоос",
+  "en": "dust",
+  "reviewed": false
+ },
+ {
+  "id": 249,
+  "mn": "хувцас",
+  "en": "clothes",
+  "reviewed": false
+ },
+ {
+  "id": 250,
+  "mn": "хог",
+  "en": "rubbish / trash",
+  "reviewed": false
+ },
+ {
+  "id": 251,
+  "mn": "зөөлөн",
+  "en": "soft",
+  "reviewed": false
+ },
+ {
+  "id": 252,
+  "mn": "урт",
+  "en": "long",
+  "reviewed": false
+ },
+ {
+  "id": 253,
+  "mn": "өндөр",
+  "en": "tall / high",
+  "reviewed": false
+ },
+ {
+  "id": 254,
+  "mn": "хурдан",
+  "en": "fast",
+  "reviewed": false
+ },
+ {
+  "id": 255,
+  "mn": "нээлттэй",
+  "en": "open",
+  "reviewed": false
+ },
+ {
+  "id": 256,
+  "mn": "дуртай",
+  "en": "to like / fond of",
+  "reviewed": false
+ },
+ {
+  "id": 257,
+  "mn": "унтах",
+  "en": "to sleep",
+  "reviewed": false
+ },
+ {
+  "id": 258,
+  "mn": "идэх",
+  "en": "to eat",
+  "reviewed": false
+ },
+ {
+  "id": 259,
+  "mn": "уух",
+  "en": "to drink",
+  "reviewed": false
+ },
+ {
+  "id": 260,
+  "mn": "нээх",
+  "en": "to open",
+  "reviewed": false
+ },
+ {
+  "id": 261,
+  "mn": "хаах",
+  "en": "to close",
+  "reviewed": false
+ },
+ {
+  "id": 262,
+  "mn": "өгөх",
+  "en": "to give",
+  "reviewed": false
+ },
+ {
+  "id": 263,
+  "mn": "авах",
+  "en": "to take / to buy",
+  "reviewed": false
+ },
+ {
+  "id": 264,
+  "mn": "хаях",
+  "en": "to throw away",
+  "reviewed": false
+ },
+ {
+  "id": 265,
+  "mn": "сорох",
+  "en": "to vacuum / to suck",
+  "reviewed": false
+ },
+ {
+  "id": 266,
+  "mn": "арчих",
+  "en": "to wipe",
+  "reviewed": false
+ },
+ {
+  "id": 267,
+  "mn": "хийх",
+  "en": "to do / to make",
+  "reviewed": false
+ },
+ {
+  "id": 268,
+  "mn": "явах",
+  "en": "to go",
+  "reviewed": false
+ },
+ {
+  "id": 269,
+  "mn": "тавих",
+  "en": "to put",
+  "reviewed": false
+ },
+ {
+  "id": 270,
+  "mn": "ярих",
+  "en": "to tell / to speak",
+  "reviewed": false
+ },
+ {
+  "id": 271,
+  "mn": "алхах",
+  "en": "to walk",
+  "reviewed": false
+ },
+ {
+  "id": 272,
+  "mn": "хүсэх",
+  "en": "to want",
+  "reviewed": false
+ },
+ {
+  "id": 273,
+  "mn": "өнгөрүүлэх",
+  "en": "to spend (time)",
+  "reviewed": false
+ }
+]
