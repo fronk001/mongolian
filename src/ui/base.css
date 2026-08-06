@@ -143,3 +143,22 @@ color:var(--muted);resize:vertical;min-height:72px;letter-spacing:0;text-transfo
 .prompt.sm,.prompt.en{font-size:23px}
 .wordrow .mn{font-size:23px}
 }
+
+/* --- English gloss ------------------------------------------------------
+   INSTRUMENT: English sits under the Mongolian in mono grey at 10-11px.
+   A crutch, switchable off from Хадгалалт once the chrome is familiar. */
+.gl{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;
+letter-spacing:.06em;text-transform:lowercase;color:var(--muted2);
+margin-top:3px;font-weight:400}
+.btn .gl{margin-top:2px;opacity:.85}
+.btn.primary .gl{color:var(--chassis);opacity:.6}
+.grade .gl{margin-top:2px}
+h1+.gl{margin-top:2px;margin-bottom:2px}
+.inline-gl{display:inline-block;margin-left:8px;margin-top:0;vertical-align:middle}
+
+/* Backup staleness. Alert only when a backup is genuinely overdue. */
+.card.warn{border-color:var(--hair3)}
+.card.warn .wline{padding-top:0;border-bottom:0}
+.card.warn .note{font-size:13px;color:var(--muted);font-weight:300;margin-top:2px}
+.mono.alert{color:var(--alert)}
+.btn.slim{padding:6px 10px;font-size:12px;flex:none;white-space:nowrap}

@@ -23,8 +23,22 @@ export function blank() {
     sentSkill: 0.5,
     history: [],
     createdAt: dayKey(),
-    lastDate: null
+    lastDate: null,
+    lastExport: null,
+    gloss: true
   };
+}
+
+/**
+ * Days since a backup code was last taken on this device, or null if never.
+ *
+ * Progress lives only in this browser's localStorage — there is no server and
+ * no sync — so an exported code is the only thing that survives a cleared
+ * store, an iOS update or a lost phone.
+ */
+export function exportAge(p, today = dayKey()) {
+  if (!p.lastExport) return null;
+  return Math.max(0, daysBetween(p.lastExport, today));
 }
 
 /** Box level -> seed stability, in days. Deliberately conservative. */

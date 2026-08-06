@@ -85,6 +85,16 @@ py tools/coverage.py --unmatched   # what is still missing
 v1 saves are migrated automatically on load; box level seeds stability,
 accuracy seeds difficulty.
 
+There is no server and no sync. Progress exists only in the browser that
+created it, per device — a backup code is a manual transfer, not a sync, and
+`importCode()` **replaces** the whole state rather than merging.
+
+- `lastExport` — day a code actually left the device. Only set when a copy or
+  share succeeded; a dismissed iOS share sheet must not record one.
+  `exportAge()` returns days since, or null. The home screen warns at 14 days.
+- `gloss` — English under Mongolian chrome (INSTRUMENT: mono grey, 10–11px).
+  On by default, switchable from Хадгалалт.
+
 ## Current status
 
 FSRS-6 scheduling with i+1 sentence selection. Deployed target is GitHub Pages

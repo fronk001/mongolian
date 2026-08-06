@@ -33,7 +33,7 @@
 
 <script type="module">
 import { makeFSRS, dayKey, daysBetween } from '../src/core/fsrs.js';
-import { blank, migrateV1, encodeCode, importCode, stats } from '../src/core/progress.js';
+import { blank, migrateV1, encodeCode, importCode, stats, exportAge } from '../src/core/progress.js';
 import { buildSession, applyGrade } from '../src/core/scheduler.js';
 import { gradeText } from '../src/core/grade.js';
 
@@ -104,6 +104,39 @@ ok('empty v1 profile imports', importCode(encodeCode(v1empty))?.schema === 2);
 // The literal byte format v1 shipped: btoa(unescape(encodeURIComponent(json))).
 const v1bytes = btoa(unescape(encodeURIComponent(JSON.stringify(v1))));
 ok('v1 wire format decodes byte-for-byte', importCode(v1bytes)?.schema === 2);
+
+// ------------------------------------------------- backup age + gloss flag
+// Two fields were added to the schema (lastExport, gloss). CLAUDE.md: a
+// schema change must be proven not to break v1 or v2 codes.
+section('backup age and gloss');
+ok('blank tracks export state', blank().lastExport === null && blank().gloss === true);
+ok('never exported reads null', exportAge(blank()) === null);
+ok('export age counts whole days',
+   exportAge({ lastExport: '2026-08-01' }, '2026-08-15') === 14,
+   `got ${exportAge({ lastExport: '2026-08-01' }, '2026-08-15')}`);
+ok('a future export date never goes negative',
+   exportAge({ lastExport: '2026-08-20' }, '2026-08-06') === 0);
+
+const exported = Object.assign(blank(), { lastExport: '2026-07-30', gloss: false });
+const back2 = importCode(encodeCode(exported));
+ok('lastExport survives a round-trip', back2.lastExport === '2026-07-30');
+ok('gloss:false survives a round-trip', back2.gloss === false,
+   `got ${back2.gloss} — a preference must not silently flip back on`);
+
+// A v1 code predates both fields and must still land on sane defaults.
+const v1old = { learned: [90], words: { 90: { box: 3, right: 2, wrong: 1 } }, day: 1, newPerDay: 3, history: [] };
+const v1mig = importCode(btoa(unescape(encodeURIComponent(JSON.stringify(v1old)))));
+ok('v1 code still imports after the schema change', v1mig?.schema === 2);
+ok('v1 import defaults to never-exported', v1mig.lastExport === null);
+ok('v1 import defaults gloss on', v1mig.gloss === true);
+
+// A v2 code written before these fields existed.
+const preV2 = Object.assign(blank(), { items: { 90: { s: 3, d: 5, due: '2026-08-10', last: '2026-08-06', reps: 1, lapses: 0, right: 1, wrong: 0 } } });
+delete preV2.lastExport; delete preV2.gloss;
+const preIn = importCode(encodeCode(preV2));
+ok('older v2 code gains the new fields as defaults',
+   preIn.lastExport === null && preIn.gloss === true);
+ok('older v2 code keeps its items', Object.keys(preIn.items).length === 1);
 
 // ---------------------------------------------------------------- scheduler
 section('scheduler');
