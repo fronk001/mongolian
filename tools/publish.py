@@ -63,16 +63,23 @@ def main() -> int:
     finally:
         INDEX.unlink(missing_ok=True)
 
+    force = "--force" in sys.argv
     parent = None
     if ref_exists(f"refs/heads/{BRANCH}"):
         parent = git("rev-parse", f"refs/heads/{BRANCH}").stdout.strip()
-        if git("rev-parse", f"{parent}^{{tree}}").stdout.strip() == tree:
+        if git("rev-parse", f"{parent}^{{tree}}").stdout.strip() == tree and not force:
             print(f"{BRANCH} already matches dist/ — nothing to publish")
+            print("(use --force to re-trigger a Pages deployment anyway)")
             return 0
 
     src = git("rev-parse", "--short", "HEAD", check=False).stdout.strip() or "unknown"
     files = sum(1 for p in DIST.rglob("*") if p.is_file())
     msg = f"Publish dist ({files} files) from {src}"
+    if force and parent and git("rev-parse", f"{parent}^{{tree}}").stdout.strip() == tree:
+        # Same content, new commit: the only way to re-trigger a Pages build
+        # without the web UI. The first deploy after enabling Pages often
+        # fails because the branch push predates the site being provisioned.
+        msg = f"Redeploy dist ({files} files) from {src}"
 
     if dry:
         print(f"would commit tree {tree[:10]} to {BRANCH}"

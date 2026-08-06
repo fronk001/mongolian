@@ -1,0 +1,64 @@
+# Build and publish to GitHub Pages.
+#
+# Replaces the gh-pages branch deploy, which failed with "Timeout reached,
+# aborting!": actions/deploy-pages polls for a Pages site that the branch path
+# never provisioned. configure-pages below creates it explicitly, which is the
+# step that was missing.
+#
+# Building here also means dist/ never has to be committed — CI runs the same
+# build.py that runs locally, on the standard library alone.
+name: Deploy to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; let a running one finish rather than cancelling.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Build
+        run: python build.py
+
+      - name: Check the build is offline-first
+        run: |
+          if grep -rIoE "https?://" dist --include="*.js" --include="*.html" \
+               --include="*.css" --include="*.webmanifest"; then
+            echo "::error::dist/ contains an external URL; the app must work offline"
+            exit 1
+          fi
+          test -f dist/index.html
+          test -f dist/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

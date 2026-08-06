@@ -17,20 +17,33 @@ One-time setup:
    git push -u origin main
    ```
 
-3. Build and publish. `dist/` is gitignored, so publish it to a `gh-pages`
-   branch. There is no Node here, so no `npx gh-pages` — plain git does it:
+3. In the repo: **Settings → Pages → Source: GitHub Actions**. This applies
+   immediately; there is no Save button to press.
+
+4. Push to `main`. `.github/workflows/pages.yml` runs `build.py` and publishes
+   `dist/`, so nothing needs to be built or committed by hand:
 
    ```
-   py build.py
-   py tools/publish.py
+   git push
    ```
-
-   `publish.py` commits `dist/` onto a `gh-pages` branch and pushes it, using
-   only git. Run `py tools/publish.py --dry-run` first to see what it will do.
-
-4. In the repo: **Settings → Pages → Source: deploy from branch `gh-pages`, root**.
 
    The app appears at `https://<you>.github.io/mongolian/`.
+
+### Why Actions rather than a gh-pages branch
+
+The branch path failed here with `Timeout reached, aborting!` in the deploy
+job. `actions/deploy-pages` polls for a Pages site that selecting a branch had
+never actually provisioned — the repo reported `has_pages: true` while
+`GET /repos/<you>/<repo>/pages` returned 404. `actions/configure-pages` in the
+workflow creates the site explicitly, which is the missing step.
+
+`tools/publish.py` still works and still pushes `dist/` to a `gh-pages`
+branch, if you ever want to publish without CI:
+
+```
+py build.py && py tools/publish.py          # --dry-run to preview
+py build.py && py tools/publish.py --force  # redeploy unchanged content
+```
 
 ## Install on iPhone
 
@@ -47,8 +60,12 @@ have a history of loss around OS updates, and the code is the only real safety n
 ## Updating
 
 ```
-py build.py && py tools/publish.py
+git push
 ```
+
+CI rebuilds and republishes on every push to `main`. It also fails the build
+if `dist/` ever gains an external URL, which would break the offline-first
+rule.
 
 The service worker is versioned by a content hash, so a changed build
 invalidates the old cache automatically. Users get the new version on next launch.
