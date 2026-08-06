@@ -1,0 +1,7 @@
+# Normalise to LF in the repo. Without this, Windows checkouts flip line
+# endings and the service worker's content-hash version changes for no real
+# reason, invalidating every client's cache on a no-op rebuild.
+* text=auto eol=lf
+
+*.woff2 binary
+*.png   binary

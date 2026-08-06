@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "repo",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["tools/serve.py", ".", "8000"],
+      "port": 8000
+    },
+    {
+      "name": "app",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["tools/serve.py", "dist", "8080"],
+      "port": 8080
+    }
+  ]
+}

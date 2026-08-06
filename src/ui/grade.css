@@ -1,0 +1,27 @@
+/* FSRS grade bar — four buttons, real interval printed under each label.
+   Instrument rule: the interval is always shown, and it is genuine telemetry. */
+.gradebar{display:flex;gap:2px;margin-top:16px}
+.grade{flex:1;text-align:center;padding:12px 4px;background:var(--panel2);
+border:1px solid var(--hair);cursor:pointer;font-family:'Geologica',sans-serif;color:var(--ink);
+transition:background 160ms var(--ease),border-color 160ms var(--ease)}
+.grade:first-child{border-radius:3px 0 0 3px}
+.grade:last-child{border-radius:0 3px 3px 0}
+.grade .lbl{font-size:11px;font-weight:500}
+.grade .ivl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted2);margin-top:4px;letter-spacing:.04em}
+.grade[data-g="1"] .lbl{color:var(--alert)}
+.grade.sel{background:var(--signal);color:var(--chassis);border-color:var(--signal)}
+.grade.sel .lbl,.grade.sel .ivl{color:var(--chassis)}
+.grade.sel .ivl{opacity:.65}
+.grade:not(.sel):hover{border-color:var(--hair3)}
+
+/* retrievability meter */
+.rmeter{display:flex;align-items:center;gap:8px;margin-top:12px}
+.rmeter .track{flex:1;height:3px;background:var(--track);border-radius:2px;overflow:hidden}
+.rmeter .track i{display:block;height:100%;background:var(--signal)}
+.rmeter .track i.low{background:var(--alert)}
+
+/* i+1 context chips under a sentence */
+.ctx{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.ctx span{border:1px solid var(--hair);border-radius:3px;padding:4px 8px;
+font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;color:var(--muted2)}
+.ctx span.target{border-color:var(--signal);color:var(--signal)}

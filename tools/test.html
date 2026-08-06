@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<!--
+  Test runner for core/.
+
+  This machine has no Node, so the browser is the JS runtime. Serve the repo
+  root and open this page:
+
+      py -m http.server 8000
+      http://localhost:8000/tools/test.html
+
+  It imports the real modules from ../src/core/ — not a copy — so a green run
+  here is a genuine statement about the shipped code.
+-->
+<meta charset="utf-8">
+<title>core tests</title>
+<style>
+  body { background:#0A0B0C; color:#EDEEEC; font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
+         margin:0; padding:24px 20px; }
+  h2 { font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#5E646A;
+       margin:22px 0 6px; font-weight:400; }
+  h2:first-of-type { margin-top:0; }
+  .r { padding:2px 0; }
+  .ok::before   { content:"ok   "; color:#D8F04B; }
+  .fail::before { content:"FAIL "; color:#FF6B4A; }
+  .fail { color:#FF6B4A; }
+  .why { color:#7C8288; padding-left:5ch; }
+  #sum { margin-top:24px; padding-top:14px; border-top:1px solid rgba(255,255,255,.10);
+         font-size:15px; }
+  .pass { color:#D8F04B; } .bad { color:#FF6B4A; }
+</style>
+<div id="out"></div>
+<div id="sum">running…</div>
+
+<script type="module">
+import { makeFSRS, dayKey, daysBetween } from '../src/core/fsrs.js';
+import { blank, migrateV1, encodeCode, importCode, stats } from '../src/core/progress.js';
+import { buildSession, applyGrade } from '../src/core/scheduler.js';
+import { gradeText } from '../src/core/grade.js';
+
+const out = document.getElementById('out');
+let pass = 0, fail = 0;
+const results = [];
+
+const section = name => { out.insertAdjacentHTML('beforeend', `<h2>${name}</h2>`); };
+const ok = (name, cond, why = '') => {
+  cond ? pass++ : fail++;
+  results.push({ name, pass: !!cond, why });
+  out.insertAdjacentHTML('beforeend',
+    `<div class="r ${cond ? 'ok' : 'fail'}">${name}</div>` +
+    (!cond && why ? `<div class="why">${why}</div>` : ''));
+};
+
+const W = await (await fetch('../src/data/words.json')).json();
+const S = await (await fetch('../src/data/sentences.json')).json();
+
+// ---------------------------------------------------------------- fsrs
+section('fsrs');
+const f = makeFSRS();
+ok('R(t=S) === 0.90', Math.abs(f.retrievability(10, 10) - 0.9) < 1e-9);
+ok('interval(S) === S', Math.abs(f.interval(10) - 10) < 1e-9);
+const pv = f.preview({ s: 10, d: 5, reps: 3, lapses: 0 }, 10);
+ok('grades produce ascending intervals', pv[0] <= pv[1] && pv[1] <= pv[2] && pv[2] <= pv[3],
+   `got ${pv.map(x => x.toFixed(2)).join(', ')}`);
+
+// dayKey must name the day where the user actually is, at every hour — not
+// just whenever the suite happens to run. A UTC key rolls the day over at
+// 01:00/02:00 local in the Netherlands, filing a session just after midnight
+// under the previous day. Asserted at fixed local instants so the result does
+// not depend on the wall clock.
+const offsetH = -new Date().getTimezoneOffset() / 60;
+const at = (y, mo, d, h, mi) => dayKey(new Date(y, mo - 1, d, h, mi, 0).getTime());
+ok('dayKey() names the local day just after midnight', at(2026, 8, 7, 0, 30) === '2026-08-07',
+   `got ${at(2026, 8, 7, 0, 30)}, want 2026-08-07 (tz UTC${offsetH >= 0 ? '+' : ''}${offsetH}` +
+   `${offsetH === 0 ? '; vacuous in UTC' : ''})`);
+ok('dayKey() names the local day late evening', at(2026, 8, 6, 23, 30) === '2026-08-06',
+   `got ${at(2026, 8, 6, 23, 30)}, want 2026-08-06`);
+ok('dayKey() names the local day at midday', at(2026, 1, 15, 12, 0) === '2026-01-15',
+   `got ${at(2026, 1, 15, 12, 0)}, want 2026-01-15`);
+ok('daysBetween is exact across a DST boundary',
+   daysBetween('2026-03-28', '2026-03-30') === 2,
+   `got ${daysBetween('2026-03-28', '2026-03-30')}`);
+
+// ---------------------------------------------------------------- grade
+section('grade');
+ok('exact match', gradeText('door', 'door', 0.2).ok);
+ok('slash variant accepted', gradeText('yard', 'yard/fence', 0.2).ok);
+ok('short words are not typos', !gradeText('cat', 'eat', 0.2).ok);
+ok('empty is wrong', !gradeText('', 'door', 0.2).ok);
+
+// ---------------------------------------------------------------- progress
+section('progress');
+const v1 = { learned: [90, 91], words: { 90: { box: 5, right: 9, wrong: 0 }, 91: { box: 0, right: 0, wrong: 4 } }, day: 2, newPerDay: 3, history: [] };
+const m = migrateV1(v1);
+ok('v1 migrates', Object.keys(m.items).length === 2 && m.schema === 2);
+ok('strong word is easier than weak word', m.items[90].d < m.items[91].d);
+ok('v1 backup code still imports', importCode(encodeCode(v1))?.schema === 2);
+ok('v2 code round-trips', JSON.stringify(importCode(encodeCode(m))) === JSON.stringify(m));
+ok('garbage rejected', importCode('nonsense') === null);
+
+// A pristine v1 profile (nothing learned yet) must still import.
+const v1empty = { learned: [], words: {}, day: 0, newPerDay: 3, strictness: 0.2, sentSkill: 0.5, history: [] };
+ok('empty v1 profile imports', importCode(encodeCode(v1empty))?.schema === 2);
+
+// The literal byte format v1 shipped: btoa(unescape(encodeURIComponent(json))).
+const v1bytes = btoa(unescape(encodeURIComponent(JSON.stringify(v1))));
+ok('v1 wire format decodes byte-for-byte', importCode(v1bytes)?.schema === 2);
+
+// ---------------------------------------------------------------- scheduler
+section('scheduler');
+let p = blank();
+const s1 = buildSession(p, W, S, { today: '2026-08-06' });
+ok('cold start produces items', s1.items.length > 0);
+ok('cold start is all i+1', s1.diagnostics.iPlusOneShare === 1);
+ok('every session item resolves to a real word',
+   s1.items.every(i => i.kind === 'sentence' ? i.targetIds.length > 0 : !!i.word));
+s1.items.forEach(i => (i.kind === 'sentence' ? i.targetIds : [i.word.id])
+  .forEach(id => applyGrade(p, id, 3, { today: '2026-08-06' })));
+ok('no duplicate introductions', p.introduced.length === new Set(p.introduced).size);
+const s2 = buildSession(p, W, S, { today: '2026-08-07' });
+ok('day 2 introduces different words', !s2.fresh.some(id => s1.fresh.includes(id)));
+ok('stats compute', stats(p).tracked > 0);
+
+// ---------------------------------------------------------------- orphans
+// An id in p.items whose word has left words.json must not be counted as due
+// anywhere, or the home screen shows work that cannot be started.
+section('orphaned ids');
+let po = blank();
+applyGrade(po, 90, 1, { today: '2026-08-01' });   // real word, comes due fast
+applyGrade(po, 99999, 1, { today: '2026-08-01' }); // word no longer in words.json
+const so = buildSession(po, W, S, { today: '2026-08-20' });
+ok('orphan is not offered in the session',
+   !so.items.some(i => i.kind === 'card' && !i.word));
+ok('orphan is not counted in diagnostics.dueCount',
+   so.diagnostics.dueCount === so.due.length && !so.due.includes(99999),
+   `due=${JSON.stringify(so.due)} dueCount=${so.diagnostics.dueCount}`);
+ok('stats.due agrees with diagnostics.dueCount',
+   stats(po, { words: W }).due === so.diagnostics.dueCount,
+   `stats.due=${stats(po, { words: W }).due} diag.dueCount=${so.diagnostics.dueCount}`);
+ok('a session is never empty while the home screen reports work',
+   so.diagnostics.dueCount + so.diagnostics.newCount === 0 || so.items.length > 0);
+
+// ---------------------------------------------------------------- summary
+const el = document.getElementById('sum');
+el.className = fail ? 'bad' : 'pass';
+el.textContent = `${pass} passed, ${fail} failed`;
+window.__RESULTS__ = { pass, fail, results };
+console.log(`${pass} passed, ${fail} failed`);
+results.filter(r => !r.pass).forEach(r => console.error('FAIL', r.name, r.why));
+</script>
