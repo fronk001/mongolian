@@ -9,19 +9,24 @@ Uses git plumbing with a scratch index, so your working tree, your current
 branch and your staged changes are never touched. dist/ stays gitignored on
 main; only the gh-pages branch carries it.
 """
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 BRANCH = "gh-pages"
 DIST = Path("dist")
-INDEX = Path(".git") / "publish-index"
+# Absolute: with --work-tree, git resolves a relative GIT_INDEX_FILE against
+# the work tree rather than the cwd, and would look for dist/.git/.
+INDEX = (Path(".git") / "publish-index").resolve()
 
 
 def git(*args, check=True, **kw):
-    return subprocess.run(
-        ["git", *args], check=check, text=True, capture_output=True, **kw
-    )
+    r = subprocess.run(["git", *args], text=True, capture_output=True, **kw)
+    if check and r.returncode != 0:
+        sys.stderr.write(f"git {' '.join(args)}\n{r.stderr.strip()}\n")
+        raise SystemExit(1)
+    return r
 
 
 def ref_exists(ref: str) -> bool:
@@ -49,12 +54,12 @@ def main() -> int:
 
     # Build a tree from dist/ using a scratch index. --force because dist/ is
     # gitignored on main and we want it here regardless.
-    env = {"GIT_INDEX_FILE": str(INDEX)}
+    env = {**os.environ, "GIT_INDEX_FILE": str(INDEX)}
     INDEX.unlink(missing_ok=True)
     try:
-        git("--work-tree", str(DIST), "add", "--all", "--force", ".",
-            env={**_environ(), **env})
-        tree = git("write-tree", env={**_environ(), **env}).stdout.strip()
+        git("--work-tree", str(DIST.resolve()), "add", "--all", "--force", ".",
+            env=env, cwd=DIST)
+        tree = git("write-tree", env=env).stdout.strip()
     finally:
         INDEX.unlink(missing_ok=True)
 
@@ -90,11 +95,6 @@ def main() -> int:
     print(f"pushed to {remote}/{BRANCH}")
     print("GitHub Pages: Settings -> Pages -> deploy from branch gh-pages, root")
     return 0
-
-
-def _environ():
-    import os
-    return os.environ.copy()
 
 
 if __name__ == "__main__":
