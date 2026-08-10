@@ -25,8 +25,46 @@ export function blank() {
     createdAt: dayKey(),
     lastDate: null,
     lastExport: null,
-    gloss: true
+    gloss: true,
+    // --- added with the paper redesign ----------------------------------
+    // All additive. normalise() merges saved state over blank(), so codes
+    // written before these existed import with the defaults below rather
+    // than being rejected — see importCode().
+    mcMode: true,        // word cards as multiple choice; off = type the answer
+    purpose: '',         // the ЯАГААД line, shown on the dashboard every day
+    goalWords: 2500,     // B1 estimate. Research figure, not a CEFR spec.
+    xp: 0,
+    badges: []
   };
+}
+
+/**
+ * Record a finished session against its day.
+ *
+ * Upsert, not append: two sessions in one day are one study day. The streak
+ * and the week strip both count distinct dates, so appending twice used to
+ * inflate a day into two — and a metric that rewards re-opening the app is
+ * exactly the failure mode the streak is designed to avoid.
+ */
+export function recordDay(p, entry) {
+  const history = (p.history || []).slice();
+  const i = history.findIndex(h => h.date === entry.date);
+  if (i >= 0) {
+    const prev = history[i];
+    history[i] = {
+      ...prev, ...entry,
+      // Counters accumulate across sessions; snapshots take the latest value.
+      reviews: (prev.reviews || 0) + (entry.reviews || 0),
+      newWords: (prev.newWords || 0) + (entry.newWords || 0),
+      onTime: (prev.onTime || 0) + (entry.onTime || 0),
+      late: (prev.late || 0) + (entry.late || 0),
+      xp: (prev.xp || 0) + (entry.xp || 0)
+    };
+  } else {
+    history.push(entry);
+  }
+  p.history = history;
+  return p;
 }
 
 /**

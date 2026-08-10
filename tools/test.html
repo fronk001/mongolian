@@ -33,9 +33,15 @@
 
 <script type="module">
 import { makeFSRS, dayKey, daysBetween } from '../src/core/fsrs.js';
-import { blank, migrateV1, encodeCode, importCode, stats, exportAge } from '../src/core/progress.js';
+import { blank, migrateV1, encodeCode, importCode, stats, exportAge, recordDay } from '../src/core/progress.js';
 import { buildSession, applyGrade } from '../src/core/scheduler.js';
-import { gradeText } from '../src/core/grade.js';
+import { gradeText, gradeAnswer, acceptedForms } from '../src/core/grade.js';
+import { buildChoices, distractors, makeRng, faceKey } from '../src/core/choices.js';
+import {
+  streak, bestStreak, weekCells, monthCells, weekStart, monthStart, weekday,
+  periodTotals, punctuality, intakeRate, projectDate, levelFor, xpFor,
+  earnedBadges, lessonWorth, stepCount, LEVELS, BADGES
+} from '../src/core/goals.js';
 
 const out = document.getElementById('out');
 let pass = 0, fail = 0;
@@ -151,9 +157,22 @@ ok('cold start produces items', s1.items.length > 0);
 ok('cold start reports i+1 share honestly',
    s1.diagnostics.iPlusOneShare >= 0 && s1.diagnostics.iPlusOneShare <= 1,
    `iPlusOneShare=${s1.diagnostics.iPlusOneShare}`);
-ok('every session item resolves to a real word',
-   s1.items.every(i => i.kind === 'sentence' ? i.targetIds.length > 0 : !!i.word));
-s1.items.forEach(i => (i.kind === 'sentence' ? i.targetIds : [i.word.id])
+// Every word the item touches. New words now arrive as one 'deck' item
+// carrying several words rather than one 'intro' item each.
+const idsOf = i =>
+  i.kind === 'sentence' ? i.targetIds :
+  i.kind === 'deck' ? i.words.map(w => w.id) : [i.word.id];
+
+ok('every session item resolves to real words',
+   s1.items.every(i => idsOf(i).length > 0 && idsOf(i).every(id => id != null)));
+ok('new words arrive as a single deck',
+   s1.items.filter(i => i.kind === 'deck').length <= 1 &&
+   (s1.fresh.length === 0 || s1.items[0].kind === 'deck'),
+   `first item kind = ${s1.items[0]?.kind}, fresh = ${s1.fresh.length}`);
+ok('the deck holds exactly the new words',
+   s1.fresh.length === 0 ||
+   JSON.stringify(s1.items[0].words.map(w => w.id)) === JSON.stringify(s1.fresh));
+s1.items.forEach(i => idsOf(i)
   .forEach(id => applyGrade(p, id, 3, { today: '2026-08-06' })));
 ok('no duplicate introductions', p.introduced.length === new Set(p.introduced).size);
 const s2 = buildSession(p, W, S, { today: '2026-08-07' });
@@ -193,8 +212,8 @@ const sr = buildSession(pr, W, S, { today: '2026-08-06', newCount: 6 });
 ok('no reference word is ever introduced as new',
    !sr.fresh.some(id => refIds.has(id)),
    `fresh=${JSON.stringify(sr.fresh)}`);
-ok('no reference word is offered as a card',
-   !sr.items.some(i => i.kind !== 'sentence' && refIds.has(i.word.id)));
+ok('no reference word is offered as a card or in the deck',
+   !sr.items.some(i => i.kind !== 'sentence' && idsOf(i).some(id => refIds.has(id))));
 ok('no reference word is a grade target',
    !sr.items.some(i => i.kind === 'sentence' && i.targetIds.some(id => refIds.has(id))));
 
@@ -238,9 +257,8 @@ section('trajectory (45 simulated days)');
   for (let day = 0; day < 45; day++) {
     const today = d.toISOString().slice(0, 10);
     const s = buildSession(p, W, S, { today });
-    log.push({ day: day + 1, ...s.diagnostics, items: s.items.length });
-    s.items.forEach(i => (i.kind === 'sentence' ? i.targetIds : [i.word.id])
-      .forEach(id => applyGrade(p, id, 3, { today })));
+    log.push({ day: day + 1, ...s.diagnostics, items: stepCount(s) });
+    s.items.forEach(i => idsOf(i).forEach(id => applyGrade(p, id, 3, { today })));
     d.setUTCDate(d.getUTCDate() + 1);
   }
   const early = log.slice(3, 25);
@@ -260,6 +278,338 @@ section('trajectory (45 simulated days)');
   ok('content runway is recorded, not guessed', dry > 0,
      `new material runs out on simulated day ${dry + 1}; ` +
      `from there the app is review-only`);
+}
+
+// ------------------------------------------------- accepted answers + typos
+// Once the app is live there is nobody to appeal to: an answer that is right
+// has to be accepted, and a misspelt right answer has to be told apart from
+// a wrong one.
+section('accepted answers');
+{
+  ok('a slash lists variants', acceptedForms('yard/fence').join('|') === 'yard|fence');
+  // Splitting on commas as well would tear this into two acceptable halves.
+  ok('a comma is not a separator', acceptedForms('No, thank you').length === 1);
+  ok('blank fields yield nothing', acceptedForms('').length === 0 && acceptedForms(null).length === 0);
+
+  const alts = ['The floor is clean.', "The floor's clean.", 'The floor is tidy.'];
+  ok('canonical answer is accepted', gradeAnswer('The floor is clean.', alts).ok);
+  ok('a listed alternative is accepted', gradeAnswer("the floor's clean", alts).ok);
+  ok('a second alternative is accepted', gradeAnswer('The floor is tidy', alts).ok);
+  ok('an unlisted answer is rejected', gradeAnswer('The wall is clean', alts).ok === false);
+  ok('the matched form is reported',
+     gradeAnswer('The floor is tidy', alts).matched === 'The floor is tidy.');
+
+  // The whole point of the feature: right word, wrong spelling.
+  const t = gradeAnswer('The floor is clen.', alts);
+  ok('a misspelt right answer is accepted', t.ok === true);
+  ok('...and is flagged as a typo', t.typo === true);
+  ok('...and carries the correct spelling', t.matched === 'The floor is clean.');
+  ok('a clean answer is not flagged as a typo',
+     gradeAnswer('The floor is clean.', alts).typo === false);
+  ok('a wrong answer is not a typo',
+     gradeAnswer('completely different', alts).typo === false);
+
+  // A near-miss on one form must not beat an exact match on another.
+  ok('exact match wins over a near miss on another form',
+     gradeAnswer('The floor is tidy.', alts).typo === false);
+
+  // Short words get no tolerance: дэр and дээр are different words.
+  ok('short words tolerate no typo', gradeAnswer('дээр', ['дэр']).ok === false);
+  ok('long words tolerate one slip', gradeAnswer('хаалагыг', ['хаалгыг']).ok === true);
+  ok('strictness 1 tolerates nothing', gradeAnswer('The floor is clen.', alts, 1).ok === false);
+
+  ok('an empty answer is never correct', gradeAnswer('', alts).ok === false);
+  ok('gradeText still works for one target', gradeText('yard', 'yard/fence').ok === true);
+}
+
+// ------------------------------------------------------- corpus alternatives
+// The generated answer sets have to be well-formed, or the app silently
+// accepts something wrong — worse than rejecting something right.
+section('corpus alternatives');
+{
+  const withAlt = S.filter(s => s.alt);
+  ok('most sentences carry alternatives', withAlt.length >= 150,
+     `${withAlt.length}/${S.length}`);
+  ok('every alternative set is marked unreviewed',
+     withAlt.every(s => s.altReviewed === false));
+  ok('alternatives are arrays of non-empty strings',
+     withAlt.every(s => ['en', 'mn'].every(k =>
+       !s.alt[k] || (Array.isArray(s.alt[k]) && s.alt[k].every(v => typeof v === 'string' && v.trim())))));
+
+  // A canonical answer repeated as its own alternative is dead weight and
+  // would show "accepted alternative" for the expected answer.
+  const dupes = withAlt.filter(s =>
+    (s.alt.en || []).some(v => v.toLowerCase() === s.en.toLowerCase()) ||
+    (s.alt.mn || []).some(v => v.toLowerCase() === s.mn.toLowerCase()));
+  ok('no alternative repeats its canonical form', dupes.length === 0,
+     dupes.slice(0, 3).map(s => s.mn).join(' | '));
+
+  const selfDupe = withAlt.filter(s => ['en', 'mn'].some(k => {
+    const a = (s.alt[k] || []).map(v => v.toLowerCase());
+    return new Set(a).size !== a.length;
+  }));
+  ok('no alternative is listed twice', selfDupe.length === 0,
+     selfDupe.slice(0, 3).map(s => s.mn).join(' | '));
+
+  // Mongolian alternatives must actually be Mongolian, and English English.
+  const cyr = /[Ѐ-ӿ]/;
+  ok('mongolian alternatives are Cyrillic',
+     withAlt.every(s => (s.alt.mn || []).every(v => cyr.test(v))));
+  ok('english alternatives are not Cyrillic',
+     withAlt.every(s => (s.alt.en || []).every(v => !cyr.test(v))));
+
+  // Two bugs the first generation run actually produced, tested directly
+  // rather than by guessing at a pattern.
+
+  // Contraction chaining: "There isn't any salt" -> "There is not any salt"
+  // -> "there'sn't any salt".
+  // "there'sn't" carries the apostrophe before the -n; a plain "isn't" does not.
+  const chained = withAlt.flatMap(s => (s.alt.en || []).filter(v => /'sn/.test(v)));
+  ok('contractions were never chained', chained.length === 0, chained.slice(0, 3).join(' | '));
+
+  // Grammar-word swapping: `байна` glosses as "is / are", and substituting
+  // one for the other gave "The floor are clean".
+  const agree = withAlt.flatMap(s => (s.alt.en || []).filter(v =>
+    v.toLowerCase().replace(/\bare\b/g, 'is') === s.en.toLowerCase().replace(/\bare\b/g, 'is') &&
+    v.toLowerCase() !== s.en.toLowerCase()));
+  ok('no alternative differs from canonical only by is/are',
+     agree.length === 0, agree.slice(0, 3).join(' | '));
+
+  // Every accepted form must actually grade as correct against its own set.
+  let bad = [];
+  for (const s of S) {
+    for (const [field, key] of [['en', 'en'], ['mn', 'mn']]) {
+      const set = [s[field], ...((s.alt && s.alt[key]) || [])];
+      for (const form of set) {
+        if (!gradeAnswer(form, set).ok) bad.push(`${s.mn} :: ${form}`);
+      }
+    }
+  }
+  ok('every listed form grades as correct against its own set', bad.length === 0,
+     bad.slice(0, 3).join(' | '));
+
+  // And no sentence's answer set accidentally accepts a different sentence.
+  const collisions = [];
+  for (let i = 0; i < S.length; i++) {
+    const set = [S[i].en, ...((S[i].alt && S[i].alt.en) || [])];
+    for (let j = 0; j < S.length; j++) {
+      if (i === j) continue;
+      if (gradeAnswer(S[j].en, set).ok) collisions.push(`${S[i].en} <= ${S[j].en}`);
+    }
+  }
+  ok('one sentence never accepts another sentence as its answer',
+     collisions.length === 0, collisions.slice(0, 4).join(' | '));
+}
+
+// ---------------------------------------------------------------- choices
+// A multiple-choice question with two right answers grades as a failure the
+// learner did not commit, so the dedup rule is the one that actually matters.
+section('multiple choice');
+const BY = Object.fromEntries(W.map(w => [w.id, w]));
+{
+  const target = W.find(w => w.drill !== false);
+  const c = buildChoices(target, W, { dir: 'mge', count: 4 });
+  ok('builds a full set of options', c.usable && c.options.length === 4,
+     `got ${c.options.length}`);
+  ok('exactly one option is correct',
+     c.options.filter(o => o.correct).length === 1);
+  ok('the correct option is the target',
+     c.options[c.answerIndex].id === target.id);
+  ok('no two options read the same',
+     new Set(c.options.map(o => faceKey(o.text))).size === c.options.length,
+     JSON.stringify(c.options.map(o => o.text)));
+
+  // The view re-renders on every state change; unseeded options jumped
+  // position between answering and seeing the feedback.
+  const again = buildChoices(target, W, { dir: 'mge', count: 4 });
+  ok('options are stable across renders',
+     JSON.stringify(c.options) === JSON.stringify(again.options));
+  ok('a different word gets a different question',
+     JSON.stringify(buildChoices(W[5], W, { dir: 'mge' }).options.map(o => o.id))
+     !== JSON.stringify(c.options.map(o => o.id)));
+
+  const cm = buildChoices(target, W, { dir: 'egm', count: 4 });
+  ok('egm shows Mongolian options', cm.options.every(o => /[Ѐ-ӿ]/.test(o.text)));
+  ok('mge shows English options', c.options.every(o => !/[Ѐ-ӿ]/.test(o.text)));
+
+  // Whole-lexicon sweep: every drillable word must produce a clean question.
+  const bad = W.filter(w => w.drill !== false).map(w => {
+    const q = buildChoices(w, W, { dir: 'mge', count: 4 });
+    const dupes = new Set(q.options.map(o => faceKey(o.text))).size !== q.options.length;
+    return (!q.usable || dupes || q.options.filter(o => o.correct).length !== 1) ? w.mn : null;
+  }).filter(Boolean);
+  ok('every drillable word yields a valid question', bad.length === 0,
+     `${bad.length} failed: ${bad.slice(0, 5).join(', ')}`);
+
+  // A pool too small to fill the question must say so rather than show one option.
+  const tiny = buildChoices(W[0], [W[0]], { dir: 'mge', count: 4 });
+  ok('an unusable pool is reported, not rendered', tiny.usable === false);
+
+  const r = makeRng(42);
+  ok('rng is deterministic and in range',
+     makeRng(42)() === r() && r() >= 0 && r() < 1);
+}
+
+// ------------------------------------------------------------------ goals
+// Every figure on the dashboard has to be derived from something that
+// happened. These tests pin the derivations, not the presentation.
+section('goals and consistency');
+{
+  ok('monday is weekday 0', weekday('2026-08-10') === 0);
+  ok('sunday is weekday 6', weekday('2026-08-09') === 6);
+  ok('week starts on monday', weekStart('2026-08-13') === '2026-08-10');
+  ok('a monday is its own week start', weekStart('2026-08-10') === '2026-08-10');
+  ok('month start', monthStart('2026-08-13') === '2026-08-01');
+
+  const h = d => d.map(date => ({ date, tracked: 1, due: 0 }));
+  ok('streak counts back from today',
+     streak(h(['2026-08-08', '2026-08-09', '2026-08-10']), '2026-08-10') === 3);
+  // An unfinished morning must not read as a broken streak.
+  ok('an unstarted today does not break the streak',
+     streak(h(['2026-08-08', '2026-08-09']), '2026-08-10') === 2);
+  ok('a missed day breaks it',
+     streak(h(['2026-08-07', '2026-08-09']), '2026-08-10') === 1);
+  ok('no history is no streak', streak([], '2026-08-10') === 0);
+  ok('best streak finds the longest run',
+     bestStreak(h(['2026-08-01', '2026-08-02', '2026-08-03', '2026-08-06', '2026-08-07'])) === 3);
+
+  const cells = weekCells(h(['2026-08-10', '2026-08-11']), '2026-08-12');
+  ok('week has seven cells', cells.length === 7);
+  ok('finished days read done', cells[0].state === 'done' && cells[1].state === 'done');
+  ok('today unstarted reads today', cells[2].state === 'today');
+  ok('later days read future', cells[3].state === 'future');
+  // A hidden miss makes the readout flattering and false.
+  ok('a missed day stays visible as a gap',
+     weekCells(h(['2026-08-10']), '2026-08-12')[1].state === 'missed');
+
+  const mc = monthCells(h(['2026-08-03']), '2026-08-10');
+  ok('august 2026 lays out with 5 leading blanks and 31 days',
+     mc.filter(c => c.state === 'blank').length === 5 &&
+     mc.filter(c => c.day).length === 31);
+  ok('month grid marks the studied day',
+     mc.find(c => c.day === 3).state === 'done');
+
+  // Totals: counters accumulate, `known` is a snapshot so the gain is a diff.
+  const rich = [
+    { date: '2026-08-10', reviews: 10, newWords: 2, known: 40, onTime: 9, late: 1, xp: 100 },
+    { date: '2026-08-11', reviews: 14, newWords: 3, known: 43, onTime: 14, late: 0, xp: 150 }
+  ];
+  const t = periodTotals(rich, '2026-08-10', '2026-08-16');
+  ok('period sums reviews', t.reviews === 24);
+  ok('period sums new words', t.newWords === 5);
+  ok('known gain is a delta, not a sum', t.knownGain === 3, `got ${t.knownGain}`);
+  ok('punctuality is a real ratio', Math.abs(punctuality(t) - 23 / 24) < 1e-9);
+  ok('punctuality is null before any review', punctuality(periodTotals([], 'a', 'z')) === null);
+
+  ok('intake rate measures known words per day',
+     Math.abs(intakeRate(rich, '2026-08-11') - 3) < 1e-9, `got ${intakeRate(rich, '2026-08-11')}`);
+  // A guess dressed as a measurement is the failure this must avoid.
+  ok('a single data point yields no rate', intakeRate([rich[0]], '2026-08-10') === null);
+  ok('no history yields no rate', intakeRate([], '2026-08-10') === null);
+
+  ok('projection lands on a real date',
+     projectDate(40, 50, 1, '2026-08-10') === '2026-08-20');
+  ok('a stalled rate projects nothing', projectDate(40, 2500, 0, '2026-08-10') === null);
+  ok('an unknown rate projects nothing', projectDate(40, 2500, null, '2026-08-10') === null);
+  ok('a reached goal projects nothing', projectDate(2500, 2500, 5, '2026-08-10') === null);
+  // 47 known at 0.02/day is ~336 years. A date is worse than no date.
+  ok('an absurd horizon projects nothing', projectDate(47, 2500, 0.02, '2026-08-10') === null);
+
+  ok('level 1 at zero known', levelFor(0).level === 1);
+  ok('levels climb with known words', levelFor(100).level > levelFor(10).level);
+  ok('the ladder ends on the b1 estimate', LEVELS[LEVELS.length - 1] === 2500);
+  ok('top level has no next', levelFor(2500).next === null && levelFor(2500).toNext === null);
+  ok('progress to next level is a real fraction',
+     levelFor(17).share > 0 && levelFor(17).share < 1);
+
+  // XP is the base for doing the work plus the stability actually gained.
+  ok('a lapse still earns the base', xpFor(10, 4) === 6);
+  ok('a gain earns more than a lapse', xpFor(10, 20) > xpFor(10, 4));
+  ok('xp is capped', xpFor(0, 100000) === 20);
+  ok('a first review earns something', xpFor(undefined, 3) === 9);
+
+  ok('every badge has both languages',
+     BADGES.every(b => b.id && b.mn && b.en));
+  // Mon 10 Aug 2026 through Sun 16 Aug: a genuine calendar week, all seven days.
+  const pb = Object.assign(blank(), { history: h(['2026-08-10','2026-08-11','2026-08-12','2026-08-13','2026-08-14','2026-08-15','2026-08-16']) });
+  const earned = earnedBadges(pb, { stats: { known: 30, tracked: 40, avgRetrievability: 0.5 }, today: '2026-08-16' });
+  ok('a real 7-day streak earns the badge', earned.includes('week7'));
+  ok('a full calendar week earns the week badge', earned.includes('full-week'));
+  // Seven consecutive days that straddle two calendar weeks are a streak,
+  // but they are not a full week — the badges measure different things.
+  const straddle = Object.assign(blank(), { history: h(['2026-08-04','2026-08-05','2026-08-06','2026-08-07','2026-08-08','2026-08-09','2026-08-10']) });
+  const se = earnedBadges(straddle, { stats: { known: 30 }, today: '2026-08-10' });
+  ok('a streak straddling two weeks is not a full week',
+     se.includes('week7') && !se.includes('full-week'));
+  ok('30 known words earns the 25 badge, not the 50',
+     earned.includes('known25') && !earned.includes('known50'));
+  ok('an untaken backup earns no backup badge', !earned.includes('backup'));
+  ok('badges are never lost once earned',
+     earnedBadges(Object.assign(blank(), { badges: ['known250'] }),
+       { stats: { known: 0 }, today: '2026-08-10' }).includes('known250'));
+
+  // Two sessions in one day are one study day; appending twice inflated it.
+  let pd = blank();
+  recordDay(pd, { date: '2026-08-10', reviews: 5, newWords: 1, known: 10, xp: 50 });
+  recordDay(pd, { date: '2026-08-10', reviews: 7, newWords: 2, known: 12, xp: 70 });
+  ok('a second session the same day does not add a day', pd.history.length === 1);
+  ok('same-day counters accumulate', pd.history[0].reviews === 12 && pd.history[0].xp === 120);
+  ok('same-day snapshots take the latest', pd.history[0].known === 12);
+  ok('a second day is a second entry',
+     recordDay(pd, { date: '2026-08-11', reviews: 1 }).history.length === 2);
+  ok('two sessions in a day are still one streak day',
+     streak(pd.history, '2026-08-11') === 2);
+
+  // The lesson-worth readout is what makes a single session feel significant.
+  let pw = blank();
+  const sw = buildSession(pw, W, S, { today: '2026-08-10' });
+  const worth = lessonWorth(sw, [], '2026-08-10');
+  ok('lesson worth counts deck cards individually', worth.items === stepCount(sw));
+  ok('an unfinished today is worth a seventh of the week',
+     Math.abs(worth.weekShare - 1 / 7) < 1e-9);
+  ok('a finished today is worth no more of the week',
+     lessonWorth(sw, h(['2026-08-10']), '2026-08-10').weekShare === 0);
+  ok('estimated minutes are positive', worth.minutes >= 1);
+}
+
+// ------------------------------------------- backup codes vs the new fields
+// CLAUDE.md: never break backup codes. Five fields were added for the
+// redesign; v1 and v2 codes written before them must still import.
+section('backup survives the redesign fields');
+{
+  const b = blank();
+  ok('blank carries the new defaults',
+     b.mcMode === true && b.goalWords === 2500 && b.xp === 0 &&
+     Array.isArray(b.badges) && b.purpose === '');
+
+  const rich = Object.assign(blank(), {
+    mcMode: false, purpose: 'Сарнайн гэр бүлтэй ярих', goalWords: 3000,
+    xp: 2340, badges: ['week7', 'known25']
+  });
+  const back = importCode(encodeCode(rich));
+  ok('mcMode:false survives a round-trip', back.mcMode === false,
+     'a difficulty preference must not silently flip back on');
+  ok('purpose survives a round-trip, Cyrillic intact',
+     back.purpose === 'Сарнайн гэр бүлтэй ярих');
+  ok('goal, xp and badges survive', back.goalWords === 3000 && back.xp === 2340 &&
+     back.badges.join() === 'week7,known25');
+
+  // A v2 code written before the redesign.
+  const old2 = Object.assign(blank(), { items: { 90: { s: 3, d: 5, due: '2026-08-10', last: '2026-08-06', reps: 1, lapses: 0 } } });
+  ['mcMode', 'purpose', 'goalWords', 'xp', 'badges'].forEach(k => delete old2[k]);
+  const in2 = importCode(encodeCode(old2));
+  ok('a pre-redesign v2 code still imports', in2?.schema === 2);
+  ok('it gains the new fields as defaults',
+     in2.mcMode === true && in2.goalWords === 2500 && in2.xp === 0 && in2.badges.length === 0);
+  ok('it keeps its items', Object.keys(in2.items).length === 1);
+
+  // A v1 Leitner code, the format that must work forever.
+  const v1r = { learned: [90], words: { 90: { box: 4, right: 3, wrong: 1 } }, day: 2, newPerDay: 3, strictness: 0.2, history: [] };
+  const v1in = importCode(btoa(unescape(encodeURIComponent(JSON.stringify(v1r)))));
+  ok('a v1 code still imports after the redesign', v1in?.schema === 2);
+  ok('v1 lands on the new defaults',
+     v1in.mcMode === true && v1in.xp === 0 && v1in.goalWords === 2500);
+  ok('v1 box level still seeds stability', v1in.items[90].s > 0);
 }
 
 // ---------------------------------------------------------------- summary

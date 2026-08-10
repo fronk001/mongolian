@@ -1,0 +1,456 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Монгол хэл — visual system, 3 variants</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+/* Real project fonts, reached from tools/ */
+@font-face{font-family:'Geologica';font-style:normal;font-weight:300 700;font-display:block;src:url('../src/fonts/geologica-cyrillic.woff2') format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Geologica';font-style:normal;font-weight:300 700;font-display:block;src:url('../src/fonts/geologica-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Geologica';font-style:normal;font-weight:300 700;font-display:block;src:url('../src/fonts/geologica-latin-ext.woff2') format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+1E00-1E9F,U+2020,U+20A0-20AB,U+2113,U+2C60-2C7F}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:block;src:url('../src/fonts/jetbrains-mono-cyrillic.woff2') format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:block;src:url('../src/fonts/jetbrains-mono-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+/* ── flag tokens, shared by all three ─────────────────────────── */
+:root{
+  --red:#C4272F; --blue:#0066B3; --gold:#F9CF02;
+  --paper:#F4F2ED; --white:#FFFFFF; --ink:#14161A; --muted:#5A6068;
+  --rule:rgba(20,22,26,.13); --rule2:rgba(20,22,26,.07);
+  --ease:cubic-bezier(.2,0,0,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#E4E1DA;font-family:'Geologica',system-ui,sans-serif;color:var(--ink);
+  -webkit-font-smoothing:antialiased;padding:28px 24px 64px}
+.pagehead{max-width:1240px;margin:0 auto 22px}
+.pagehead h1{font-size:19px;font-weight:600;letter-spacing:-.02em}
+.pagehead p{font-size:13px;color:var(--muted);margin-top:5px;font-weight:400;max-width:70ch;line-height:1.6}
+.rowhead{max-width:1240px;margin:34px auto 12px;display:flex;align-items:baseline;gap:12px;
+  border-bottom:1px solid rgba(20,22,26,.2);padding-bottom:7px}
+.rowhead b{font-size:14px;font-weight:600}
+.rowhead span{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted)}
+.grid{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+.col>.name{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+.col>.name b{color:var(--ink);font-weight:700}
+.frame{background:var(--paper);border:1px solid rgba(20,22,26,.22);overflow:hidden}
+
+/* ── shared primitives ─────────────────────────────────────────── */
+.v{padding:18px 18px 22px;font-weight:400}
+.mono{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted)}
+.gl{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.02em;
+  text-transform:lowercase;color:var(--muted);margin-top:3px;font-weight:400}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.top h1{font-size:23px;font-weight:600;letter-spacing:-.03em;line-height:1.05;margin-top:7px}
+.top .right{text-align:right;line-height:1.85;white-space:nowrap}
+.sub{font-size:13px;color:var(--muted);margin-top:5px}
+.why{font-size:14.5px;line-height:1.5;font-weight:500}
+.prompt{font-size:44px;font-weight:500;letter-spacing:-.035em;line-height:1.08}
+.prompt.en{font-size:27px;letter-spacing:-.02em}
+.big{font-size:30px;font-weight:600;letter-spacing:-.025em;line-height:1}
+.deckword{font-size:40px;font-weight:500;letter-spacing:-.035em;line-height:1.1;text-align:center}
+.k{font-family:'JetBrains Mono',monospace;font-size:10px;flex:none}
+.btn{display:block;width:100%;padding:14px;text-align:center;font-family:'Geologica',sans-serif;
+  font-size:14px;font-weight:600;border:1px solid transparent;cursor:pointer;line-height:1.25}
+.btn .gl{color:rgba(255,255,255,.72);margin-top:2px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
+.btn.ghost .gl{color:var(--muted)}
+.gb{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.gb button{padding:9px 3px;text-align:center;font-family:'Geologica',sans-serif;font-size:12.5px;
+  font-weight:600;background:var(--white);border:1px solid var(--rule);cursor:pointer;color:var(--ink)}
+.gb .gl{font-size:10px;margin-top:1px}
+.gb .ivl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px}
+.gb button.again{color:var(--red);border-color:rgba(196,39,47,.4)}
+.gb button.again .gl{color:rgba(196,39,47,.7)}
+.dots{display:flex;gap:5px;justify-content:center}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--rule)}
+.wl{display:flex;align-items:baseline;gap:10px;padding:9px 0}
+.wl .mn{font-size:14px;font-weight:500}
+.wl .en{flex:1;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-transform:lowercase}
+.wl .n{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+
+/* ═══════════════════════════════════════════════════════════════
+   A — ХЭВЛЭЛ / PRESS.  Print logic: no boxes, hairline rules,
+   air, type does the work. Red is a rule and one button.
+   ═══════════════════════════════════════════════════════════════ */
+.A .v{padding:20px 20px 24px}
+.A .sec{padding-top:15px;margin-top:15px;border-top:1px solid var(--rule)}
+.A .sec.first{border-top:0;margin-top:0}
+.A .top{border-bottom:2px solid var(--red);padding-bottom:13px}
+.A .h{display:flex;justify-content:space-between;margin-bottom:11px}
+.A .btn{background:var(--red);color:#fff;border-radius:0;letter-spacing:.01em}
+.A .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.A .gb button{border-radius:0;background:transparent;border-color:var(--rule)}
+.A .meter{height:2px;background:var(--rule);margin-top:9px}
+.A .meter i{display:block;height:100%;background:var(--ink)}
+.A .meter.gold i{background:var(--gold)}
+.A .meter.blue i{background:var(--blue)}
+.A .stats{display:flex;gap:16px}
+.A .stats>div{flex:1}
+.A .stats .big{font-size:27px}
+.A .why{border-left:2px solid var(--red);padding-left:11px;font-style:italic}
+.A .choice{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:11px 2px;
+  background:transparent;border:0;border-bottom:1px solid var(--rule);font-family:'Geologica',sans-serif;
+  font-size:17px;font-weight:500;color:var(--ink);cursor:pointer}
+.A .choice .k{color:var(--muted)}
+.A .choice.right{color:var(--blue);border-bottom-color:var(--blue);border-bottom-width:2px}
+.A .choice.right .k{color:var(--blue)}
+.A .choice.wrong{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--red)}
+.A .tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--red);font-weight:700}
+.A .lvl{display:flex;align-items:baseline;gap:8px}
+.A .lvl b{font-size:27px;font-weight:600;letter-spacing:-.02em}
+.A .deck{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:44px 0;margin:15px 0}
+.A .dots i.on{background:var(--red)}
+
+/* ═══════════════════════════════════════════════════════════════
+   B — ТУГ / BANNER.  Flag-forward: white cards, the three-stripe
+   motif, solid colour blocks, gold badge grounds.
+   ═══════════════════════════════════════════════════════════════ */
+.B .v{padding:0 0 20px;background:var(--paper)}
+.B .stripe{display:flex;height:5px}
+.B .stripe i{flex:1}
+.B .stripe i:nth-child(1){background:var(--red)}
+.B .stripe i:nth-child(2){background:var(--blue)}
+.B .stripe i:nth-child(3){background:var(--gold)}
+.B .pad{padding:0 16px}
+.B .top{padding-top:16px}
+.B .card{background:var(--white);border:1px solid var(--rule);border-radius:8px;padding:14px;
+  box-shadow:0 1px 2px rgba(20,22,26,.05);margin-top:12px}
+.B .h{display:flex;justify-content:space-between;margin:18px 0 0}
+.B .btn{background:var(--red);color:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(196,39,47,.3)}
+.B .btn.ghost{border-radius:8px;background:var(--white)}
+.B .gb button{border-radius:7px}
+.B .meter{height:8px;background:rgba(20,22,26,.09);border-radius:4px;margin-top:9px;overflow:hidden}
+.B .meter i{display:block;height:100%;background:var(--blue);border-radius:4px}
+.B .meter.gold i{background:var(--gold)}
+.B .meter.red i{background:var(--red)}
+.B .chip{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:var(--ink);
+  border-radius:20px;padding:4px 11px;font-size:12px;font-weight:700;letter-spacing:-.01em}
+.B .chip.blue{background:rgba(0,102,179,.12);color:var(--blue)}
+.B .why{background:var(--white);border:1px solid var(--rule);border-left:4px solid var(--gold);
+  border-radius:8px;padding:13px 14px;margin-top:12px}
+.B .choice{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:13px 14px;
+  background:var(--white);border:1.5px solid var(--rule);border-radius:8px;font-family:'Geologica',sans-serif;
+  font-size:17px;font-weight:500;color:var(--ink);cursor:pointer;margin-top:8px}
+.B .choice .k{color:var(--muted);border:1px solid var(--rule);border-radius:5px;padding:2px 6px}
+.B .choice.right{background:var(--blue);color:#fff;border-color:var(--blue)}
+.B .choice.right .k{color:#fff;border-color:rgba(255,255,255,.45)}
+.B .choice.wrong{border-color:var(--red);color:var(--red)}
+.B .choice.wrong .k{color:var(--red);border-color:rgba(196,39,47,.35)}
+.B .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;background:var(--red);color:#fff;padding:4px 9px;border-radius:5px}
+.B .badges{display:flex;gap:7px;margin-top:11px}
+.B .badge{width:38px;height:38px;border-radius:50%;background:var(--gold);display:flex;
+  align-items:center;justify-content:center;font-size:16px}
+.B .badge.off{background:rgba(20,22,26,.07)}
+.B .deckcard{background:var(--white);border:1px solid var(--rule);border-radius:12px;padding:38px 16px;
+  box-shadow:0 2px 6px rgba(20,22,26,.07);margin-top:14px}
+.B .dots i.on{background:var(--red);width:18px;border-radius:3px}
+
+/* ═══════════════════════════════════════════════════════════════
+   C — СОЁМБО / EMBLEM.  Instrument panel on paper: coloured
+   spines name each domain, boxed mono labels, dense grids.
+   ═══════════════════════════════════════════════════════════════ */
+.C .v{padding:16px 16px 22px}
+.C .top{border-bottom:1px solid var(--ink);padding-bottom:12px}
+.C .panel{background:var(--white);border:1px solid var(--rule);border-left:3px solid var(--muted);
+  border-radius:3px;padding:12px 13px;margin-top:10px}
+.C .panel.red{border-left-color:var(--red)}
+.C .panel.blue{border-left-color:var(--blue)}
+.C .panel.gold{border-left-color:var(--gold);background:linear-gradient(90deg,rgba(249,207,2,.16),rgba(249,207,2,0) 62%),var(--white)}
+.C .lab{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:2px 6px}
+.C .lab.red{color:var(--red);border-color:rgba(196,39,47,.35)}
+.C .h{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.C .btn{background:var(--red);color:#fff;border-radius:3px}
+.C .btn.ghost{border-radius:3px;background:var(--white)}
+.C .gb button{border-radius:3px}
+.C .meter{height:4px;background:rgba(20,22,26,.11);border-radius:2px;margin-top:8px;overflow:hidden}
+.C .meter i{display:block;height:100%;background:var(--blue)}
+.C .meter.gold i{background:var(--gold)}
+.C .grid2{display:grid;grid-template-columns:1fr 1fr}
+.C .grid2>div{padding:10px 12px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.C .grid2>div:nth-child(2n){border-right:0}
+.C .grid2>div:nth-last-child(-n+2){border-bottom:0}
+.C .grid2 .big{font-size:24px;margin-top:4px}
+.C .choice{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:12px 13px;
+  background:var(--white);border:1px solid var(--rule);border-left:3px solid var(--rule);border-radius:3px;
+  font-family:'Geologica',sans-serif;font-size:17px;font-weight:500;color:var(--ink);cursor:pointer;margin-top:7px}
+.C .choice .k{color:var(--muted)}
+.C .choice.right{border-left-color:var(--blue);border-color:var(--blue);color:var(--blue)}
+.C .choice.right .k{color:var(--blue)}
+.C .choice.wrong{border-left-color:var(--red);opacity:.55;text-decoration:line-through}
+.C .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;background:var(--ink);color:var(--paper);padding:3px 7px;border-radius:3px}
+.C .goldband{background:var(--gold);color:var(--ink);border-radius:3px;padding:11px 13px;margin-top:10px;
+  display:flex;justify-content:space-between;align-items:center}
+.C .goldband .mono{color:rgba(20,22,26,.62)}
+.C .deckpanel{background:var(--white);border:1px solid var(--rule);border-top:3px solid var(--red);
+  border-radius:3px;padding:40px 14px;margin-top:12px}
+.C .dots i{border-radius:0;width:100%;height:3px}
+.C .dots{gap:3px}
+.C .dots i.on{background:var(--red)}
+.C .dots i.done{background:var(--muted)}
+</style>
+
+<div class="pagehead">
+  <h1>Монгол хэл — visual system, three variants</h1>
+  <p>All three share the paper base and the flag palette you picked: red <b>#C4272F</b> for action and error,
+     blue <b>#0066B3</b> for correct and known, gold <b>#F9CF02</b> for the goal layer only. They differ in how
+     much structure and colour carries the page. Real Geologica + JetBrains Mono, real telemetry shapes.</p>
+</div>
+
+<div class="rowhead"><b>Хяналтын самбар</b><span>Row 1 · daily dashboard</span></div>
+<div class="grid" id="r1"></div>
+
+<div class="rowhead"><b>Дасгал — сонголт</b><span>Row 2 · word card, multiple choice, answered</span></div>
+<div class="grid" id="r2"></div>
+
+<div class="rowhead"><b>Шинэ үг</b><span>Row 3 · interactive flashcard deck</span></div>
+<div class="grid" id="r3"></div>
+
+<script>
+const NAMES = {
+  A:['A','ХЭВЛЭЛ / PRESS'],
+  B:['B','ТУГ / BANNER'],
+  C:['C','СОЁМБО / EMBLEM']
+};
+
+/* ── Row 1: dashboard ───────────────────────────────────────── */
+function dash(v){
+  const head = `<div class="top">
+      <div><div class="mono">МОНГОЛ ХЭЛ · FSRS</div>
+        <h1>Өнөөдөр</h1><div class="gl">today</div>
+        <div class="sub">184 үг · 12 давтах</div></div>
+      <div class="mono right">SUN 10 AUG<br>RET 87%<br>ACC 82%</div>
+    </div>`;
+
+  if(v==='A') return `<div class="v A">${head}
+    <div class="sec first">
+      <div class="h"><span class="mono">Яагаад</span><span class="mono">WHY</span></div>
+      <div class="why">Сарнайн гэр бүлтэй орчуулгагүй ярихын тулд.</div>
+      <div class="gl">to talk with sarnai's family without translating</div>
+    </div>
+    <div class="sec">
+      <div class="h"><span class="mono">Зорилго</span><span class="mono">B1 · 1500 ҮГ</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div class="big">47<span style="font-size:15px;color:var(--muted);font-weight:400"> / 1500</span></div>
+        <div class="mono">3%</div></div>
+      <div class="meter gold"><i style="width:3.1%"></i></div>
+      <div class="wl"><span class="mn">+2.1 үг</span><span class="en">per day, last 14d</span></div>
+      <div class="wl" style="padding-top:0"><span class="mn">Гуравдугаар сар 2027</span><span class="en">projected b1</span></div>
+      <div class="mono" style="color:var(--red);margin-top:8px">CORPUS CEILING · 184 WORDS AVAILABLE</div>
+    </div>
+    <div class="sec">
+      <div class="h"><span class="mono">Тогтвортой байдал</span><span class="mono">CONSISTENCY</span></div>
+      <div class="stats">
+        <div><div class="mono">ЦУВАА</div><div class="big" style="color:var(--red)">12</div><div class="gl">day streak</div></div>
+        <div><div class="mono">ЦАГТАА</div><div class="big">94%</div><div class="gl">on time</div></div>
+        <div><div class="mono">ТОГТООЛТ</div><div class="big">87%</div><div class="gl">retention</div></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="lvl"><span class="mono">ТҮВШИН</span><b>4</b><span class="gl" style="margin:0">level · 2,340 xp</span></div>
+      <div class="meter"><i style="width:64%"></i></div>
+      <div class="mono" style="margin-top:6px">660 XP TO LEVEL 5</div>
+    </div>
+    <div class="sec">
+      <div class="h"><span class="mono">Хичээл</span><span class="mono">TODAY</span></div>
+      <div class="wl"><span class="mn">Давтах</span><span class="en">due reviews</span><span class="n">12</span></div>
+      <div class="wl"><span class="mn">Шинэ үг</span><span class="en">new words</span><span class="n">4</span></div>
+      <div class="wl"><span class="mn">Өгүүлбэр</span><span class="en">sentences</span><span class="n">8</span></div>
+      <div class="wl"><span class="mn">Ойлгомжтой</span><span class="en">comprehensible</span><span class="n">91%</span></div>
+    </div>
+    <button class="btn" style="margin-top:18px">Эхлэх →<div class="gl">start · 24 items</div></button>
+  </div>`;
+
+  if(v==='B') return `<div class="v B"><div class="stripe"><i></i><i></i><i></i></div>
+    <div class="pad">${head}
+    <div class="why"><div class="mono">ЯАГААД · WHY</div>
+      <div style="font-size:14.5px;font-weight:500;line-height:1.5;margin-top:6px">Сарнайн гэр бүлтэй орчуулгагүй ярихын тулд.</div>
+      <div class="gl">to talk with sarnai's family without translating</div></div>
+    <div class="h"><span class="mono">Зорилго</span><span class="mono">GOAL · B1</span></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div class="big">47 <span style="font-size:15px;color:var(--muted);font-weight:400">/ 1500</span></div>
+          <div class="gl">known words toward b1</div></div>
+        <span class="chip">★ ТҮВШИН 4</span></div>
+      <div class="meter gold"><i style="width:3.1%"></i></div>
+      <div style="display:flex;justify-content:space-between;margin-top:9px">
+        <span class="mono">+2.1/DAY</span><span class="mono">B1 · MAR 2027</span></div>
+      <div class="mono" style="color:var(--red);margin-top:9px;padding-top:9px;border-top:1px solid var(--rule2)">
+        CORPUS CEILING · 184 WORDS AVAILABLE</div>
+    </div>
+    <div class="h"><span class="mono">Тогтвортой байдал</span><span class="mono">CONSISTENCY</span></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div class="big" style="color:var(--red)">12 <span style="font-size:15px;color:var(--muted);font-weight:400">хоног</span></div>
+          <div class="gl">day streak · best 18</div></div>
+        <span class="chip blue">94% ЦАГТАА</span></div>
+      <div class="badges">
+        <div class="badge">7</div><div class="badge">50</div><div class="badge">★</div>
+        <div class="badge off" style="color:var(--muted);font-size:11px">?</div>
+        <div class="badge off" style="color:var(--muted);font-size:11px">?</div></div>
+      <div class="gl" style="margin-top:8px">3 of 12 milestones · next at 60 known words</div>
+    </div>
+    <div class="h"><span class="mono">Хичээл</span><span class="mono">TODAY</span></div>
+    <div class="card" style="padding:6px 14px">
+      <div class="wl"><span class="mn">Давтах</span><span class="en">due reviews</span><span class="n">12</span></div>
+      <div class="wl" style="border-top:1px solid var(--rule2)"><span class="mn">Шинэ үг</span><span class="en">new words</span><span class="n">4</span></div>
+      <div class="wl" style="border-top:1px solid var(--rule2)"><span class="mn">Өгүүлбэр</span><span class="en">sentences</span><span class="n">8</span></div>
+      <div class="wl" style="border-top:1px solid var(--rule2)"><span class="mn">Ойлгомжтой</span><span class="en">comprehensible</span><span class="n">91%</span></div>
+    </div>
+    <button class="btn" style="margin-top:16px">Эхлэх →<div class="gl">start · 24 items</div></button>
+    </div></div>`;
+
+  return `<div class="v C">${head}
+    <div class="panel gold">
+      <span class="lab">ЯАГААД · WHY</span>
+      <div style="font-size:14.5px;font-weight:500;line-height:1.5;margin-top:8px">Сарнайн гэр бүлтэй орчуулгагүй ярихын тулд.</div>
+      <div class="gl">to talk with sarnai's family without translating</div></div>
+    <div class="h"><span class="mono">Зорилго</span><span class="mono">GOAL</span></div>
+    <div class="panel gold" style="margin-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div class="big">47<span style="font-size:14px;color:var(--muted);font-weight:400"> / 1500</span></div>
+        <span class="lab">B1 · 3%</span></div>
+      <div class="meter gold"><i style="width:3.1%"></i></div>
+      <div class="gl">known = fsrs stability ≥ 21d</div></div>
+    <div class="panel" style="padding:0;border-left-color:var(--blue)">
+      <div class="grid2">
+        <div><span class="lab">ХУРД</span><div class="big">+2.1</div><div class="gl">words / day</div></div>
+        <div><span class="lab">B1 ОГНОО</span><div class="big" style="font-size:19px;margin-top:9px">Mar 2027</div><div class="gl">projected</div></div>
+        <div><span class="lab red">НӨӨЦ</span><div class="big" style="color:var(--red)">184</div><div class="gl">corpus ceiling</div></div>
+        <div><span class="lab">ТОГТООЛТ</span><div class="big">87%</div><div class="gl">vs 90% target</div></div>
+      </div></div>
+    <div class="h"><span class="mono">Тогтвортой байдал</span><span class="mono">CONSISTENCY</span></div>
+    <div class="goldband">
+      <div><div class="mono">ЦУВАА · STREAK</div>
+        <div class="big" style="margin-top:3px">12 хоног</div></div>
+      <div style="text-align:right"><div class="mono">ТҮВШИН 4</div>
+        <div class="mono" style="margin-top:3px">2,340 XP</div></div></div>
+    <div class="panel red" style="padding:2px 13px">
+      <div class="wl"><span class="mn">Давтах</span><span class="en">due reviews</span><span class="n">12</span></div>
+      <div class="wl" style="border-top:1px solid var(--rule2)"><span class="mn">Шинэ үг</span><span class="en">new words</span><span class="n">4</span></div>
+      <div class="wl" style="border-top:1px solid var(--rule2)"><span class="mn">Өгүүлбэр</span><span class="en">sentences</span><span class="n">8</span></div>
+      <div class="wl" style="border-top:1px solid var(--rule2)"><span class="mn">Ойлгомжтой</span><span class="en">comprehensible</span><span class="n">91%</span></div>
+    </div>
+    <button class="btn" style="margin-top:14px">Эхлэх →<div class="gl">start · 24 items</div></button>
+  </div>`;
+}
+
+/* ── Row 2: word card, multiple choice, answered ────────────── */
+function mc(v){
+  const opts = [['1','морь','right'],['2','нохой',''],['3','муур','wrong'],['4','үхэр','']];
+  const grades = [['Дахин','again','10м','again'],['Хэцүү','hard','2ө',''],['Сайн','good','6ө',''],['Амархан','easy','14ө','']];
+  const gb = `<div class="gb">${grades.map(g=>`<button class="${g[3]}">${g[0]}
+      <div class="gl">${g[1]}</div><div class="ivl">${g[2]}</div></button>`).join('')}</div>`;
+
+  if(v==='A') return `<div class="v A">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--rule);padding-bottom:9px">
+      <span class="tag">ENG → MGL</span><span class="mono">CARD 7/24 · REVIEW</span></div>
+    <div style="padding:26px 0 4px"><div class="prompt en">horse</div>
+      <div class="gl" style="margin-top:8px">үг #23 · recall 62%</div></div>
+    <div class="meter blue" style="margin-bottom:14px"><i style="width:62%"></i></div>
+    ${opts.map(o=>`<button class="choice ${o[2]}"><span class="k">${o[0]}</span>${o[1]}</button>`).join('')}
+    <div style="margin-top:16px;border-top:2px solid var(--blue);padding-top:11px">
+      <div class="mono" style="color:var(--blue);font-weight:700">ЗӨВ · CORRECT</div>
+      <div class="gl" style="margin-top:5px">морь — horse · +12 xp</div></div>
+    <div style="margin-top:15px"><div class="mono" style="margin-bottom:7px">ДАРААГИЙН ДАВТАЛТ · NEXT REVIEW</div>${gb}</div>
+  </div>`;
+
+  if(v==='B') return `<div class="v B"><div class="stripe"><i></i><i></i><i></i></div><div class="pad" style="padding-top:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="tag">ENG → MGL</span><span class="mono">CARD 7/24 · REVIEW</span></div>
+    <div class="card" style="margin-top:14px">
+      <div class="prompt en">horse</div>
+      <div class="gl" style="margin-top:6px">үг #23</div>
+      <div class="meter red"><i style="width:62%"></i></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span class="mono">RECALL</span><span class="mono">62%</span></div>
+    </div>
+    ${opts.map(o=>`<button class="choice ${o[2]}"><span class="k">${o[0]}</span>${o[1]}</button>`).join('')}
+    <div class="card" style="border-left:4px solid var(--blue)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:15px;font-weight:700;color:var(--blue)">ЗӨВ</div>
+          <div class="gl">correct · морь = horse</div></div>
+        <span class="chip">+12 XP</span></div></div>
+    <div class="h"><span class="mono">Дараагийн давталт</span><span class="mono">NEXT REVIEW</span></div>
+    <div style="margin-top:10px">${gb}</div>
+    </div></div>`;
+
+  return `<div class="v C">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--ink);padding-bottom:10px">
+      <span class="tag">ENG → MGL</span><span class="mono">CARD 7/24 · REVIEW</span></div>
+    <div class="panel red">
+      <span class="lab">АСУУЛТ · PROMPT</span>
+      <div class="prompt en" style="margin-top:9px">horse</div>
+      <div class="meter"><i style="width:62%"></i></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span class="mono">RECALL 62%</span><span class="mono">ҮГ #23</span></div></div>
+    ${opts.map(o=>`<button class="choice ${o[2]}"><span class="k">${o[0]}</span>${o[1]}</button>`).join('')}
+    <div class="panel blue" style="margin-top:11px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><span class="lab" style="color:var(--blue);border-color:rgba(0,102,179,.35)">ЗӨВ · CORRECT</span>
+          <div style="font-size:15px;font-weight:500;margin-top:7px">морь — horse</div></div>
+        <div class="mono" style="color:var(--blue)">+12 XP</div></div></div>
+    <div class="h"><span class="mono">Дараагийн давталт</span><span class="mono">NEXT REVIEW</span></div>
+    <div style="margin-top:9px">${gb}</div>
+  </div>`;
+}
+
+/* ── Row 3: interactive flashcard deck ──────────────────────── */
+function deck(v){
+  const dots = n => Array.from({length:4},(_,i)=>
+    `<i class="${i<1?'done':i===1?'on':''}"></i>`).join('');
+
+  if(v==='A') return `<div class="v A">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--rule);padding-bottom:9px">
+      <span class="tag">ШИНЭ ҮГ</span><span class="mono">NEW 2/4</span></div>
+    <div class="deck">
+      <div class="deckword">тоос сорогч</div>
+      <div class="gl" style="text-align:center;margin-top:14px">vacuum cleaner</div>
+      <div class="mono" style="text-align:center;margin-top:22px;color:var(--red)">ЭРГҮҮЛЭХ · TAP TO FLIP</div>
+    </div>
+    <div class="dots">${dots()}</div>
+    <div class="mono" style="text-align:center;margin-top:9px">ҮГ #147 · NEVER SEEN</div>
+    <button class="btn" style="margin-top:18px">Сурах<div class="gl">learn it — queue for review</div></button>
+    <button class="btn ghost" style="margin-top:8px">Мэдэж байна<div class="gl">i know this — skip ahead</div></button>
+  </div>`;
+
+  if(v==='B') return `<div class="v B"><div class="stripe"><i></i><i></i><i></i></div><div class="pad" style="padding-top:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="tag">ШИНЭ ҮГ</span><span class="mono">NEW 2/4</span></div>
+    <div class="deckcard">
+      <div class="deckword">тоос сорогч</div>
+      <div class="gl" style="text-align:center;margin-top:14px">vacuum cleaner</div>
+      <div style="text-align:center;margin-top:24px"><span class="chip blue">↻ ЭРГҮҮЛЭХ · flip</span></div>
+    </div>
+    <div class="dots" style="margin-top:14px">${dots()}</div>
+    <div class="gl" style="text-align:center;margin-top:8px">үг #147 · never seen</div>
+    <button class="btn" style="margin-top:16px">Сурах<div class="gl">learn it — queue for review</div></button>
+    <button class="btn ghost" style="margin-top:8px">Мэдэж байна<div class="gl">i know this — skip ahead</div></button>
+    </div></div>`;
+
+  return `<div class="v C">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--ink);padding-bottom:10px">
+      <span class="tag">ШИНЭ ҮГ</span><span class="mono">NEW 2/4</span></div>
+    <div class="dots" style="margin-top:12px">${dots()}</div>
+    <div class="deckpanel">
+      <div class="deckword">тоос сорогч</div>
+      <div class="gl" style="text-align:center;margin-top:14px">vacuum cleaner</div>
+      <div style="text-align:center;margin-top:24px"><span class="lab red">ЭРГҮҮЛЭХ · TAP TO FLIP</span></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:9px">
+      <span class="mono">ҮГ #147</span><span class="mono">NEVER SEEN</span></div>
+    <button class="btn" style="margin-top:16px">Сурах<div class="gl">learn it — queue for review</div></button>
+    <button class="btn ghost" style="margin-top:8px">Мэдэж байна<div class="gl">i know this — skip ahead</div></button>
+  </div>`;
+}
+
+for(const [row,fn] of [['r1',dash],['r2',mc],['r3',deck]]){
+  document.getElementById(row).innerHTML = ['A','B','C'].map(v=>
+    `<div class="col"><div class="name"><b>${NAMES[v][0]}</b><span>${NAMES[v][1]}</span></div>
+     <div class="frame">${fn(v)}</div></div>`).join('');
+}
+</script>

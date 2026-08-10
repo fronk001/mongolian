@@ -1,0 +1,215 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Хяналтын самбар — weekly vs monthly</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+@font-face{font-family:'Geologica';font-style:normal;font-weight:300 700;font-display:block;src:url('../src/fonts/geologica-cyrillic.woff2') format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Geologica';font-style:normal;font-weight:300 700;font-display:block;src:url('../src/fonts/geologica-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Geologica';font-style:normal;font-weight:300 700;font-display:block;src:url('../src/fonts/geologica-latin-ext.woff2') format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+1E00-1E9F,U+2020,U+20A0-20AB,U+2113,U+2C60-2C7F}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:block;src:url('../src/fonts/jetbrains-mono-cyrillic.woff2') format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:block;src:url('../src/fonts/jetbrains-mono-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+:root{
+  --red:#C4272F; --blue:#015197; --gold:#F9CF02;      /* official 2011 standard */
+  --paper:#F4F2ED; --white:#FFF; --ink:#14161A; --muted:#5A6068;
+  --rule:rgba(20,22,26,.13); --rule2:rgba(20,22,26,.07);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#E4E1DA;font-family:'Geologica',system-ui,sans-serif;color:var(--ink);
+  -webkit-font-smoothing:antialiased;padding:28px 24px 64px}
+.pagehead{max-width:880px;margin:0 auto 20px}
+.pagehead h1{font-size:19px;font-weight:600;letter-spacing:-.02em}
+.pagehead p{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.6;max-width:74ch}
+.grid{max-width:880px;margin:0 auto;display:grid;grid-template-columns:repeat(2,1fr);gap:36px}
+.name{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+.name b{color:var(--ink);font-weight:700}
+.frame{background:var(--paper);border:1px solid rgba(20,22,26,.22)}
+
+/* ── variant C primitives ───────────────────────────────────── */
+.v{padding:16px 16px 22px;font-weight:400}
+.mono{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.gl{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.02em;text-transform:lowercase;
+  color:var(--muted);margin-top:3px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;
+  border-bottom:1px solid var(--ink);padding-bottom:12px}
+.top h1{font-size:23px;font-weight:600;letter-spacing:-.03em;line-height:1.05;margin-top:7px}
+.top .right{text-align:right;line-height:1.85;white-space:nowrap}
+.sub{font-size:13px;color:var(--muted);margin-top:5px}
+.h{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.panel{background:var(--white);border:1px solid var(--rule);border-left:3px solid var(--muted);
+  border-radius:3px;padding:12px 13px;margin-top:9px}
+.panel.red{border-left-color:var(--red)}
+.panel.blue{border-left-color:var(--blue)}
+.panel.gold{border-left-color:var(--gold);
+  background:linear-gradient(90deg,rgba(249,207,2,.16),rgba(249,207,2,0) 62%),var(--white)}
+.panel.flush{padding:0}
+.lab{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:2px 6px}
+.lab.red{color:var(--red);border-color:rgba(196,39,47,.35)}
+.lab.blue{color:var(--blue);border-color:rgba(1,81,151,.35)}
+.big{font-size:30px;font-weight:600;letter-spacing:-.025em;line-height:1}
+.big .u{font-size:14px;color:var(--muted);font-weight:400;letter-spacing:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr}
+.grid2>div{padding:10px 12px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.grid2>div:nth-child(2n){border-right:0}
+.grid2>div:nth-last-child(-n+2){border-bottom:0}
+.grid2 .big{font-size:23px;margin-top:5px}
+.btn{display:block;width:100%;padding:14px;text-align:center;font-family:'Geologica',sans-serif;font-size:14px;
+  font-weight:600;background:var(--red);color:#fff;border:0;border-radius:3px;cursor:pointer;margin-top:14px;line-height:1.25}
+.btn .gl{color:rgba(255,255,255,.75);margin-top:2px}
+.wl{display:flex;align-items:baseline;gap:10px;padding:9px 0}
+.wl .mn{font-size:14px;font-weight:500}
+.wl .en{flex:1;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-transform:lowercase}
+.wl .n{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+.goldband{background:var(--gold);color:var(--ink);border-radius:3px;padding:12px 13px;margin-top:9px}
+.goldband .mono{color:rgba(20,22,26,.62)}
+.meter{height:4px;background:rgba(20,22,26,.11);border-radius:2px;margin-top:8px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--blue)}
+.meter.gold i{background:var(--gold)}
+
+/* ── week strip: 7 segments, one lesson = one segment ───────── */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
+.week .d{text-align:center}
+.week .bar{height:34px;background:rgba(20,22,26,.08);border-radius:2px}
+.week .bar.done{background:var(--blue)}
+.week .bar.today{background:var(--red)}
+.week .bar.today.pending{background:repeating-linear-gradient(135deg,rgba(196,39,47,.22) 0 4px,transparent 4px 8px);
+  border:1px solid var(--red)}
+.week .lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);margin-top:5px}
+.week .d.on .lbl{color:var(--red);font-weight:700}
+
+/* ── month grid: habit shape ────────────────────────────────── */
+.month{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:9px}
+.month i{aspect-ratio:1;background:rgba(20,22,26,.08);border-radius:2px}
+.month i.on{background:var(--blue)}
+.month i.on.light{background:rgba(1,81,151,.42)}
+.month i.today{background:var(--red)}
+.month i.future{background:rgba(20,22,26,.04)}
+.month.small i{border-radius:1px}
+.mhead{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.mhead span{text-align:center;font-family:'JetBrains Mono',monospace;font-size:8.5px;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+</style>
+
+<div class="pagehead">
+  <h1>Хяналтын самбар — which horizon leads?</h1>
+  <p>Both are variant C with the corrected official flag blue <b>#015197</b>. The difference is what sits at the
+     top and therefore what a single lesson visibly moves: a week has 7 slots, so one lesson is 14% of it; a month
+     has 31, so one lesson is 3%. Everything on both screens is real telemetry — days studied, reviews landed,
+     words that actually crossed into known.</p>
+</div>
+
+<div class="grid" id="g"></div>
+
+<script>
+const head = `<div class="top">
+    <div><div class="mono">МОНГОЛ ХЭЛ · FSRS</div>
+      <h1>Өнөөдөр</h1><div class="gl">today</div>
+      <div class="sub">184 үг · 12 давтах</div></div>
+    <div class="mono right">SUN 10 AUG<br>RET 87%<br>ACC 82%</div>
+  </div>`;
+
+const why = `<div class="panel gold">
+    <span class="lab">ЯАГААД · WHY</span>
+    <div style="font-size:14.5px;font-weight:500;line-height:1.5;margin-top:8px">Сарнайн гэр бүлтэй орчуулгагүй ярихын тулд.</div>
+    <div class="gl">to talk with sarnai's family without translating</div></div>`;
+
+/* what this lesson is worth — stated before you start */
+const worth = pctWeek => `<div class="goldband">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div><div class="mono">ЭНЭ ХИЧЭЭЛ · THIS LESSON</div>
+        <div class="big" style="margin-top:5px">+4 үг<span class="u"> · 12 давталт</span></div></div>
+      <div style="text-align:right"><div class="big" style="font-size:26px">${pctWeek}</div>
+        <div class="mono" style="margin-top:2px">OF THE ${pctWeek === '14%' ? 'WEEK' : 'MONTH'}</div></div>
+    </div>
+    <div class="gl" style="color:rgba(20,22,26,.6)">~8 min · 24 items · 4 new words meet you for the first time</div>
+  </div>`;
+
+const weekStrip = () => {
+  const days = [['Да',1],['Мя',1],['Лх',0],['Пү',1],['Ба',1],['Бя',2],['Ня',3]];
+  //             done      done      missed   done     done    today   future
+  return `<div class="week">${days.map(([l,st])=>`
+    <div class="d ${st===2?'on':''}">
+      <div class="bar ${st===1?'done':st===2?'today pending':''}"></div>
+      <div class="lbl">${l}</div></div>`).join('')}</div>`;
+};
+
+const monthGrid = (small) => {
+  // Aug 2026: 1st is a Saturday -> 5 leading blanks, 31 days, today = 10th
+  const cells = [];
+  for(let i=0;i<5;i++) cells.push('<i class="future"></i>');
+  const studied = new Set([1,2,4,5,6,7,8,9]);
+  const light = new Set([3]);
+  for(let d=1;d<=31;d++){
+    if(d===10) cells.push('<i class="today"></i>');
+    else if(d>10) cells.push('<i class="future"></i>');
+    else if(light.has(d)) cells.push('<i class="on light"></i>');
+    else if(studied.has(d)) cells.push('<i class="on"></i>');
+    else cells.push('<i></i>');
+  }
+  return `<div class="mhead">${['Да','Мя','Лх','Пү','Ба','Бя','Ня'].map(x=>`<span>${x}</span>`).join('')}</div>
+    <div class="month ${small?'small':''}">${cells.join('')}</div>`;
+};
+
+const b1line = `<div class="panel blue">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div><span class="lab blue">B1 · 2,500 ҮГ</span>
+        <div class="gl" style="margin-top:6px">47 known · research estimate, not a cefr spec</div></div>
+      <div style="text-align:right"><div class="mono">ЭНЭ САРЫН ХУРДААР</div>
+        <div style="font-size:15px;font-weight:600;margin-top:3px">2029 он</div></div>
+    </div>
+    <div class="meter gold"><i style="width:1.9%"></i></div></div>`;
+
+const WEEK = `<div class="v">${head}${why}
+  <div class="h"><span class="mono">Энэ долоо хоног</span><span class="mono">THIS WEEK</span></div>
+  <div class="panel red">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div class="big">4<span class="u"> / 7 хоног</span></div>
+      <span class="lab red">ЦУВАА 12</span></div>
+    ${weekStrip()}
+    <div class="gl" style="margin-top:9px">today is unstarted — the striped slot is yours to fill</div>
+  </div>
+  <div class="panel blue flush">
+    <div class="grid2">
+      <div><span class="lab">ДАВТАЛТ</span><div class="big">96</div><div class="gl">reviews landed</div></div>
+      <div><span class="lab">ШИНЭ ҮГ</span><div class="big">11</div><div class="gl">new words met</div></div>
+      <div><span class="lab">ТОГТСОН</span><div class="big" style="color:var(--blue)">+3</div><div class="gl">crossed into known</div></div>
+      <div><span class="lab">ЦАГТАА</span><div class="big">94%</div><div class="gl">reviews on time</div></div>
+    </div></div>
+  ${worth('14%')}
+  <div class="h"><span class="mono">8-р сар</span><span class="mono">MONTH · 18/31</span></div>
+  <div class="panel" style="border-left-color:var(--rule)">${monthGrid(true)}</div>
+  ${b1line}
+  <button class="btn">Эхлэх →<div class="gl">start · 24 items · ~8 min</div></button>
+</div>`;
+
+const MONTH = `<div class="v">${head}${why}
+  <div class="h"><span class="mono">8-р сар</span><span class="mono">THIS MONTH</span></div>
+  <div class="panel red">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div class="big">18<span class="u"> / 31 хоног</span></div>
+      <span class="lab red">ЦУВАА 12</span></div>
+    ${monthGrid(false)}
+    <div class="gl" style="margin-top:10px">each square is a day you actually finished a session</div>
+  </div>
+  <div class="panel blue flush">
+    <div class="grid2">
+      <div><span class="lab">ДАВТАЛТ</span><div class="big">412</div><div class="gl">reviews landed</div></div>
+      <div><span class="lab">ШИНЭ ҮГ</span><div class="big">41</div><div class="gl">new words met</div></div>
+      <div><span class="lab">ТОГТСОН</span><div class="big" style="color:var(--blue)">+14</div><div class="gl">crossed into known</div></div>
+      <div><span class="lab">ЦАГТАА</span><div class="big">91%</div><div class="gl">reviews on time</div></div>
+    </div></div>
+  ${worth('3%')}
+  <div class="h"><span class="mono">Энэ долоо хоног</span><span class="mono">WEEK · 4/7</span></div>
+  <div class="panel" style="border-left-color:var(--rule)">${weekStrip()}</div>
+  ${b1line}
+  <button class="btn">Эхлэх →<div class="gl">start · 24 items · ~8 min</div></button>
+</div>`;
+
+document.getElementById('g').innerHTML =
+  [['1','ДОЛОО ХОНОГ / WEEK-LED',WEEK],['2','САР / MONTH-LED',MONTH]]
+  .map(([n,t,html])=>`<div><div class="name"><b>${n}</b><span>${t}</span></div>
+    <div class="frame">${html}</div></div>`).join('');
+</script>

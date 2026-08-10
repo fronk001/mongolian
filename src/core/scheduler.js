@@ -107,12 +107,17 @@ export function buildSession(p, words, sentences, opts = {}) {
     .map(id => ({ kind: 'card', word: byId[id], isNew: isNew(id) }))
     .filter(x => x.word);
 
+  // New words arrive as one flip-through deck rather than N separate screens.
+  // They are introduced together, then tested individually by the card items
+  // that follow — introduction and first recall are different jobs.
+  const deckWords = fresh.map(id => byId[id]).filter(Boolean);
+
   return {
     date: today,
     fresh,
     due,
     items: [
-      ...fresh.filter(id => byId[id]).map(id => ({ kind: 'intro', word: byId[id] })),
+      ...(deckWords.length ? [{ kind: 'deck', words: deckWords }] : []),
       ...cardItems,
       ...sentenceItems
     ],

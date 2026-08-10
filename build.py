@@ -77,8 +77,11 @@ write(DIST / ".nojekyll", b"")  # GitHub Pages: don't run Jekyll
 
 
 # ---- icons: flat PNGs in the Instrument palette ------------------------------
+# Paper ground with the flag's red and blue, matching src/ui/base.css. These
+# are the home-screen icon and the PWA splash, so a stale dark palette here
+# shows up as a black tile next to a paper-white app.
 def png(size: int) -> bytes:
-    bg, signal, muted = (0x0A, 0x0B, 0x0C), (0xD8, 0xF0, 0x4B), (0x7C, 0x82, 0x88)
+    bg, signal, muted = (0xF4, 0xF2, 0xED), (0xC4, 0x27, 0x2F), (0x01, 0x51, 0x97)
     bar_y, bar_h = round(size * 0.46), round(size * 0.08)
     sub_y, sub_h = round(size * 0.60), round(size * 0.04)
     x0, x1 = round(size * 0.30), round(size * 0.70)

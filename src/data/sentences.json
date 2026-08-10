@@ -5,7 +5,21 @@
   "ids": [
    90,
    261
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Close the door, please.",
+    "Please shut the door.",
+    "Shut the door, please.",
+    "Close the door."
+   ],
+   "mn": [
+    "Хаалгаа хаагаач.",
+    "Хаалга хаагаач.",
+    "Хаалгыг хаагаарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The floor is clean.",
@@ -14,7 +28,17 @@
    91,
    138,
    201
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The floor's clean.",
+    "The floor is tidy."
+   ],
+   "mn": [
+    "Шал цэвэр."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is a picture on the wall.",
@@ -24,7 +48,18 @@
    105,
    201,
    213
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There is a painting on the wall.",
+    "A picture is on the wall.",
+    "There's a picture hanging on the wall.",
+    "There's a picture on the wall.",
+    "There's a painting on the wall.",
+    "There is a picture hanging on the wall."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is a lamp on the ceiling.",
@@ -34,7 +69,16 @@
    106,
    201,
    213
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There is a light on the ceiling.",
+    "A lamp is on the ceiling.",
+    "There's a lamp on the ceiling.",
+    "There's a light on the ceiling."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The stairs are new.",
@@ -42,7 +86,17 @@
   "ids": [
    94,
    197
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The staircase is new.",
+    "The stair is new."
+   ],
+   "mn": [
+    "Шат шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "My yard is small.",
@@ -51,7 +105,18 @@
    95,
    196,
    210
-  ]
+  ],
+  "alt": {
+   "en": [
+    "My yard is little.",
+    "My fence is small."
+   ],
+   "mn": [
+    "Хашаа минь жижиг байна.",
+    "Миний хашаа жижиг."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The table is big.",
@@ -59,7 +124,17 @@
   "ids": [
    96,
    195
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The table's big.",
+    "The table is large."
+   ],
+   "mn": [
+    "Ширээ том байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The door is open.",
@@ -68,7 +143,17 @@
    90,
    201,
    255
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The door's open.",
+    "The door is unlocked."
+   ],
+   "mn": [
+    "Хаалга нээлттэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This chair is new.",
@@ -77,7 +162,16 @@
    97,
    197,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This is a new chair."
+   ],
+   "mn": [
+    "Энэ сандал шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "My bed is warm.",
@@ -86,7 +180,17 @@
    98,
    113,
    210
-  ]
+  ],
+  "alt": {
+   "en": [
+    "My bed's warm."
+   ],
+   "mn": [
+    "Орон минь дулаан байна.",
+    "Миний орон дулаан."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The cat is sleeping on the sofa.",
@@ -97,7 +201,15 @@
    201,
    213,
    257
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The cat is sleeping on the couch.",
+    "The cat sleeps on the sofa.",
+    "The cat's asleep on the sofa."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please open the cabinet.",
@@ -105,7 +217,20 @@
   "ids": [
    100,
    260
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Open the cabinet, please.",
+    "Please open the closet.",
+    "Open the cupboard, please."
+   ],
+   "mn": [
+    "Шүүгээгээ нээгээч.",
+    "Шүүгээ нээгээч.",
+    "Шүүгээг нээгээрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The mirror is clean.",
@@ -113,7 +238,16 @@
   "ids": [
    101,
    138
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The mirror's clean."
+   ],
+   "mn": [
+    "Толь цэвэр байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Where is my pillow?",
@@ -123,7 +257,18 @@
    210,
    213,
    218
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Where's my pillow?",
+    "Where is my cushion?",
+    "Where's my cushion?"
+   ],
+   "mn": [
+    "Миний дэр хаана байна?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The blanket is warm.",
@@ -131,7 +276,17 @@
   "ids": [
    103,
    113
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The blanket's warm.",
+    "The quilt is warm."
+   ],
+   "mn": [
+    "Хөнжил дулаан байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please give me the chair.",
@@ -139,7 +294,18 @@
   "ids": [
    97,
    262
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Give me the chair, please.",
+    "Pass me the chair.",
+    "Please pass the chair."
+   ],
+   "mn": [
+    "Сандал өгөөрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The ceiling is high.",
@@ -148,7 +314,17 @@
    93,
    253
   ],
-  "note": "*өндөр = tall/high"
+  "note": "*өндөр = tall/high",
+  "alt": {
+   "en": [
+    "The ceiling's high.",
+    "The ceiling is tall."
+   ],
+   "mn": [
+    "Тааз өндөр байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please clean the carpet.",
@@ -156,7 +332,19 @@
   "ids": [
    104,
    121
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Clean the carpet, please.",
+    "Please clean the rug.",
+    "Clean the rug."
+   ],
+   "mn": [
+    "Хивс цэвэрлээч.",
+    "Хивсийг цэвэрлээрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This picture is beautiful.",
@@ -165,7 +353,18 @@
    105,
    199,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This picture is nice.",
+    "This painting is beautiful.",
+    "This is a beautiful picture."
+   ],
+   "mn": [
+    "Энэ зураг гоё байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The lamp is small.",
@@ -173,7 +372,17 @@
   "ids": [
    106,
    196
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The lamp's small.",
+    "The light is small."
+   ],
+   "mn": [
+    "Чийдэн жижиг байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I cook on the stove.",
@@ -183,7 +392,15 @@
    129,
    203,
    213
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I make food on the stove.",
+    "I use the stove to cook.",
+    "I cook on the cooker."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please open the refrigerator.",
@@ -191,7 +408,19 @@
   "ids": [
    108,
    260
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Please open the fridge.",
+    "Open the refrigerator, please.",
+    "Open the fridge."
+   ],
+   "mn": [
+    "Хөргөгч нээгээч.",
+    "Хөргөгчийг нээгээрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The washing machine is new.",
@@ -199,7 +428,17 @@
   "ids": [
    109,
    197
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The washer is new.",
+    "The washing machine's new."
+   ],
+   "mn": [
+    "Угаалгын машин шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Where is the vacuum cleaner?",
@@ -208,7 +447,17 @@
    110,
    201,
    218
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Where's the vacuum cleaner?",
+    "Where is the vacuum?",
+    "Where is the hoover?",
+    "Where's the vacuum?",
+    "Where's the hoover?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The carpet is dirty.",
@@ -216,7 +465,17 @@
   "ids": [
    104,
    137
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The rug is dirty.",
+    "The carpet's dirty."
+   ],
+   "mn": [
+    "Хивс бохир байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The cat sleeps on the bed.",
@@ -226,7 +485,14 @@
    161,
    213,
    257
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The cat sleeps in the bed.",
+    "Cats sleep on the bed."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This stair is small.",
@@ -235,7 +501,17 @@
    94,
    196,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This staircase is small.",
+    "These stairs are small."
+   ],
+   "mn": [
+    "Энэ шат жижиг байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The cat is in the yard.",
@@ -244,7 +520,14 @@
    95,
    161,
    201
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The cat's in the yard.",
+    "The cat is in the garden."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The cat is on the floor.",
@@ -254,7 +537,13 @@
    161,
    201,
    213
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The cat's on the floor."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This pillow is soft.",
@@ -264,7 +553,17 @@
    213,
    251
   ],
-  "note": "*зөөлөн = soft"
+  "note": "*зөөлөн = soft",
+  "alt": {
+   "en": [
+    "This cushion is soft.",
+    "This pillow's soft."
+   ],
+   "mn": [
+    "Энэ дэр зөөлөн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Where is my key?",
@@ -274,7 +573,17 @@
    201,
    210,
    218
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Where's my key?",
+    "Where are my keys?"
+   ],
+   "mn": [
+    "Миний түлхүүр хаана байна?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is no electricity.",
@@ -282,7 +591,16 @@
   "ids": [
    112,
    202
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There's no electricity.",
+    "There is no power.",
+    "The power is out.",
+    "There's no power."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The room is warm.",
@@ -290,7 +608,16 @@
   "ids": [
    113,
    231
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The room's warm."
+   ],
+   "mn": [
+    "Өрөө дулаан байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The light is good.",
@@ -298,7 +625,17 @@
   "ids": [
    114,
    193
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The light's good.",
+    "The lighting is good."
+   ],
+   "mn": [
+    "Гэрэл сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is a box on the table.",
@@ -308,7 +645,14 @@
    116,
    201,
    213
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There's a box on the table.",
+    "A box is on the table."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "My bag is new.",
@@ -317,7 +661,18 @@
    117,
    197,
    210
-  ]
+  ],
+  "alt": {
+   "en": [
+    "My bag's new.",
+    "My sack is new."
+   ],
+   "mn": [
+    "Уут минь шинэ байна.",
+    "Миний уут шинэ."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please give me the key.",
@@ -325,7 +680,18 @@
   "ids": [
    111,
    262
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Give me the key, please.",
+    "Pass me the key.",
+    "Please give me the keys."
+   ],
+   "mn": [
+    "Түлхүүр өгөөрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The cabinet is big.",
@@ -333,7 +699,18 @@
   "ids": [
    100,
    195
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The closet is big.",
+    "The cupboard is big.",
+    "The cabinet's big."
+   ],
+   "mn": [
+    "Шүүгээ том байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is a lamp in the room.",
@@ -342,7 +719,15 @@
    106,
    201,
    231
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There's a lamp in the room.",
+    "There is a light in the room.",
+    "There's a light in the room."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The lock is new.",
@@ -350,7 +735,16 @@
   "ids": [
    118,
    197
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The lock's new."
+   ],
+   "mn": [
+    "Цоож шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The doorbell is new.",
@@ -358,7 +752,17 @@
   "ids": [
    119,
    197
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The bell is new.",
+    "The doorbell's new."
+   ],
+   "mn": [
+    "Хонх шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There are flowers on the balcony.",
@@ -368,7 +772,14 @@
    182,
    201,
    213
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There is a flower on the balcony.",
+    "There's a flower on the balcony."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please clean the room.",
@@ -376,7 +787,19 @@
   "ids": [
    121,
    231
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Clean the room, please.",
+    "Please tidy the room.",
+    "Clean the room."
+   ],
+   "mn": [
+    "Өрөө цэвэрлээч.",
+    "Өрөөг цэвэрлээрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please wash this.",
@@ -384,7 +807,18 @@
   "ids": [
    122,
    208
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Wash this, please.",
+    "Please wash it.",
+    "Wash this."
+   ],
+   "mn": [
+    "Үүнийг угаагаарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I do the dishes after dinner.",
@@ -394,14 +828,34 @@
    144,
    203,
    214
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I wash the dishes after dinner.",
+    "I do the washing up after dinner.",
+    "After dinner I do the dishes."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please mop the floor.",
   "mn": "Шал арчаач.",
   "ids": [
    124
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Mop the floor, please.",
+    "Please wipe the floor.",
+    "Wipe the floor.",
+    "Mop the floor."
+   ],
+   "mn": [
+    "Шал арчаарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Where is the lock?",
@@ -410,7 +864,13 @@
    118,
    201,
    218
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Where's the lock?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Where is your bag?",
@@ -420,7 +880,16 @@
    201,
    211,
    218
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Where's your bag?"
+   ],
+   "mn": [
+    "Чиний уут хаана байна?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is a picture in the living room.",
@@ -429,7 +898,15 @@
    105,
    201,
    232
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There's a picture in the living room.",
+    "There is a painting in the living room.",
+    "There's a painting in the living room."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please vacuum.",
@@ -437,7 +914,15 @@
   "ids": [
    248
   ],
-  "partial": true
+  "partial": true,
+  "alt": {
+   "en": [
+    "Please hoover.",
+    "Vacuum, please.",
+    "Please do the vacuuming."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please dust the table.",
@@ -445,7 +930,18 @@
   "ids": [
    96,
    126
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Please wipe the table.",
+    "Dust the table, please.",
+    "Dust the table."
+   ],
+   "mn": [
+    "Ширээний тоос арчаарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Today I will do laundry.",
@@ -454,7 +950,21 @@
    127,
    203,
    227
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I will do the laundry today.",
+    "Today I am doing laundry.",
+    "I'm doing laundry today.",
+    "Today I will wash clothes.",
+    "Today I'll do laundry.",
+    "I'll do the laundry today.",
+    "Today I'm doing laundry.",
+    "I am doing laundry today.",
+    "Today I'll wash clothes."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I iron my clothes.",
@@ -463,7 +973,13 @@
    128,
    203,
    249
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I do the ironing."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I will cook this evening.",
@@ -473,21 +989,55 @@
    203,
    228,
    238
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I will cook tonight.",
+    "I am cooking this evening.",
+    "Tonight I will cook.",
+    "I'll cook this evening.",
+    "I'll cook tonight.",
+    "I'm cooking this evening.",
+    "Tonight I'll cook."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please take out the trash.",
   "mn": "Хогоо хаягаач.",
   "ids": [
    130
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Take out the trash, please.",
+    "Please take out the rubbish.",
+    "Take out the rubbish."
+   ],
+   "mn": [
+    "Хогоо хаягаарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please make the bed.",
   "mn": "Ор засаач.",
   "ids": [
    131
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Make the bed, please.",
+    "Please make your bed.",
+    "Make the bed."
+   ],
+   "mn": [
+    "Ор засаарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I vacuum every week.",
@@ -500,7 +1050,15 @@
    248
   ],
   "note": "*бүр = every",
-  "partial": true
+  "partial": true,
+  "alt": {
+   "en": [
+    "I vacuum weekly.",
+    "Every week I vacuum.",
+    "I hoover every week."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The refrigerator is new.",
@@ -508,7 +1066,17 @@
   "ids": [
    108,
    197
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The fridge is new.",
+    "The refrigerator's new."
+   ],
+   "mn": [
+    "Хөргөгч шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "My blanket is warm.",
@@ -517,7 +1085,18 @@
    103,
    113,
    210
-  ]
+  ],
+  "alt": {
+   "en": [
+    "My blanket's warm.",
+    "My quilt is warm."
+   ],
+   "mn": [
+    "Хөнжил минь дулаан байна.",
+    "Миний хөнжил дулаан."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The vacuum cleaner is new.",
@@ -525,7 +1104,17 @@
   "ids": [
    110,
    197
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The vacuum is new.",
+    "The hoover is new."
+   ],
+   "mn": [
+    "Тоос сорогч шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I wash every day.",
@@ -536,14 +1125,32 @@
    224,
    236
   ],
-  "note": "*бүр = every"
+  "note": "*бүр = every",
+  "alt": {
+   "en": [
+    "I wash daily.",
+    "Every day I wash."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please clean the window.",
   "mn": "Цонхыг цэвэрлээч.",
   "ids": [
    132
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Clean the window, please.",
+    "Please clean the windows.",
+    "Clean the window."
+   ],
+   "mn": [
+    "Цонхыг цэвэрлээрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I will fix the door.",
@@ -552,7 +1159,20 @@
    90,
    133,
    203
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I will repair the door.",
+    "I'll fix the door.",
+    "I am going to fix the door.",
+    "I'll repair the door.",
+    "I'm going to fix the door."
+   ],
+   "mn": [
+    "Би хаалга засна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I want to paint the wall.",
@@ -563,7 +1183,17 @@
    201,
    203,
    272
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I would like to paint the wall.",
+    "I want to paint the walls."
+   ],
+   "mn": [
+    "Би хана би хүсэж байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "My room is tidy.",
@@ -572,7 +1202,18 @@
    135,
    210,
    231
-  ]
+  ],
+  "alt": {
+   "en": [
+    "My room is organized.",
+    "My room's tidy.",
+    "My room is neat."
+   ],
+   "mn": [
+    "Миний өрөө эмх цэгцтэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The kitchen is messy.",
@@ -581,7 +1222,15 @@
    136,
    201,
    233
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The kitchen's messy.",
+    "The kitchen is a mess.",
+    "The kitchen is untidy."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The floor is dirty.",
@@ -589,7 +1238,16 @@
   "ids": [
    91,
    137
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The floor's dirty."
+   ],
+   "mn": [
+    "Шал бохир байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The room is clean.",
@@ -597,7 +1255,17 @@
   "ids": [
    138,
    231
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The room's clean.",
+    "The room is tidy."
+   ],
+   "mn": [
+    "Өрөө цэвэр байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I clean the windows on Saturday.",
@@ -608,7 +1276,15 @@
    239,
    240
   ],
-  "note": "*бямба = Saturday"
+  "note": "*бямба = Saturday",
+  "alt": {
+   "en": [
+    "I clean the window on Saturday.",
+    "On Saturdays I clean the windows.",
+    "I clean windows on Saturday."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "My clothes are dry.",
@@ -617,7 +1293,17 @@
    139,
    210,
    249
-  ]
+  ],
+  "alt": {
+   "en": [
+    "My clothing is dry."
+   ],
+   "mn": [
+    "Хувцас минь хуурай байна.",
+    "Миний хувцас хуурай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The floor is wet.",
@@ -625,7 +1311,16 @@
   "ids": [
    91,
    140
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The floor's wet."
+   ],
+   "mn": [
+    "Шал нойтон байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The food is good.",
@@ -633,7 +1328,18 @@
   "ids": [
    141,
    193
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The meal is good.",
+    "The food's good.",
+    "The food is nice."
+   ],
+   "mn": [
+    "Хоол сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I eat breakfast in the morning.",
@@ -643,7 +1349,16 @@
    203,
    237,
    258
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I have breakfast in the morning.",
+    "In the morning I eat breakfast.",
+    "I eat breakfast in the mornings.",
+    "I've breakfast in the morning."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Lunch is good.",
@@ -651,7 +1366,17 @@
   "ids": [
    143,
    193
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The lunch is good.",
+    "Lunch is nice."
+   ],
+   "mn": [
+    "Үдийн хоол сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Dinner is at seven.",
@@ -660,7 +1385,16 @@
    144,
    242,
    243
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Dinner is at seven o'clock.",
+    "Dinner is at 7.",
+    "Dinner's at seven.",
+    "Supper is at seven."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I like meat.",
@@ -669,7 +1403,15 @@
    145,
    203,
    256
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I love meat.",
+    "I am fond of meat.",
+    "I'm fond of meat."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The floor is dry.",
@@ -677,7 +1419,16 @@
   "ids": [
    91,
    139
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The floor's dry."
+   ],
+   "mn": [
+    "Шал хуурай байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "My mother cooks well.",
@@ -688,7 +1439,19 @@
    210,
    245
   ],
-  "note": "*ээж = mother"
+  "note": "*ээж = mother",
+  "alt": {
+   "en": [
+    "My mother cooks nicely.",
+    "My mum cooks well.",
+    "My mother is a good cook.",
+    "My mother makes lovely food."
+   ],
+   "mn": [
+    "Миний ээж сайхан хоол хийдэг."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I take out the trash in the morning.",
@@ -697,7 +1460,14 @@
    130,
    203,
    237
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I take out the rubbish in the morning.",
+    "In the morning I take out the trash."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Where is the bell?",
@@ -706,7 +1476,15 @@
    119,
    201,
    218
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Where's the bell?",
+    "Where is the doorbell?",
+    "Where's the doorbell?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Our sofa is new.",
@@ -715,7 +1493,17 @@
    99,
    197,
    212
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Our couch is new.",
+    "Our sofa's new."
+   ],
+   "mn": [
+    "Манай буйдан шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I mop the floor on Sunday.",
@@ -726,7 +1514,15 @@
    239,
    241
   ],
-  "note": "*ням = Sunday"
+  "note": "*ням = Sunday",
+  "alt": {
+   "en": [
+    "I wipe the floor on Sunday.",
+    "On Sundays I mop the floor.",
+    "I mop floors on Sunday."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I like fish.",
@@ -735,7 +1531,15 @@
    146,
    203,
    256
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I love fish.",
+    "I am fond of fish.",
+    "I'm fond of fish."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please buy vegetables.",
@@ -743,7 +1547,19 @@
   "ids": [
    147,
    263
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Buy vegetables, please.",
+    "Please get vegetables.",
+    "Please buy some vegetables.",
+    "Buy some vegetables."
+   ],
+   "mn": [
+    "Хүнсний ногоо аваарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This fruit is good.",
@@ -752,7 +1568,18 @@
    148,
    193,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This fruit's good.",
+    "This fruit is nice.",
+    "This fruit's nice."
+   ],
+   "mn": [
+    "Энэ жимс сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Rice is on the table.",
@@ -762,7 +1589,15 @@
    149,
    201,
    213
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There is rice on the table.",
+    "There's rice on the table.",
+    "The rice is on the table."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This bread is good.",
@@ -771,7 +1606,17 @@
    150,
    193,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This bread's good.",
+    "This bread is nice."
+   ],
+   "mn": [
+    "Энэ талх сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I eat eggs in the morning.",
@@ -781,7 +1626,14 @@
    203,
    237,
    258
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I eat an egg in the morning.",
+    "In the morning I eat eggs."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The milk is good.",
@@ -789,7 +1641,17 @@
   "ids": [
    152,
    193
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The milk's good.",
+    "Milk is good."
+   ],
+   "mn": [
+    "Сүү сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This fish is good.",
@@ -798,7 +1660,17 @@
    146,
    193,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This fish's good.",
+    "This fish is nice."
+   ],
+   "mn": [
+    "Энэ загас сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is no light in the room.",
@@ -807,7 +1679,16 @@
    114,
    202,
    231
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There's no light in the room.",
+    "There is no light in this room.",
+    "The room has no light.",
+    "There's no light in this room."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The carpet is wet.",
@@ -815,7 +1696,17 @@
   "ids": [
    104,
    140
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The rug is wet.",
+    "The carpet's wet."
+   ],
+   "mn": [
+    "Хивс нойтон байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Mother cooks dinner.",
@@ -825,7 +1716,16 @@
    245,
    267
   ],
-  "note": "*ээж = mother"
+  "note": "*ээж = mother",
+  "alt": {
+   "en": [
+    "Mother makes dinner.",
+    "My mother cooks dinner.",
+    "Mum cooks dinner.",
+    "Mother cooks supper."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Father is painting the door.",
@@ -836,7 +1736,15 @@
    201,
    246
   ],
-  "note": "*аав = father"
+  "note": "*аав = father",
+  "alt": {
+   "en": [
+    "Father paints the door.",
+    "Dad is painting the door.",
+    "My father is painting the door."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Would you like tea?",
@@ -845,7 +1753,15 @@
    153,
    205,
    259
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Do you want tea?",
+    "Would you like some tea?",
+    "Will you have tea?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I drink coffee in the morning.",
@@ -855,7 +1771,15 @@
    203,
    237,
    259
-  ]
+  ],
+  "alt": {
+   "en": [
+    "In the morning I drink coffee.",
+    "I have coffee in the morning.",
+    "I've coffee in the morning."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is no salt.",
@@ -863,7 +1787,16 @@
   "ids": [
    155,
    202
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There's no salt.",
+    "We have no salt.",
+    "There isn't any salt.",
+    "There is not any salt."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I like sugar.",
@@ -872,7 +1805,17 @@
    156,
    203,
    256
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I love sugar.",
+    "I like sweets.",
+    "I like candy.",
+    "I am fond of sugar.",
+    "I'm fond of sugar."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is no butter.",
@@ -880,7 +1823,17 @@
   "ids": [
    202,
    248
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There's no butter.",
+    "There is no oil.",
+    "There isn't any butter.",
+    "There's no oil.",
+    "There is not any butter."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Where is the knife?",
@@ -889,7 +1842,13 @@
    158,
    201,
    218
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Where's the knife?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Put the food on the plate.",
@@ -899,7 +1858,18 @@
    159,
    213,
    269
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Put the food on the shelf.",
+    "Put the meal on the plate.",
+    "Place the food on the plate."
+   ],
+   "mn": [
+    "Хоол тавиур дээр тавь."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This tea is good.",
@@ -908,7 +1878,17 @@
    153,
    193,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This tea's good.",
+    "This tea is nice."
+   ],
+   "mn": [
+    "Энэ цай сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The electricity is here now.",
@@ -917,7 +1897,17 @@
    112,
    201,
    226
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The power is on now.",
+    "The electricity is on now.",
+    "There is electricity now.",
+    "The power is back.",
+    "There's electricity now."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please give me oil.",
@@ -925,7 +1915,18 @@
   "ids": [
    248,
    262
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Give me the oil, please.",
+    "Please pass the butter.",
+    "Pass me the oil."
+   ],
+   "mn": [
+    "Тос өгөөрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This bowl is small.",
@@ -934,7 +1935,17 @@
    160,
    196,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This cup is small.",
+    "This bowl's small."
+   ],
+   "mn": [
+    "Энэ аяга жижиг байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "My cat is small.",
@@ -943,7 +1954,18 @@
    161,
    196,
    210
-  ]
+  ],
+  "alt": {
+   "en": [
+    "My cat's small.",
+    "My cat is little."
+   ],
+   "mn": [
+    "Муур минь жижиг байна.",
+    "Миний муур жижиг."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The kitten is small.",
@@ -951,7 +1973,17 @@
   "ids": [
    162,
    196
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The kitten's small.",
+    "The kitten is little."
+   ],
+   "mn": [
+    "Зулзага муур жижиг байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Do you have a pet?",
@@ -960,7 +1992,15 @@
    163,
    204,
    220
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Have you got a pet?",
+    "Do you have pets?",
+    "Do you own a pet?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This is a new toy.",
@@ -969,7 +2009,16 @@
    164,
    197,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This toy is new.",
+    "This is a new game.",
+    "It's a new toy.",
+    "It is a new toy."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Let's play together.",
@@ -977,7 +2026,14 @@
   "ids": [
    165,
    229
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Shall we play together?",
+    "Let us play together."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The cat scratches the sofa.",
@@ -987,7 +2043,18 @@
    161,
    166,
    201
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The cat is scratching the sofa.",
+    "The cat scratches the couch.",
+    "The cat is scratching the couch."
+   ],
+   "mn": [
+    "Муур буйдан хумхиж байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This cup is new.",
@@ -996,7 +2063,17 @@
    160,
    197,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This bowl is new.",
+    "This cup's new."
+   ],
+   "mn": [
+    "Энэ аяга шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I want bread.",
@@ -1006,7 +2083,15 @@
    201,
    203,
    272
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I would like bread.",
+    "I want some bread.",
+    "I'd like some bread."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This tail is small.",
@@ -1015,7 +2100,17 @@
    167,
    196,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This tail's small.",
+    "This tail is short."
+   ],
+   "mn": [
+    "Энэ сүүл жижиг байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The paw is small.",
@@ -1023,7 +2118,17 @@
   "ids": [
    168,
    196
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The paw's small.",
+    "The paws are small."
+   ],
+   "mn": [
+    "Сарвуу жижиг байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I feed the cat in the morning.",
@@ -1033,7 +2138,15 @@
    169,
    203,
    237
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I feed my cat in the morning.",
+    "In the morning I feed the cat.",
+    "I give the cat food in the morning."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Take the cat to the vet.",
@@ -1042,7 +2155,19 @@
    161,
    170,
    263
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Take the cat to the clinic.",
+    "Please take the cat to the vet.",
+    "Bring the cat to the vet."
+   ],
+   "mn": [
+    "Муур эмнэлэгт аваач.",
+    "Муурыг эмнэлэгт аваарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This book is good.",
@@ -1051,7 +2176,17 @@
    171,
    193,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This book's good.",
+    "This is a good book."
+   ],
+   "mn": [
+    "Энэ ном сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please read this.",
@@ -1059,7 +2194,18 @@
   "ids": [
    172,
    208
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Read this, please.",
+    "Please read it.",
+    "Read this."
+   ],
+   "mn": [
+    "Үүнийг уншаарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please open the page.",
@@ -1067,7 +2213,18 @@
   "ids": [
    173,
    260
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Open the page, please.",
+    "Please turn to the page.",
+    "Open the page."
+   ],
+   "mn": [
+    "Хуудсыг нээгээрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The cat has a long tail.",
@@ -1077,7 +2234,16 @@
    167,
    252
   ],
-  "note": "*урт = long"
+  "note": "*урт = long",
+  "alt": {
+   "en": [
+    "The cat's tail is long."
+   ],
+   "mn": [
+    "Муурын сүүл урт байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The cat is sleeping.",
@@ -1086,7 +2252,15 @@
    161,
    201,
    257
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The cat sleeps.",
+    "The cat's asleep.",
+    "The cat is asleep."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This plate is clean.",
@@ -1095,7 +2269,17 @@
    138,
    159,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This shelf is clean.",
+    "This plate's clean."
+   ],
+   "mn": [
+    "Энэ тавиур цэвэр байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "What is this thing?",
@@ -1106,7 +2290,17 @@
    220,
    221,
    230
-  ]
+  ],
+  "alt": {
+   "en": [
+    "What is this called?",
+    "What's this thing?",
+    "What is this item?",
+    "What's this called?",
+    "What's this item?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "My bag is dirty.",
@@ -1115,7 +2309,17 @@
    117,
    137,
    210
-  ]
+  ],
+  "alt": {
+   "en": [
+    "My bag's dirty."
+   ],
+   "mn": [
+    "Уут минь бохир байна.",
+    "Миний уут бохир."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This story is good.",
@@ -1124,7 +2328,18 @@
    174,
    193,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This story's good.",
+    "This history is good.",
+    "This is a good story."
+   ],
+   "mn": [
+    "Энэ түүх сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Who is the author?",
@@ -1133,7 +2348,16 @@
    175,
    219,
    222
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Who's the author?",
+    "Who is the writer?",
+    "Who wrote it?",
+    "Who's the writer?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Let's go to the library.",
@@ -1141,7 +2365,14 @@
   "ids": [
    176,
    268
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Let us go to the library.",
+    "Shall we go to the library?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is a bookstore here.",
@@ -1150,7 +2381,16 @@
    177,
    201,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There's a bookstore here.",
+    "There is a bookshop here.",
+    "Here is a bookstore.",
+    "There's a bookshop here."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please write the word.",
@@ -1158,7 +2398,19 @@
   "ids": [
    178,
    179
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Write the word, please.",
+    "Please write down the word.",
+    "Write the word."
+   ],
+   "mn": [
+    "Үг бичээч.",
+    "Үгийг бичээрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This word is new.",
@@ -1167,7 +2419,17 @@
    179,
    197,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This word's new.",
+    "This is a new word."
+   ],
+   "mn": [
+    "Энэ үг шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please make a sentence.",
@@ -1175,7 +2437,17 @@
   "ids": [
    180,
    267
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Make a sentence, please.",
+    "Please build a sentence."
+   ],
+   "mn": [
+    "Өгүүлбэр хийгээрэй."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please tell me a story.",
@@ -1184,7 +2456,14 @@
    174,
    209,
    270
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Tell me a story.",
+    "Tell me a story, please."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Where is the vet?",
@@ -1193,7 +2472,15 @@
    170,
    201,
    218
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Where's the vet?",
+    "Where is the clinic?",
+    "Where's the clinic?"
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This knife is new.",
@@ -1202,7 +2489,17 @@
    158,
    197,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This knife's new.",
+    "This is a new knife."
+   ],
+   "mn": [
+    "Энэ хутга шинэ байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Our garden is beautiful.",
@@ -1211,7 +2508,17 @@
    181,
    199,
    212
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Our garden is nice.",
+    "Our garden's beautiful."
+   ],
+   "mn": [
+    "Манай цэцэрлэг гоё байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I love flowers.",
@@ -1220,7 +2527,15 @@
    182,
    203,
    256
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I like flowers.",
+    "I am fond of flowers.",
+    "I'm fond of flowers."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please water the plant.",
@@ -1228,7 +2543,18 @@
   "ids": [
    183,
    188
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Water the plant, please.",
+    "Please water the plants.",
+    "Water the plant."
+   ],
+   "mn": [
+    "Ургамлыг усалаарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There is a tree near the house.",
@@ -1238,7 +2564,16 @@
    201,
    216,
    234
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There's a tree near the house.",
+    "There is a tree by the house.",
+    "A tree is near the house.",
+    "There's a tree by the house."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This leaf is small.",
@@ -1247,7 +2582,17 @@
    185,
    196,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This leaf's small.",
+    "This leaf is little."
+   ],
+   "mn": [
+    "Энэ навч жижиг байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please plant the seed.",
@@ -1255,7 +2600,19 @@
   "ids": [
    186,
    189
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Plant the seed, please.",
+    "Please sow the seed.",
+    "Plant the seed.",
+    "Sow the seed."
+   ],
+   "mn": [
+    "Үр тариач."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The soil is wet.",
@@ -1264,7 +2621,18 @@
    140,
    187,
    201
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The earth is wet.",
+    "The soil's wet.",
+    "The ground is wet."
+   ],
+   "mn": [
+    "Хөрс нойтон."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "There are flowers in the garden.",
@@ -1273,7 +2641,14 @@
    181,
    182,
    201
-  ]
+  ],
+  "alt": {
+   "en": [
+    "There is a flower in the garden.",
+    "There's a flower in the garden."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I read every evening.",
@@ -1284,7 +2659,14 @@
    224,
    238
   ],
-  "note": "*бүр = every"
+  "note": "*бүр = every",
+  "alt": {
+   "en": [
+    "Every evening I read.",
+    "I read each evening."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I want a new blanket.",
@@ -1295,7 +2677,15 @@
    201,
    203,
    272
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I would like a new blanket.",
+    "I'd like a new blanket.",
+    "I want a new quilt."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Please water the flowers.",
@@ -1303,7 +2693,18 @@
   "ids": [
    182,
    188
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Water the flowers, please.",
+    "Please water the flower.",
+    "Water the flowers."
+   ],
+   "mn": [
+    "Цэцэг усалаарай."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I want to plant a tree.",
@@ -1314,7 +2715,15 @@
    201,
    203,
    272
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I would like to plant a tree.",
+    "I want to plant trees.",
+    "I'd like to plant a tree."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The tree is growing.",
@@ -1323,7 +2732,13 @@
    184,
    190,
    201
-  ]
+  ],
+  "alt": {
+   "en": [
+    "The tree grows."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Don't walk on the grass.",
@@ -1333,7 +2748,19 @@
    213,
    225,
    271
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Do not walk on the grass.",
+    "Don't step on the grass.",
+    "Keep off the grass.",
+    "Do not step on the grass."
+   ],
+   "mn": [
+    "Өвсөн дээр битгий алх."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Our lawn is big.",
@@ -1342,7 +2769,17 @@
    192,
    195,
    212
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Our lawn's big.",
+    "Our lawn is large."
+   ],
+   "mn": [
+    "Манай зүлэг том байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This food is good.",
@@ -1351,7 +2788,18 @@
    141,
    193,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This meal is good.",
+    "This food's good.",
+    "This food is nice."
+   ],
+   "mn": [
+    "Энэ хоол сайн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This is a bad day.",
@@ -1360,7 +2808,15 @@
    194,
    206,
    236
-  ]
+  ],
+  "alt": {
+   "en": [
+    "It's a bad day.",
+    "This day is bad.",
+    "It is a bad day."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I water the plants every morning.",
@@ -1372,7 +2828,14 @@
    224,
    237
   ],
-  "note": "*бүр = every"
+  "note": "*бүр = every",
+  "alt": {
+   "en": [
+    "Every morning I water the plants.",
+    "I water the plant every morning."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "My house is big.",
@@ -1381,7 +2844,18 @@
    195,
    212,
    234
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Our house is big.",
+    "My house is large.",
+    "Our house is large."
+   ],
+   "mn": [
+    "Манай байшин том байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "I bought a new bag.",
@@ -1391,7 +2865,16 @@
    197,
    203,
    263
-  ]
+  ],
+  "alt": {
+   "en": [
+    "I got a new bag.",
+    "I have bought a new bag.",
+    "I took a new bag.",
+    "I've bought a new bag."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This book is old.",
@@ -1400,7 +2883,17 @@
    171,
    198,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This book's old.",
+    "This is an old book."
+   ],
+   "mn": [
+    "Энэ ном хуучин байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "That picture is beautiful.",
@@ -1409,7 +2902,18 @@
    105,
    199,
    207
-  ]
+  ],
+  "alt": {
+   "en": [
+    "That picture is nice.",
+    "That painting is beautiful.",
+    "That's a beautiful picture."
+   ],
+   "mn": [
+    "Тэр зураг гоё байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Have a lovely day.",
@@ -1418,7 +2922,15 @@
    200,
    236,
    273
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Have a nice day.",
+    "Have a good day.",
+    "Enjoy your day."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This is a big book.",
@@ -1427,7 +2939,16 @@
    171,
    195,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This book is big.",
+    "It's a big book.",
+    "This is a large book.",
+    "It is a big book."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This is a small box.",
@@ -1436,7 +2957,16 @@
    116,
    196,
    206
-  ]
+  ],
+  "alt": {
+   "en": [
+    "This box is small.",
+    "It's a small box.",
+    "This is a little box.",
+    "It is a small box."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Children love to play.",
@@ -1446,7 +2976,16 @@
    247,
    256
   ],
-  "note": "*хүүхдүүд = children"
+  "note": "*хүүхдүүд = children",
+  "alt": {
+   "en": [
+    "Children like to play.",
+    "Kids love to play.",
+    "Children love playing.",
+    "Children like playing."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "The cat's paws are soft.",
@@ -1456,7 +2995,18 @@
    168,
    251
   ],
-  "note": "*зөөлөн = soft"
+  "note": "*зөөлөн = soft",
+  "alt": {
+   "en": [
+    "The cat's paw is soft.",
+    "Cat paws are soft.",
+    "The paws of the cat are soft."
+   ],
+   "mn": [
+    "Муурын сарвуу зөөлөн байна."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "Read the next page.",
@@ -1465,7 +3015,17 @@
    172,
    173,
    215
-  ]
+  ],
+  "alt": {
+   "en": [
+    "Please read the next page.",
+    "Turn to the next page."
+   ],
+   "mn": [
+    "Дараагийн хуудас унш."
+   ]
+  },
+  "altReviewed": false
  },
  {
   "en": "This plant grows fast.",
