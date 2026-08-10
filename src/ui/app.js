@@ -19,6 +19,7 @@ let S = {
   deckI: 0, flipped: false,          // flashcard deck position
   picked: null,                       // chosen multiple-choice index
   skip: new Set(),                    // words dismissed with «Мэдэж байна»
+  graded: new Set(),                  // words already graded this session
   editPurpose: false,
   summary: blankSummary()
 };
@@ -26,6 +27,12 @@ let S = {
 const fsrs = () => makeFSRS(undefined, P.desiredRetention);
 const glossOn = () => P.gloss !== false;
 const mcOn = () => P.mcMode !== false;
+
+// How many words are drilled on their own each lesson. A cycle rather than a
+// free number: buildSession() always holds a few targets back for the sentence
+// phase, so these are the steps that make a visible difference to a session.
+const DRILL_STEPS = [0, 4, 8, 14];
+const drillCount = () => P.wordDrills ?? 8;
 
 function current() { return S.session?.items[S.i]; }
 
@@ -45,8 +52,11 @@ function todaySession() {
   return buildSession(P, WORDS, SENTENCES);
 }
 
-/** Direction for a word card. New words are always shown Mongolian-first. */
-const dirFor = item => item.isNew ? 'mge' : (S.i % 2 ? 'egm' : 'mge');
+/**
+ * Direction for a word card. Decided by the scheduler, which seeds it on the
+ * word and the date rather than on the card's position in the session.
+ */
+const dirFor = item => item.dir || 'mge';
 
 /**
  * Options for a word card. Seeded on the word, direction and day, so the
@@ -61,10 +71,29 @@ function choicesFor(item) {
   });
 }
 
+/**
+ * Entry motion plays when the screen is showing something new — a different
+ * question, a different deck face, a different screen — and not on the
+ * re-renders that happen within one question. The whole view is rebuilt from a
+ * string on every state change, so without this gate picking a multiple-choice
+ * option would replay the entry animation of the prompt the learner is already
+ * reading. INSTRUMENT: nothing moves that has not changed.
+ */
+let lastKey = null;
+function renderKey() {
+  if (S.screen !== 'run') return `${S.screen}:${S.tools}:${S.editPurpose}`;
+  const item = current();
+  return `run:${S.i}:${item && item.kind === 'deck' ? S.deckI + ':' + S.flipped : ''}`;
+}
+
 function render() {
   const st = stats(P, { words: WORDS });
   const gloss = glossOn();
   const today = dayKey();
+  const key = renderKey();
+  const fresh = key !== lastKey;
+  lastKey = key;
+  el.className = fresh ? 'wrap enter' : 'wrap';
 
   if (S.screen === 'home') {
     el.innerHTML = V.viewDash(P, st, todaySession(), toolsPanel(), {
@@ -124,6 +153,11 @@ function toolsPanel() {
       <div class="wline">
         <div style="flex:1"><div class="mn">Сонголтоор асуух</div>${g('multiple choice on word cards')}</div>
         <button class="btn ghost slim" data-act="mc">${mcOn() ? 'Асаалттай' : 'Унтраалттай'}${g(mcOn() ? 'on' : 'off — you type instead')}</button>
+      </div>
+      <div class="wline">
+        <div style="flex:1"><div class="mn">Үгийн сорил</div>${g('word cards per lesson — drilled on their own, before the sentences')}</div>
+        <button class="btn ghost slim" data-act="drills">${drillCount() || 'Хаалттай'}${
+          g(drillCount() ? 'per lesson, when there is that much due' : 'off — only words no sentence covers')}</button>
       </div>
       <div class="wline">
         <div style="flex:1"><div class="mn">Англи орчуулга</div>${g('english gloss under the mongolian')}</div>
@@ -222,8 +256,19 @@ function finish() {
  * Apply a grade to every word the current item covers, and award the XP it
  * actually earned — base for doing the work, plus the memory stability the
  * review genuinely bought. Nothing here can be earned without grading a card.
+ *
+ * A word is graded at most once per session. Two sentences in one session can
+ * share a target word (a sentence is only skipped when *every* word it teaches
+ * is already covered), and the word drills reserved by buildSession() sit
+ * alongside sentences that may contain the same vocabulary. Grading twice would
+ * apply the FSRS same-day term twice — about 1.29× stability each time — and
+ * would count one memory as two reviews and two XP awards. The first grade
+ * wins: word cards run before sentences, and a card is the sharper measurement
+ * of that one word than a sentence graded across all of its targets.
  */
 function awardGrade(id, g) {
+  if (S.graded.has(id)) return;
+  S.graded.add(id);
   const today = dayKey();
   const prev = P.items[id];
   // On time = not already overdue when it was answered.
@@ -253,7 +298,7 @@ document.addEventListener('click', e => {
   if (act === 'start') {
     S.session = todaySession(); S.i = 0; S.screen = 'run';
     S.fb = null; S.picked = null;
-    S.deckI = 0; S.flipped = false; S.skip = new Set();
+    S.deckI = 0; S.flipped = false; S.skip = new Set(); S.graded = new Set();
     S.summary = blankSummary();
     render();
   }
@@ -281,9 +326,18 @@ document.addEventListener('click', e => {
 
   // ---- multiple choice ------------------------------------------------
   else if (act === 'pick') { S.picked = parseInt(t.getAttribute('data-i'), 10); render(); }
+  // A closed set of four: the app scored the answer, so it grades it too —
+  // «Сайн» for a right pick, «Дахин» for a wrong one. «Амархан байсан» is the
+  // one judgement the learner still holds, and it is optional.
+  else if (act === 'card-next') grade(parseInt(t.getAttribute('data-g'), 10));
   else if (act === 'mc-off') { P.mcMode = false; save(P); S.picked = null; render(); }
   else if (act === 'mc-on') { P.mcMode = true; save(P); S.fb = null; render(); }
   else if (act === 'mc') { P.mcMode = !mcOn(); save(P); render(); }
+  else if (act === 'drills') {
+    const i = DRILL_STEPS.indexOf(drillCount());
+    P.wordDrills = DRILL_STEPS[(i + 1) % DRILL_STEPS.length];
+    save(P); render();
+  }
 
   else if (act === 'grade') grade(parseInt(t.getAttribute('data-g'), 10));
   else if (act === 'check-word') {
@@ -362,7 +416,7 @@ document.addEventListener('keydown', e => {
   if (e.target && /^(TEXTAREA|INPUT)$/.test(e.target.tagName) && e.key !== 'Enter') return;
 
   if (e.key === 'Enter' && !e.shiftKey) {
-    const order = ['submit', 'check-word', 'deck-learn', 'next'];
+    const order = ['submit', 'check-word', 'card-next', 'deck-learn', 'next'];
     for (const act of order) {
       const b = document.querySelector(`[data-act="${act}"]`);
       if (b) { e.preventDefault(); b.click(); return; }

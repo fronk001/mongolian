@@ -31,6 +31,11 @@ export function blank() {
     // written before these existed import with the defaults below rather
     // than being rejected — see importCode().
     mcMode: true,        // word cards as multiple choice; off = type the answer
+    // How many of the day's due/new words are drilled as isolated word cards
+    // before the sentence phase. Reserved in buildSession() *before* sentences
+    // are scored, so a word is still presented — and graded — once per session.
+    // 0 falls back to the old behaviour: a card only where no sentence fits.
+    wordDrills: 8,
     purpose: '',         // the ЯАГААД line, shown on the dashboard every day
     goalWords: 2500,     // B1 estimate. Research figure, not a CEFR spec.
     xp: 0,

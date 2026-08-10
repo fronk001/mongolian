@@ -11,9 +11,25 @@
  * See ROADMAP.md for sources.
  */
 import { makeFSRS, dayKey, daysBetween } from './fsrs.js';
+import { hashSeed } from './choices.js';
 
 const KNOWN_R = 0.80;   // recall probability above which a word is "supporting context"
 const WEAK_R  = 0.60;   // below this the word is the thing being taught
+const SENTENCE_TARGET_FLOOR = 3;   // targets never taken from the sentence phase
+
+/**
+ * Which way a word card faces.
+ *
+ * A word met today is asked Mongolian-first: recognition before production.
+ * After that the direction alternates on the word and the date, so both halves
+ * come round on their own. It used to be `sessionIndex % 2`, which meant the
+ * direction depended on where the card happened to land in the session — the
+ * same word could be asked the same way for a week.
+ */
+function cardDir(word, isNew, today) {
+  if (isNew) return 'mge';
+  return hashSeed(`${word.id}:${today}`) % 2 ? 'egm' : 'mge';
+}
 
 export function buildSession(p, words, sentences, opts = {}) {
   const today = opts.today || dayKey();
@@ -56,9 +72,43 @@ export function buildSession(p, words, sentences, opts = {}) {
     .slice(0, opts.newCount ?? room)
     .map(w => w.id);
 
-  // --- sentence selection -----------------------------------------------
   const targets = [...due, ...fresh];
-  const targetSet = new Set(targets);
+
+  // --- word drills, reserved before the sentences claim everything -------
+  // Vocabulary drilled in isolation used to be *residue*: a target became a
+  // word card only when no chosen sentence happened to contain it. With 164
+  // sentences over 184 words the sentence phase absorbed nearly all of them,
+  // so the card — and with it multiple choice, the only place it lives —
+  // vanished for days at a time. A cold start produced no word card at all on
+  // days 1, 2 and 4, and averaged 3.7 a day against 7.7 sentences.
+  //
+  // Targets are reserved for drilling *before* the sentences are scored. That
+  // keeps the property which made the old arrangement correct: a word is
+  // presented once per session, so it is graded once per session, and the FSRS
+  // same-day term (~1.29× stability per repeat) never compounds on it.
+  const drillCap = opts.wordDrills ?? p.wordDrills ?? 8;   // default in blank()
+  // Never reserve so much that the sentence phase has nothing left to teach.
+  // Sentences are what build comprehension; a session of bare word cards is
+  // the flashcard app this scheduler was written to replace. Holding back a
+  // fixed few rather than a fraction keeps the setting meaningful: a share of
+  // the targets would have capped every setting above ~6 at the same figure.
+  const reserveN = (!drillCap || !targets.length)
+    ? 0
+    : Math.max(1, Math.min(drillCap, targets.length - SENTENCE_TARGET_FLOOR));
+  // Alternating the two sources matters more than it looks. Taking all the new
+  // words first let a day of fresh vocabulary crowd the reviews out entirely,
+  // and reviews are the only cards that ask ENG→MGL — new words are always
+  // asked the other way round. Straight new-words-first left that direction at
+  // 14% of all cards, so the harder half of the vocabulary barely came up.
+  const drillOrder = [];
+  for (let i = 0; i < Math.max(fresh.length, due.length); i++) {
+    if (i < fresh.length) drillOrder.push(fresh[i]);
+    if (i < due.length) drillOrder.push(due[i]);   // `due` is weakest-first
+  }
+  const drilled = new Set(drillOrder.slice(0, reserveN));
+
+  // --- sentence selection -----------------------------------------------
+  const targetSet = new Set(targets.filter(id => !drilled.has(id)));
 
   const scored = sentences.map(s => {
     const ids = s.ids;
@@ -100,12 +150,16 @@ export function buildSession(p, words, sentences, opts = {}) {
     comprehensible: c.comprehensible
   }));
 
-  // words with no usable sentence still need review, as plain cards
+  // Word cards: the reserved drills, plus any target no sentence could carry —
+  // a due word with no usable sentence must still be practised somewhere.
+  // Kept in `targets` order (reviews, then new words) so the deck at the top of
+  // the session and the first recall of a word it introduced are not adjacent.
   const inSentences = new Set(picked.flatMap(c => c.teaches));
   const cardItems = targets
-    .filter(id => !inSentences.has(id))
+    .filter(id => drilled.has(id) || !inSentences.has(id))
     .map(id => ({ kind: 'card', word: byId[id], isNew: isNew(id) }))
-    .filter(x => x.word);
+    .filter(x => x.word)
+    .map(it => ({ ...it, dir: cardDir(it.word, it.isNew, today) }));
 
   // New words arrive as one flip-through deck rather than N separate screens.
   // They are introduced together, then tested individually by the card items

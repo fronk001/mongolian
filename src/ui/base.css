@@ -270,6 +270,56 @@ letter-spacing:0;text-transform:none}
 .foot{border-top:1px solid var(--rule);padding-top:14px;margin-top:22px;
 display:flex;justify-content:space-between}
 
+/* ═══════════════════════════════════════════════════════════════════════
+   Motion.
+
+   INSTRUMENT: 140–180ms on cubic-bezier(.2,0,0,1); nothing bounces; grading a
+   card advances instantly. Two rules keep it from becoming decoration:
+
+   1. **Only what changed moves.** The view is rebuilt from an HTML string on
+      every state change, so a naive entry animation replays on every render —
+      picking an option would re-animate the prompt already on screen. app.js
+      puts `.enter` on the container only when the screen is showing something
+      new, and the entry animations below are scoped to it.
+   2. **Touch answers immediately.** Press states are 90ms; anything slower
+      reads as lag rather than feedback on a phone.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes fade{from{opacity:0}}
+/* Rise, never overshoot: 5px is enough to read as "this is new". */
+@keyframes rise{from{opacity:0;transform:translateY(5px)}}
+/* An implicit to-keyframe animates to the element's own computed style, which
+   is how the answered options colour in without a transition — the DOM node
+   they would have transitioned from no longer exists. */
+@keyframes mark{from{background:var(--panel);border-color:var(--rule);
+border-left-color:var(--rule);color:var(--ink)}}
+@keyframes dim{from{opacity:1}}
+
+.wrap.enter{animation:fade 140ms var(--ease) both}
+.enter .choice{animation:rise 170ms var(--ease) both}
+.enter .choice:nth-child(2){animation-delay:25ms}
+.enter .choice:nth-child(3){animation-delay:50ms}
+.enter .choice:nth-child(4){animation-delay:75ms}
+.enter .gradebar,.enter .btns{animation:rise 170ms var(--ease) 60ms both}
+
+/* The verdict is the one thing on screen that was not there a moment ago. */
+.panel.reveal{animation:rise 180ms var(--ease) both}
+.choice.right,.choice.wrong{animation:mark 200ms var(--ease) both}
+.choice.muted{animation:dim 200ms var(--ease) both}
+.deckpanel .face{animation:rise 160ms var(--ease) both}
+
+/* Press feedback. Scale only — a shadow or a colour flip would break the
+   paper ground, and the panel spine has to stay where it is. */
+.btn{transition:opacity 160ms var(--ease),transform 90ms var(--ease)}
+.btn:not(:disabled):active{opacity:.75;transform:scale(.985)}
+.choice{transition:border-color 160ms var(--ease),background 160ms var(--ease),
+transform 90ms var(--ease)}
+.choice:not(:disabled):active{transform:scale(.99)}
+/* .grade carries its own transition in grade.css, which is concatenated after
+   this file — the press state for it lives there, next to the rule it extends. */
+.deckpanel{transition:border-color 160ms var(--ease),transform 90ms var(--ease)}
+.deckpanel:active{transform:scale(.995)}
+
 @media(max-width:420px){
 .prompt{font-size:35px}
 .prompt.sm,.prompt.en{font-size:22px}
@@ -277,4 +327,11 @@ display:flex;justify-content:space-between}
 .big{font-size:26px}
 .grid2 .big{font-size:21px}
 }
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Reduced motion removes all of it, including the press transform: an
+   animation with `both` fill still resolves to the element's own style, so
+   nothing is left mid-fade. */
+@media(prefers-reduced-motion:reduce){
+*{transition:none!important;animation:none!important}
+.btn:not(:disabled):active,.choice:not(:disabled):active,
+.grade:active,.deckpanel:active{transform:none!important}
+}

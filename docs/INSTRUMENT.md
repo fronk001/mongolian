@@ -95,10 +95,20 @@ reference layer harder to read than the content layer, that change is wrong.
   than headline.
 - **Gold band** — the goal and lesson-worth readouts. Ink on gold.
 - **SRS grade bar** — four cells; the interval is *always* printed under the
-  label, and it is what the scheduler will actually do.
+  label, and it is what the scheduler will actually do. It appears where only
+  the learner knows how hard the recall was: typed word cards and sentences.
 - **Multiple choice** — four options, keyboard 1–4. After answering: the truth
   turns blue, the wrong pick turns red and strikes through, the rest mute. No
   two options may ever read the same.
+
+  **The app grades a closed set itself.** Four options were on screen and one
+  was picked, so whether it was recalled is not in doubt — a right pick is
+  «Сайн», a wrong one «Дахин», and the card offers one button to carry on.
+  «Амархан байсан» is the single judgement left with the learner, because
+  "easy" is the one thing the pick cannot reveal. Asking for a grade here made
+  the learner answer the same question twice, the second time as a row of
+  future dates — and the interval, which INSTRUMENT still requires on screen,
+  now prints as a `NEXT` readout beside the verdict rather than as a question.
 - **Flashcard deck** — Mongolian faces up, tap or Space to flip, then a
   decision that routes the word. Never shows both sides at once.
 - **Badge** — gold pill, Mongolian label, English gloss beneath the row.
@@ -114,7 +124,32 @@ Transitions 140–180ms, `cubic-bezier(.2,0,0,1)`. Nothing bounces. Grading a
 card advances instantly. The one celebration is the session-close screen,
 which reports what actually happened — XP earned, reviews graded, badges
 crossed — and is a summary, not a fanfare. `prefers-reduced-motion` disables
-all transitions.
+every transition *and* every animation, and neutralises the press transform.
+
+**Only what changed moves.** The view is rebuilt from an HTML string on every
+state change, so an entry animation left to itself replays on every render —
+picking an option would re-animate the prompt already being read. `app.js`
+puts `.enter` on the container only when the screen is showing something new
+(a different question, deck face, or screen), and every entry animation is
+scoped under it. A verdict panel carries `.reveal` instead: it is new by
+definition, because it did not exist a moment ago.
+
+The vocabulary, and nothing beyond it:
+
+| Motion | Where | Duration |
+|---|---|---|
+| `fade` | container, on a new screen or question | 140ms |
+| `rise` — 5px, no overshoot | choices (25ms stagger), verdict panel, deck face, button rows | 160–180ms |
+| `mark` / `dim` | answered options colouring in and muting | 200ms |
+| press `scale(.985–.99)` | every tappable control | 90ms |
+
+Press feedback is scale only. A shadow would break the paper ground and a
+colour flip would collide with the spine, which has to stay where it is.
+90ms because anything slower reads as lag rather than as an answer to a touch.
+
+`mark` has no `to` keyframe on purpose: an implicit one resolves to the
+element's own computed style, which is how an answered option colours in
+without a transition — the node it would have transitioned from was replaced.
 
 ## Copy
 

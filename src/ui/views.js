@@ -370,18 +370,34 @@ export function viewCard(item, ctx) {
     }).join('');
 
     const correct = answered && choices.options[picked].correct;
+    /* Answered from a closed set of four, so the app already knows whether it
+       was recalled — it does not ask. Picking a grade here meant answering the
+       same question twice, the second time as a row of future dates. The
+       interval is still printed, because INSTRUMENT requires that what the
+       scheduler is about to do is on screen; it is now a readout rather than a
+       question. See viewCard's typed branch, where nothing but the learner
+       knows how hard it was, and the grade bar stays. */
+    const ivl = answered ? fmtInterval(previewIvls[correct ? 2 : 0]) : '';
     return `<div class="sec">${head}${prompt}
       <div class="choices">${rows}</div>
-      ${answered ? `<div class="panel ${correct ? 'blue' : 'red'}">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      ${answered ? `<div class="panel ${correct ? 'blue' : 'red'} reveal">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
           <div>
             <span class="lab ${correct ? 'blue' : 'red'}">${correct ? 'ЗӨВ · CORRECT' : 'БУРУУ · WRONG'}</span>
             <div style="font-size:15px;font-weight:500;margin-top:7px">${esc(word.mn)} — ${esc(word.en)}</div>
           </div>
-        </div></div>` : ''}
+          <div style="text-align:right;flex:none">
+            <div class="mono">NEXT</div>
+            <div class="mono n" style="font-size:13px;color:var(--ink);margin-top:3px">${ivl}</div>
+          </div>
+        </div>
+        ${gloss ? `<div class="gl raw">${correct ? 'counted as «Сайн»' : 'counted as «Дахин»'} — back in ${ivl}</div>` : ''}
+      </div>` : ''}
       ${answered
-        ? `<div class="h"><span class="mono">Дараагийн давталт</span><span class="mono">NEXT REVIEW</span></div>
-           ${gradeBar(previewIvls, correct ? undefined : 1, gloss)}`
+        ? `<div class="btns">
+             <button class="btn primary" data-act="card-next" data-g="${correct ? 3 : 1}">Үргэлжлүүлэх${gl('continue', gloss)}</button>
+             ${correct ? `<button class="btn ghost slim" data-act="card-next" data-g="4">Амархан байсан${gl('that was easy — wait longer before asking again', gloss)}</button>` : ''}
+           </div>`
         : `<div class="btns"><button class="btn ghost" data-act="mc-off">Бичиж хариулах${gl('type the answer instead — harder', gloss)}</button></div>`}
     </div>`;
   }
@@ -393,7 +409,7 @@ export function viewCard(item, ctx) {
   const toMn = dir === 'egm';
   return `<div class="sec">${head}${prompt}
     ${fb
-      ? `<div class="panel ${fb.ok ? 'blue' : 'red'}">
+      ? `<div class="panel ${fb.ok ? 'blue' : 'red'} reveal">
            <span class="lab ${fb.ok ? 'blue' : 'red'}">${fb.ok ? 'ЗӨВ · CORRECT' : 'ЗӨРҮҮ · MISMATCH'}</span>
            <div class="fb" style="margin-top:0;border-top:0;padding-top:8px">
              <div class="ans">${esc(back)}</div>
@@ -438,7 +454,7 @@ export function viewSentence(item, ctx) {
         placeholder="${toMn ? 'монголоор бич' : 'англиар бич'}"></textarea>`}
       ${fb ? '' : gloss ? `<div class="gl">${toMn ? 'write it in mongolian' : 'write it in english'}</div>` : ''}
     </div>
-    ${fb ? `<div class="panel ${fb.ok ? 'blue' : 'red'}">
+    ${fb ? `<div class="panel ${fb.ok ? 'blue' : 'red'} reveal">
         <span class="lab ${fb.ok ? 'blue' : 'red'}">${fb.ok ? 'ЗӨВ · CORRECT' : 'ЗӨРҮҮ · MISMATCH'}</span>
         <div class="fb" style="margin-top:0;border-top:0;padding-top:8px">
           <div class="ans diff">${fb.diff.map(t =>
