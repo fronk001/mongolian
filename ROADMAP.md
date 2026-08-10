@@ -60,8 +60,29 @@ candidates per target to find one where exactly one element is weak.
 - Extend Luna's packs, in the existing pipe-delimited format.
 - Add a paste-in importer that runs `coverage.py` over new sentences and
   rejects ones whose comprehensibility is too far below level.
-- Two corpus items need a native speaker: `сорогч` / `сороогоч` / `соордог`
-  spell the vacuum verb three ways.
+
+### 2c. Open questions for the next review round
+
+Luna's first review (August 2026) signed off all 73 lexicon entries and 111
+Mongolian alternatives, and rewrote four sentences outright. Those rewrites
+raise questions that need her rather than a guess — they are the whole list,
+and they are short enough to answer in one message:
+
+- **Is "bed" `ор` or `орон`?** She wrote «Миний ор дулаан», but `words.json`
+  id 98 is `орон`, and that entry is also used by «Муур орон дээр унтдаг.»,
+  which she never saw. Fixing the lexicon means fixing that sentence too, so
+  neither was touched.
+- **Is the kitten `зулзага муур` or `зулзаган муур`?** She wrote the second;
+  id 162 holds the first. Only one sentence is affected.
+- **Should `эвдэх` join the lexicon?** She replaced «хумхиж» (to scratch) with
+  «эвдэлж» in the sofa sentence, which is a better phrasing but changes what
+  the English should say — "scratches" or "is damaging".
+- `сорогч` / `сороогоч` / `соордог` spell the vacuum verb three ways across
+  the corpus. Pre-existing, still open.
+
+Until these are settled, the four rewritten sentences carry `partial: true`
+and `coverage.py` reports `миний`, `ор` and `эвдэлж` as untagged — 93% of
+tokens, 160/164 sentences fully covered, down from 94% and 162.
 
 ---
 

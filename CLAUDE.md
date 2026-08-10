@@ -65,6 +65,13 @@ the build only copies, concatenates CSS, generates icons, and stamps sw.js.
   asserts no sentence accepts another sentence's answer — keep it green.
 - **Day keys are local, not UTC.** `dayKey()` names the calendar day where Fred
   is; the keys are then parsed at a fixed offset so day arithmetic stays exact.
+- **One grade per word per session.** `awardGrade()` in `app.js` keeps a set
+  and ignores a repeat. Two sentences can share a target (a sentence is skipped
+  only when *every* word it teaches is covered) and drills sit alongside
+  sentences carrying the same vocabulary. Grading twice applies the FSRS
+  same-day term twice — about 1.29× stability each time — and counts one memory
+  as two reviews and two XP awards. `tools/test.html` asserts drills and
+  sentence targets never intersect.
 - Interface chrome is Mongolian; telemetry labels are uppercase Latin mono.
 - `core/` must stay DOM-free so it can be tested in plain Node.
 
@@ -112,7 +119,7 @@ of *Modern Mongolian: A course book*; three lessons from getting them wrong:
 Re-check coverage after any content edit:
 
 ```
-py tools/coverage.py               # 94% of tokens, 162/164 sentences covered
+py tools/coverage.py               # 93% of tokens, 160/164 sentences covered
 py tools/coverage.py --unmatched   # what is still missing
 ```
 
@@ -163,6 +170,16 @@ created it, per device — a backup code is a manual transfer, not a sync, and
   On by default, switchable from Тохиргоо.
 - `mcMode` — word cards as multiple choice. Off gives a text field graded by
   the same `gradeText()` the sentences use. Switchable mid-question, both ways.
+  A multiple-choice answer **grades itself** — right is «Сайн», wrong is
+  «Дахин» — because the pick already settles whether it was recalled. Only the
+  typed card and the sentences show the grade bar. See INSTRUMENT.
+- `wordDrills` — how many of the day's due/new words are drilled as isolated
+  word cards, default **8**, cycled from Тохиргоо (0 / 4 / 8 / 14). Reserved by
+  `buildSession()` *before* sentences are scored, never overlaid on them: a
+  word is presented once per session, so it is graded once per session.
+  Word cards used to be residue — a card appeared only where no chosen sentence
+  happened to contain the word — and with 164 sentences over 184 words a cold
+  start produced none at all on days 1, 2 and 4.
 - `purpose` — the ЯАГААД line, Fred's own sentence, shown every day. Empty
   until he writes one; there is deliberately no default.
 - `goalWords` — B1 target, default **2500**. A research estimate (Milton 2009
@@ -177,8 +194,9 @@ created it, per device — a backup code is a manual transfer, not a sync, and
 ## Current status
 
 FSRS-6 scheduling with i+1 sentence selection, Instrument v3 ("Соёмбо") on
-paper, flashcard deck for new words, multiple choice with a typed-answer
-switch, and a week-led dashboard carrying the goal and achievement layers.
+paper, flashcard deck for new words, a reserved word-drill phase in both
+directions (multiple choice or typed, switchable mid-question), and a week-led
+dashboard carrying the goal and achievement layers.
 Deployed target is GitHub Pages (`DEPLOY.md`). Audio, richer content packs and
 morphology drills are not built — see `ROADMAP.md`.
 
@@ -188,5 +206,21 @@ day 31 and goes review-only from about day 35. More content is the binding
 constraint, not more features — and the dashboard now prints that ceiling
 next to the B1 projection so the projection is not read as a promise.
 
-73 of the 184 entries are `reviewed: false`, pending Luna or Sarnai, as are
-the machine-written level and badge names in `src/core/goals.js`.
+**Luna's first review landed August 2026** (`docs/mongolian-review.json`). All
+73 outstanding lexicon entries are signed off, all 12 badge names approved,
+and 111 Mongolian alternatives ruled on — 104 kept, 7 rejected. Nothing in
+`words.json` or `sentences.json` is `reviewed: false` or `altReviewed: false`
+any more.
+
+Four sentences she rewrote outright: where she rejected *every* generated
+variant and wrote her own, that phrasing replaced the canonical rather than
+joining it, because each rejection pointed at a word in the canonical itself
+(«орон»→«ор», «зулзага»→«зулзаган», «хумхиж»→«эвдэлж», «эмнэлэгт аваач»→
+«эмнэлэгрүү авч яв»). Those four carry `partial: true` and dropped coverage
+from 94% to 93% — the vocabulary they introduce is not in `words.json` yet.
+**ROADMAP 2c lists the four questions that need her before that closes.**
+
+`altReviewed` tracks the **Mongolian only**; sentences with English-only
+alternatives carry no flag, or they would sit "pending" for ever.
+`alternatives.py` will not regenerate over `altReviewed: true` — re-running it
+after a review would otherwise bring back every rule she rejected.

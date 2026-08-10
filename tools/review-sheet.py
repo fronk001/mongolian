@@ -337,6 +337,12 @@ def build_sheet():
 
 # --------------------------------------------------------------------- apply
 
+def tidy(s):
+    """Her free-text answers arrive without closing punctuation."""
+    s = s.strip()
+    return s if not s or s[-1] in ".!?" else s + "."
+
+
 def apply(path):
     review = json.loads(Path(path).read_text(encoding="utf-8"))
     sentences = json.loads((SRC / "sentences.json").read_text(encoding="utf-8"))
@@ -345,12 +351,30 @@ def apply(path):
     alts = review.get("alts") or {}
     added = review.get("added") or {}
     removed = kept = new = settled = 0
+    promoted = []
 
     for s in sentences:
         block = (s.get("alt") or {}).get("mn") or []
         verdicts = alts.get(s["mn"], {})
-        extra = [v.strip() for v in (added.get(s["mn"]) or []) if v and v.strip()]
+        extra = [tidy(v) for v in (added.get(s["mn"]) or []) if v and v.strip()]
         if not block and not extra:
+            continue
+
+        # Every generated variant rejected, and one written in its place: the
+        # rejections all point at something in the canonical itself, so her
+        # phrasing replaces it rather than joining it. Keeping the old form as
+        # an accepted answer would teach exactly the wording she rejected.
+        all_wrong = block and all(verdicts.get(a) == "no" for a in block)
+        if all_wrong and extra:
+            promoted.append((s["mn"], extra[0]))
+            s["mn"] = extra[0]
+            removed += len(block)
+            s.pop("alt", None)
+            s["altReviewed"] = True
+            # The replacement carries vocabulary `ids` does not declare, so
+            # comprehensibility over it is no longer exact until retagged.
+            s["partial"] = True
+            settled += 1
             continue
 
         keep = []
@@ -380,16 +404,25 @@ def apply(path):
             settled += 1
 
     lex = review.get("lexicon") or {}
-    signed = corrected = 0
+    signed = corrected = noted = 0
     for w in words:
         v = lex.get(str(w["id"])) or lex.get(w["id"])
         if not v:
             continue
-        gloss = (v.get("en") or "").strip()
-        if gloss and gloss != w["en"]:
-            w["en"] = gloss
-            corrected += 1
-        if v.get("verdict") == "yes" or (v.get("verdict") == "no" and gloss):
+        text = (v.get("en") or "").strip()
+        verdict = v.get("verdict")
+        if text and verdict == "no":
+            # Marked wrong and rewritten: that is a correction.
+            if text != w["en"]:
+                w["en"] = text
+                corrected += 1
+        elif text:
+            # Approved *and* annotated. This is a usage note, not a new gloss —
+            # overwriting «my» with "endearing word often used for one's
+            # beloved people" would replace the meaning with a comment on it.
+            w["note"] = text
+            noted += 1
+        if verdict == "yes" or (verdict == "no" and text):
             w["reviewed"] = True
             signed += 1
 
@@ -400,7 +433,15 @@ def apply(path):
 
     print(f"sentences: {kept} confirmed, {removed} removed, {new} added by hand, "
           f"{settled} sentences now altReviewed")
-    print(f"lexicon:   {signed} signed off, {corrected} glosses corrected")
+    print(f"lexicon:   {signed} signed off, {corrected} glosses corrected, {noted} notes kept")
+
+    if promoted:
+        print("\ncanonical replaced — every variant was rejected and she wrote one:")
+        for old, newmn in promoted:
+            print(f"  {old}\n    -> {newmn}")
+        print("\n  These are marked partial:true. The vocabulary they introduce is not"
+              "\n  in words.json yet, so they need a retag and a second look before"
+              "\n  comprehensibility over them is exact again.")
 
     badges = {k: (v.get("text") or "").strip()
               for k, v in (review.get("badges") or {}).items()

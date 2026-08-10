@@ -558,468 +558,470 @@
   "id": 201,
   "mn": "байна",
   "en": "is / are",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 202,
   "mn": "байхгүй",
   "en": "there is no / is not",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 203,
   "mn": "би",
   "en": "I",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 204,
   "mn": "чи",
   "en": "you (informal)",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 205,
   "mn": "та",
   "en": "you (polite)",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 206,
   "mn": "энэ",
   "en": "this",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 207,
   "mn": "тэр",
   "en": "that",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 208,
   "mn": "үүнийг",
   "en": "this (object form)",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 209,
   "mn": "надад",
   "en": "to me",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 210,
   "mn": "минь",
   "en": "my",
-  "reviewed": false,
-  "drill": false
+  "reviewed": true,
+  "drill": false,
+  "note": "endearing word often used for one's beloved people"
  },
  {
   "id": 211,
   "mn": "чинь",
   "en": "your",
-  "reviewed": false,
-  "drill": false
+  "reviewed": true,
+  "drill": false,
+  "note": "can be both for people or object - ээж чинь-your mom,  утас чинь-your phone"
  },
  {
   "id": 212,
   "mn": "манай",
   "en": "our",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 213,
   "mn": "дээр",
   "en": "on / above",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 214,
   "mn": "дараа",
   "en": "after",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 215,
   "mn": "дараагийн",
   "en": "next",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 216,
   "mn": "ойролцоо",
   "en": "near",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 217,
   "mn": "энд",
   "en": "here",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 218,
   "mn": "хаана",
   "en": "where",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 219,
   "mn": "хэн",
   "en": "who",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 220,
   "mn": "юу",
   "en": "what",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 221,
   "mn": "вэ",
   "en": "question particle",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 222,
   "mn": "бэ",
   "en": "question particle",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 223,
   "mn": "уу",
   "en": "yes/no question particle",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 224,
   "mn": "бүр",
   "en": "every",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 225,
   "mn": "бүү",
   "en": "do not (prohibitive)",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 226,
   "mn": "одоо",
   "en": "now",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 227,
   "mn": "өнөөдөр",
   "en": "today",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 228,
   "mn": "өнөө",
   "en": "this (of time)",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 229,
   "mn": "хамтдаа",
   "en": "together",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 230,
   "mn": "гэдэг",
   "en": "called / that is",
-  "reviewed": false,
+  "reviewed": true,
   "drill": false
  },
  {
   "id": 231,
   "mn": "өрөө",
   "en": "room",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 232,
   "mn": "зочны өрөө",
   "en": "living room",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 233,
   "mn": "гал тогоо",
   "en": "kitchen",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 234,
   "mn": "байшин",
   "en": "house",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 235,
   "mn": "цонх",
   "en": "window",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 236,
   "mn": "өдөр",
   "en": "day",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 237,
   "mn": "өглөө",
   "en": "morning",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 238,
   "mn": "орой",
   "en": "evening",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 239,
   "mn": "гараг",
   "en": "day of the week",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 240,
   "mn": "бямба",
   "en": "Saturday",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 241,
   "mn": "ням",
   "en": "Sunday",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 242,
   "mn": "цаг",
   "en": "hour / time",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 243,
   "mn": "долоо",
   "en": "seven",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 244,
   "mn": "хоног",
   "en": "day (24 hours)",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 245,
   "mn": "ээж",
   "en": "mother",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 246,
   "mn": "аав",
   "en": "father",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 247,
   "mn": "хүүхэд",
   "en": "child",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 248,
   "mn": "тоос",
   "en": "dust",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 249,
   "mn": "хувцас",
   "en": "clothes",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 250,
   "mn": "хог",
   "en": "rubbish / trash",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 251,
   "mn": "зөөлөн",
   "en": "soft",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 252,
   "mn": "урт",
   "en": "long",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 253,
   "mn": "өндөр",
   "en": "tall / high",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 254,
   "mn": "хурдан",
   "en": "fast",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 255,
   "mn": "нээлттэй",
   "en": "open",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 256,
   "mn": "дуртай",
   "en": "to like / fond of",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 257,
   "mn": "унтах",
   "en": "to sleep",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 258,
   "mn": "идэх",
   "en": "to eat",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 259,
   "mn": "уух",
   "en": "to drink",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 260,
   "mn": "нээх",
   "en": "to open",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 261,
   "mn": "хаах",
   "en": "to close",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 262,
   "mn": "өгөх",
   "en": "to give",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 263,
   "mn": "авах",
   "en": "to take / to buy",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 264,
   "mn": "хаях",
   "en": "to throw away",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 265,
   "mn": "сорох",
   "en": "to vacuum / to suck",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 266,
   "mn": "арчих",
   "en": "to wipe",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 267,
   "mn": "хийх",
   "en": "to do / to make",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 268,
   "mn": "явах",
   "en": "to go",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 269,
   "mn": "тавих",
   "en": "to put",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 270,
   "mn": "ярих",
   "en": "to tell / to speak",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 271,
   "mn": "алхах",
   "en": "to walk",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 272,
   "mn": "хүсэх",
   "en": "to want",
-  "reviewed": false
+  "reviewed": true
  },
  {
   "id": 273,
   "mn": "өнгөрүүлэх",
   "en": "to spend (time)",
-  "reviewed": false
+  "reviewed": true
  }
 ]

@@ -179,6 +179,91 @@ const s2 = buildSession(p, W, S, { today: '2026-08-07' });
 ok('day 2 introduces different words', !s2.fresh.some(id => s1.fresh.includes(id)));
 ok('stats compute', stats(p).tracked > 0);
 
+// ------------------------------------------------------------ word drills
+// Vocabulary drilled on its own — the only screen multiple choice appears on.
+// It used to be residue: a target became a card only when no chosen sentence
+// happened to contain it, so a cold start produced none at all on days 1, 2
+// and 4. buildSession() now reserves targets for drilling before the sentences
+// are scored.
+section('word drills');
+{
+  const sim = (wordDrills, days = 12) => {
+    const pd = blank();
+    if (wordDrills !== undefined) pd.wordDrills = wordDrills;
+    let d = new Date(Date.UTC(2026, 7, 6));
+    const log = [];
+    for (let n = 0; n < days; n++) {
+      const today = d.toISOString().slice(0, 10);
+      const sess = buildSession(pd, W, S, { today });
+      log.push({
+        today,
+        cards: sess.items.filter(i => i.kind === 'card'),
+        sentences: sess.items.filter(i => i.kind === 'sentence')
+      });
+      // One grade per word per session — the invariant awardGrade() enforces
+      // in app.js, and the reason drills are reserved rather than overlaid.
+      const seen = new Set();
+      sess.items.filter(i => i.kind !== 'deck').forEach(i => idsOf(i).forEach(id => {
+        if (seen.has(id)) return;
+        seen.add(id);
+        applyGrade(pd, id, 3, { today });
+      }));
+      d.setUTCDate(d.getUTCDate() + 1);
+    }
+    return log;
+  };
+
+  const on = sim(undefined);
+  ok('every day carries at least one word card',
+     on.every(r => r.cards.length > 0),
+     `empty days: ${on.filter(r => !r.cards.length).map(r => r.today).join(', ') || 'none'}`);
+  ok('day one carries word cards', on[0].cards.length > 0,
+     `day 1 cards = ${on[0].cards.length}`);
+  ok('the sentence phase survives the reservation',
+     on.every(r => r.sentences.length > 0),
+     `sentence-less days: ${on.filter(r => !r.sentences.length).length}`);
+
+  // The property that keeps FSRS honest: presented once, so graded once. A
+  // second same-day grade would apply the short-term term again (~1.29×
+  // stability) and count one memory as two reviews.
+  ok('no word is both drilled and taught by a sentence in one session',
+     on.every(r => {
+       const carded = new Set(r.cards.map(c => c.word.id));
+       return !r.sentences.some(s => s.targetIds.some(id => carded.has(id)));
+     }));
+
+  ok('drilling more leaves fewer sentences',
+     sim(14).reduce((a, r) => a + r.cards.length, 0) >
+     sim(4).reduce((a, r) => a + r.cards.length, 0));
+
+  // Off is a real setting, not a no-op: it restores the old behaviour, where a
+  // card appears only for a target no sentence could carry.
+  const off = sim(0);
+  ok('wordDrills:0 falls back to sentence-residue cards',
+     off.reduce((a, r) => a + r.cards.length, 0) <
+     on.reduce((a, r) => a + r.cards.length, 0));
+
+  // Direction is decided by the scheduler, seeded on the word and the date —
+  // it used to be the card's index in the session, so a word could be asked
+  // the same way round for a week.
+  ok('every word card carries a direction',
+     on.every(r => r.cards.every(c => c.dir === 'mge' || c.dir === 'egm')));
+  ok('a word met today is asked Mongolian-first',
+     on.every(r => r.cards.every(c => !c.isNew || c.dir === 'mge')));
+  ok('direction is stable across rebuilds of the same session',
+     JSON.stringify(buildSession(blank(), W, S, { today: '2026-08-06' })
+       .items.filter(i => i.kind === 'card').map(i => [i.word.id, i.dir])) ===
+     JSON.stringify(buildSession(blank(), W, S, { today: '2026-08-06' })
+       .items.filter(i => i.kind === 'card').map(i => [i.word.id, i.dir])));
+
+  // ENG→MGL is production and it is the harder half. Only review cards ask it,
+  // so taking all the new words first starved it to 14% of all cards.
+  const reviewCards = on.flatMap(r => r.cards).filter(c => !c.isNew);
+  ok('review cards ask both directions',
+     reviewCards.some(c => c.dir === 'egm') && reviewCards.some(c => c.dir === 'mge'),
+     `${reviewCards.filter(c => c.dir === 'egm').length} egm of ${reviewCards.length} review cards`);
+}
+
 // ---------------------------------------------------------------- orphans
 // An id in p.items whose word has left words.json must not be counted as due
 // anywhere, or the home screen shows work that cannot be started.
@@ -330,8 +415,18 @@ section('corpus alternatives');
   const withAlt = S.filter(s => s.alt);
   ok('most sentences carry alternatives', withAlt.length >= 150,
      `${withAlt.length}/${S.length}`);
-  ok('every alternative set is marked unreviewed',
-     withAlt.every(s => s.altReviewed === false));
+  // `altReviewed` tracks the Mongolian only — that is the part needing a
+  // native speaker. A sentence carrying nothing but English alternatives is
+  // never on Luna's sheet, so it must not sit "pending" for ever.
+  const withMn = S.filter(s => (s.alt || {}).mn);
+  ok('every mongolian set carries an explicit review flag',
+     withMn.every(s => typeof s.altReviewed === 'boolean'),
+     `${withMn.filter(s => typeof s.altReviewed !== 'boolean').length} missing`);
+  ok('english-only sets carry no review flag',
+     withAlt.filter(s => !(s.alt || {}).mn).every(s => s.altReviewed === undefined));
+  const pending = withMn.filter(s => s.altReviewed === false);
+  ok('no mongolian is still awaiting review', pending.length === 0,
+     `${pending.length} pending: ${pending.slice(0, 3).map(s => s.mn).join(' | ')}`);
   ok('alternatives are arrays of non-empty strings',
      withAlt.every(s => ['en', 'mn'].every(k =>
        !s.alt[k] || (Array.isArray(s.alt[k]) && s.alt[k].every(v => typeof v === 'string' && v.trim())))));
@@ -580,13 +675,16 @@ section('backup survives the redesign fields');
   const b = blank();
   ok('blank carries the new defaults',
      b.mcMode === true && b.goalWords === 2500 && b.xp === 0 &&
-     Array.isArray(b.badges) && b.purpose === '');
+     Array.isArray(b.badges) && b.purpose === '' && b.wordDrills === 8);
 
   const rich = Object.assign(blank(), {
     mcMode: false, purpose: 'Сарнайн гэр бүлтэй ярих', goalWords: 3000,
-    xp: 2340, badges: ['week7', 'known25']
+    xp: 2340, badges: ['week7', 'known25'], wordDrills: 0
   });
   const back = importCode(encodeCode(rich));
+  // wordDrills:0 is a deliberate "off", and 0 is falsy — a code that restores
+  // it as the default 8 would silently turn the drills back on.
+  ok('wordDrills:0 survives a round-trip', back.wordDrills === 0);
   ok('mcMode:false survives a round-trip', back.mcMode === false,
      'a difficulty preference must not silently flip back on');
   ok('purpose survives a round-trip, Cyrillic intact',
@@ -596,11 +694,12 @@ section('backup survives the redesign fields');
 
   // A v2 code written before the redesign.
   const old2 = Object.assign(blank(), { items: { 90: { s: 3, d: 5, due: '2026-08-10', last: '2026-08-06', reps: 1, lapses: 0 } } });
-  ['mcMode', 'purpose', 'goalWords', 'xp', 'badges'].forEach(k => delete old2[k]);
+  ['mcMode', 'purpose', 'goalWords', 'xp', 'badges', 'wordDrills'].forEach(k => delete old2[k]);
   const in2 = importCode(encodeCode(old2));
   ok('a pre-redesign v2 code still imports', in2?.schema === 2);
   ok('it gains the new fields as defaults',
-     in2.mcMode === true && in2.goalWords === 2500 && in2.xp === 0 && in2.badges.length === 0);
+     in2.mcMode === true && in2.goalWords === 2500 && in2.xp === 0 &&
+     in2.badges.length === 0 && in2.wordDrills === 8);
   ok('it keeps its items', Object.keys(in2.items).length === 1);
 
   // A v1 Leitner code, the format that must work forever.

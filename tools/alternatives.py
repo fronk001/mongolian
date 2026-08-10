@@ -118,6 +118,13 @@ def mn_drop_accusative(mn, ids):
                 continue
             if len(bare) < 2 or low == bare.lower() or len(low) <= len(bare):
                 continue
+            # The suffix is at most "ийг" — three characters, plus at most one
+            # of fusion. Without this cap the prefix test below is far too
+            # weak for short words: «би» reduces to the single letter «б», so
+            # «будахыг» matched it and the rule produced «Би хана би хүсэж
+            # байна». Luna caught that one; the cap stops it recurring.
+            if len(low) - len(bare) > 3:
+                continue
             if not low.startswith(bare[:-1].lower()):
                 continue
             form = bare[0].upper() + bare[1:] if t[0].isupper() else bare
@@ -442,7 +449,13 @@ def build():
         mn, en, ids = s["mn"], s["en"], s.get("ids", [])
         hand = HAND.get(mn, {})
 
-        en_alts, mn_alts = [], []
+        # A signed-off Mongolian set is Luna's, not this script's. Re-running
+        # after a review must not quietly regenerate over her decisions —
+        # rules she rejected would come straight back. English keeps
+        # regenerating: she is never asked about it, so nothing there is hers.
+        locked = s.get("altReviewed") is True
+        en_alts = []
+        mn_alts = list((s.get("alt") or {}).get("mn") or []) if locked else []
 
         def add(bucket, value, rule=None):
             if not value:
@@ -458,11 +471,13 @@ def build():
 
         for v in hand.get("en", []):
             add(en_alts, v)
-        for v in hand.get("mn", []):
-            add(mn_alts, v)
+        if not locked:
+            for v in hand.get("mn", []):
+                add(mn_alts, v)
 
-        for name, fn in MN_RULES:
-            add(mn_alts, fn(mn, en, ids), name)
+        if not locked:
+            for name, fn in MN_RULES:
+                add(mn_alts, fn(mn, en, ids), name)
 
         # Contractions run over the canonical form and the hand-written
         # phrasings, but never over each other's output.
@@ -484,7 +499,14 @@ def build():
                 s["alt"]["en"] = en_alts
             if mn_alts:
                 s["alt"]["mn"] = mn_alts
-            s["altReviewed"] = False
+            # The flag tracks the *Mongolian* only — that is the part a native
+            # speaker has to confirm. A sentence carrying nothing but English
+            # alternatives is never on Luna's sheet, so marking it "pending
+            # review" would leave it pending for ever.
+            if mn_alts:
+                s.setdefault("altReviewed", False)
+            else:
+                s.pop("altReviewed", None)
             stats["sentences"] += 1
             stats["en"] += len(en_alts)
             stats["mn"] += len(mn_alts)
