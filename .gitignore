@@ -1,4 +1,5 @@
 dist/
+tools/review.html
 node_modules/
 .DS_Store
 __pycache__/

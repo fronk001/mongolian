@@ -116,6 +116,31 @@ py tools/coverage.py               # 94% of tokens, 162/164 sentences covered
 py tools/coverage.py --unmatched   # what is still missing
 ```
 
+## Native-speaker review
+
+Machine-written Mongolian never ships as confirmed. `reviewed: false` on a
+lexicon entry and `altReviewed: false` on a sentence both mean "pending Luna
+or Sarnai". To get it signed off:
+
+```
+py tools/review-sheet.py                       # -> tools/review.html
+py tools/review-sheet.py --apply review.json   # merge what comes back
+```
+
+The sheet is one self-contained file (gitignored — regenerate it, don't commit
+it). She opens it by double-clicking, answers Зөв / Буруу / Мэдэхгүй per item,
+and presses Дуусгах to download a JSON file. Progress autosaves to her
+browser, so it survives closing the tab. Nothing is uploaded anywhere.
+
+It asks about the **Mongolian only** — the 444 English alternatives are not
+her job and including them would quadruple the work. The highest-value field
+is the free-text box under each sentence: a phrasing Fred would really hear
+beats a rule-derived one that is merely legal.
+
+`--apply` deletes rejected alternatives, appends hers, sets `altReviewed: true`
+only when *every* alternative on that sentence was ruled on, and signs off
+lexicon entries. Badge names are printed for hand-editing in `core/goals.js`.
+
 ## State
 
 `localStorage['mng_study_v2']` — see `blank()` in `src/core/progress.js`.
