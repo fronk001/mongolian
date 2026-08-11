@@ -56,6 +56,14 @@ primary button is red when nothing has gone wrong, and a wrong answer is red
 when there is no primary button. «Дахин» is the one grade that reports a
 failure, so it carries the error red, not the action red.
 
+Two consequences on a question screen, both load-bearing:
+
+- The prompt panel's red spine means *answer this now*, so it is dropped the
+  moment the question is answered. Otherwise the prompt and a wrong verdict sit
+  on one screen both claiming red, and the colour stops naming anything.
+- The continue button after a multiple-choice answer is red when the answer was
+  right and **secondary when it was wrong** — the verdict already owns red.
+
 ## Type
 
 Geologica for content, JetBrains Mono for telemetry. Both self-hosted.
@@ -120,6 +128,23 @@ Screen gutter 16px. Panel padding 12–13px. Section breaks are hairlines or a
 section header, never whitespace alone. Content is never centred except
 flashcard faces.
 
+**A question screen carries no dashboard.** Lessons used to open with the full
+header — app name, words tracked, due count, date, RET, ACC — on top of every
+single question: eight lines and about twenty words, identical on every screen,
+none of it answerable and none of it changing while you study. On the sentence
+feedback screen it was a third of the text present. It is replaced by the
+lesson bar: the phase rail, the step count, and a way out. The telemetry is not
+gone — it is on the dashboard, the screen you go to in order to read it.
+
+The same test applies to everything else on a question screen. A line that
+tells the learner what they can already see is noise once it has been read the
+first time, and it is on screen for every question after that. «АСУУЛТ ·
+PROMPT» over a 44px word, "write it in mongolian" under a field whose
+placeholder already says «монголоор бич», and a legend explaining the colour
+of the context chips were all cut on those grounds. Glosses under Mongolian
+chrome are **not** in this category and are never cut — the rule is fewer
+elements, not less English.
+
 Transitions 140–180ms, `cubic-bezier(.2,0,0,1)`. Nothing bounces. Grading a
 card advances instantly. The one celebration is the session-close screen,
 which reports what actually happened — XP earned, reviews graded, badges
@@ -139,17 +164,33 @@ The vocabulary, and nothing beyond it:
 | Motion | Where | Duration |
 |---|---|---|
 | `fade` | container, on a new screen or question | 140ms |
-| `rise` — 5px, no overshoot | choices (25ms stagger), verdict panel, deck face, button rows | 160–180ms |
+| `rise` — 14px, no overshoot | question head, panels, choices, button rows, grade bar | 160–180ms |
+| `flip` — half-turn on Y | flashcard deck panel, on every turn | 180ms |
 | `mark` / `dim` | answered options colouring in and muting | 200ms |
-| press `scale(.985–.99)` | every tappable control | 90ms |
+| press `scale(.97–.975)` | every tappable control | 90ms |
+
+A question arrives in reading order — head, prompt, then the options at
+35ms apart. The stagger is what makes the sequence legible; no single step
+exceeds 180ms.
+
+**Travel has to be seen to be worth having.** The first version of this layer
+used 5px over 140ms and a `scale(.985)` press. It measured as motion and was
+reported as "there are no animations" — which was a fair reading. Anything
+subtler than roughly 10px is a transition nobody can name.
 
 Press feedback is scale only. A shadow would break the paper ground and a
 colour flip would collide with the spine, which has to stay where it is.
 90ms because anything slower reads as lag rather than as an answer to a touch.
 
-`mark` has no `to` keyframe on purpose: an implicit one resolves to the
-element's own computed style, which is how an answered option colours in
-without a transition — the node it would have transitioned from was replaced.
+Two mechanics worth knowing before editing this:
+
+- Entry animations fill **`backwards`, never `both`**. With `both` the
+  animation keeps ownership of `transform` after it ends, and the `:active`
+  press — which is also a transform — never shows. `backwards` gives the
+  from-state during the stagger delay and hands the property back on finish.
+- `mark` has no `to` keyframe on purpose: an implicit one resolves to the
+  element's own computed style, which is how an answered option colours in
+  without a transition — the node it would have transitioned from was replaced.
 
 ## Copy
 

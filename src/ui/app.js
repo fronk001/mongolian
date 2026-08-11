@@ -132,7 +132,9 @@ function render() {
         gloss
       });
     }
-    el.innerHTML = V.header(st, 'Хичээл', 'lesson', gloss) + V.progressRail(step, total) + body;
+    // No dashboard header during a lesson: see lessonBar() on why the
+    // telemetry belongs on the screen you read, not the screen you study on.
+    el.innerHTML = V.lessonBar(step, total) + body;
   }
 
   window.scrollTo(0, 0);

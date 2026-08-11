@@ -66,11 +66,29 @@ export function header(st, sub, en, gloss) {
   </div>`;
 }
 
-export function progressRail(done, total) {
+/**
+ * The whole chrome of a question screen.
+ *
+ * A lesson used to carry the dashboard header — app name, words tracked, due
+ * count, date, RET, ACC — on top of every single question. Eight lines and
+ * about twenty words, identical on every screen, none of it answerable and
+ * none of it needed while recalling a word. Measured on the sentence feedback
+ * screen it was a third of the text on screen.
+ *
+ * What survives is what a question actually needs: how far through you are,
+ * and a way out. The telemetry is not deleted — it is on the dashboard, which
+ * is where you go to read it rather than to study.
+ */
+export function lessonBar(done, total) {
   const segs = Array.from({ length: total }, (_, i) =>
     `<i class="${i < done ? 'done' : i === done ? 'now' : ''}"></i>`).join('');
-  return `<div style="margin-top:12px"><div class="rail">${segs}</div>
-    <div class="mono" style="margin-top:7px">${done} / ${total}</div></div>`;
+  return `<div class="lessonbar">
+    <div class="rail">${segs}</div>
+    <div class="barfoot">
+      <span class="mono">${done} / ${total}</span>
+      <button class="exit" data-act="home" title="гарах · exit">✕</button>
+    </div>
+  </div>`;
 }
 
 export function retrievabilityMeter(r) {
@@ -314,7 +332,6 @@ export function viewDeck(item, ctx) {
   return `<div class="sec">
     <div class="qhead"><span class="tag red">Шинэ үг</span>
       <span class="mono">NEW ${deckI + 1}/${words.length}</span></div>
-    ${gloss ? '<div class="gl">new words — tap the card to turn it over</div>' : ''}
     <div class="deckdots" style="grid-template-columns:repeat(${words.length},1fr)">${dots}</div>
 
     <div class="deckpanel" data-act="flip">
@@ -351,11 +368,23 @@ export function viewCard(item, ctx) {
       <span class="tag">${dir === 'mge' ? 'MGL → ENG' : 'ENG → MGL'}</span>
       <span class="mono">CARD · ${item.isNew ? 'NEW' : 'REVIEW'}</span></div>`;
 
-  const prompt = `<div class="panel red">
-      <span class="lab">АСУУЛТ · PROMPT</span>
-      <div class="prompt${dir === 'mge' ? '' : ' en'}" style="margin-top:9px">${esc(front)}</div>
-      ${!item.isNew ? retrievabilityMeter(r) : ''}
+  /* No «АСУУЛТ · PROMPT» label: the tag above already says which way round the
+     card is, and a boxed label naming a 44px word as "the prompt" is a line of
+     text on every question that tells you nothing you cannot see.
+
+     The recall meter moves to the answer. It reports how likely you were to
+     remember this word — which is worth reading *after* trying, and is a
+     distraction, if not a hint, while you are still trying. */
+  /* The spine is red only while the question is live. Once it is answered the
+     prompt is reference material, and the one red on screen is the verdict —
+     INSTRUMENT: two panels claiming the same domain means one of them is
+     wrong, and red naming both "do this now" and "this was wrong" at the same
+     time is exactly that. */
+  const settled = answered || !!fb;
+  const prompt = `<div class="panel${settled ? '' : ' red'}">
+      <div class="prompt${dir === 'mge' ? '' : ' en'}">${esc(front)}</div>
     </div>`;
+  const recall = !item.isNew ? retrievabilityMeter(r) : '';
 
   if (useMC) {
     const rows = choices.options.map((o, i) => {
@@ -391,11 +420,15 @@ export function viewCard(item, ctx) {
             <div class="mono n" style="font-size:13px;color:var(--ink);margin-top:3px">${ivl}</div>
           </div>
         </div>
-        ${gloss ? `<div class="gl raw">${correct ? 'counted as «Сайн»' : 'counted as «Дахин»'} — back in ${ivl}</div>` : ''}
+        ${recall}
       </div>` : ''}
       ${answered
+        /* INSTRUMENT: red is action and red is error, and the two never appear
+           as peers. When the verdict panel is red the button steps back to
+           secondary, or the screen shows two different reds meaning two
+           different things at once. */
         ? `<div class="btns">
-             <button class="btn primary" data-act="card-next" data-g="${correct ? 3 : 1}">Үргэлжлүүлэх${gl('continue', gloss)}</button>
+             <button class="btn ${correct ? 'primary' : 'secondary'}" data-act="card-next" data-g="${correct ? 3 : 1}">Үргэлжлүүлэх${gl('continue', gloss)}</button>
              ${correct ? `<button class="btn ghost slim" data-act="card-next" data-g="4">Амархан байсан${gl('that was easy — wait longer before asking again', gloss)}</button>` : ''}
            </div>`
         : `<div class="btns"><button class="btn ghost" data-act="mc-off">Бичиж хариулах${gl('type the answer instead — harder', gloss)}</button></div>`}
@@ -418,12 +451,15 @@ export function viewCard(item, ctx) {
              ${fb.close && !fb.ok ? `<div class="gl">close — check the spelling</div>` : ''}
            </div>
            ${typoNote(fb, gloss)}
+           ${recall}
          </div>
-         <div class="h"><span class="mono">Дараагийн давталт</span><span class="mono">NEXT REVIEW</span></div>
          ${gradeBar(previewIvls, fb.ok ? (fb.typo ? 2 : undefined) : 1, gloss)}`
+      /* The placeholder already says «монголоор бич» in the language being
+         asked for, and the tag above says which way round the card is. An
+         English line repeating it a third time is the kind of text that is
+         read once and then sits on every question for ever. */
       : `<textarea class="text" id="ansbox" rows="1" autocapitalize="off" autocorrect="off"
            spellcheck="false" placeholder="${toMn ? 'монголоор бич' : 'англиар бич'}"></textarea>
-         ${gloss ? `<div class="gl">${toMn ? 'write it in mongolian' : 'write it in english'}</div>` : ''}
          <div class="btns">
            <button class="btn primary" data-act="check-word">Шалгах${gl('check', gloss)}</button>
            ${choices && choices.usable
@@ -445,14 +481,13 @@ export function viewSentence(item, ctx) {
   return `<div class="sec">
     <div class="qhead"><span class="tag">${toMn ? 'ENG → MGL' : 'MGL → ENG'}</span>
       <span class="mono">i+${item.weak} · ${pct(item.comprehensible)}% KNOWN</span></div>
-    <div class="panel red">
+    <div class="panel${fb ? '' : ' red'}">
       <span class="lab">ОРЧУУЛ · TRANSLATE</span>
       <div class="prompt ${toMn ? 'en' : 'sm'}" style="margin-top:9px">${esc(prompt)}</div>
       ${s.note ? `<div class="subnote">${esc(s.note)}</div>` : ''}
       ${fb ? '' : `<textarea class="text" id="ansbox" rows="2" autocapitalize="off"
         autocorrect="off" spellcheck="false"
         placeholder="${toMn ? 'монголоор бич' : 'англиар бич'}"></textarea>`}
-      ${fb ? '' : gloss ? `<div class="gl">${toMn ? 'write it in mongolian' : 'write it in english'}</div>` : ''}
     </div>
     ${fb ? `<div class="panel ${fb.ok ? 'blue' : 'red'} reveal">
         <span class="lab ${fb.ok ? 'blue' : 'red'}">${fb.ok ? 'ЗӨВ · CORRECT' : 'ЗӨРҮҮ · MISMATCH'}</span>
@@ -461,12 +496,10 @@ export function viewSentence(item, ctx) {
             `<span class="${t.state === 'miss' ? 'miss' : t.state === 'near' ? 'near' : 'hit'}">${esc(t.tok)}</span>`).join(' ')}</div>
           ${altNote(fb, gloss)}
           ${fb.given ? `<div class="yours">Таны хариу — ${esc(fb.given)}${gli('your answer', gloss)}</div>` : ''}
-          ${contextChips(s.ids, item.targetIds, byId)}
-          ${gloss ? '<div class="gl">chips outlined blue are what this sentence is teaching</div>' : ''}
+          ${contextChips(item.targetIds, item.targetIds, byId)}
         </div>
         ${typoNote(fb, gloss)}
       </div>
-      <div class="h"><span class="mono">Дараагийн давталт</span><span class="mono">NEXT REVIEW</span></div>
       ${gradeBar(previewIvls, fb.ok ? (fb.typo ? 2 : undefined) : 1, gloss)}`
       : `<div class="btns"><button class="btn primary" data-act="submit">Шалгах${gl('check', gloss)}</button></div>`}
   </div>`;

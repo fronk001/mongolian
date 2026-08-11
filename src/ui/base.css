@@ -163,6 +163,18 @@ color:var(--ink);letter-spacing:-.01em}
 .rail i.done{background:var(--muted)}
 .rail i.now{background:var(--red)}
 
+/* ---- lesson bar ------------------------------------------------------
+   The entire chrome of a question screen. It replaced the dashboard header,
+   which put the app name, the tracked/due counts, the date, RET and ACC on
+   top of every single question — eight lines that cannot be answered and do
+   not change while you study. See lessonBar() in views.js. */
+.lessonbar{padding-bottom:2px}
+.barfoot{display:flex;justify-content:space-between;align-items:center;margin-top:7px}
+.exit{background:none;border:0;cursor:pointer;color:var(--dim);
+font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1;
+padding:4px 2px 4px 10px;transition:color 160ms var(--ease)}
+.exit:hover,.exit:active{color:var(--red)}
+
 /* ---- rows ------------------------------------------------------------ */
 .wline{display:flex;align-items:baseline;gap:10px;padding:10px 0;border-bottom:1px solid var(--rule2)}
 .wline:last-child{border-bottom:0}
@@ -286,8 +298,15 @@ display:flex;justify-content:space-between}
    ═══════════════════════════════════════════════════════════════════════ */
 
 @keyframes fade{from{opacity:0}}
-/* Rise, never overshoot: 5px is enough to read as "this is new". */
-@keyframes rise{from{opacity:0;transform:translateY(5px)}}
+/* Rise, never overshoot. This was 5px over 140ms, which measured as motion and
+   read as nothing at all — the first version of this layer was reported as
+   "there are no animations". Travel has to be seen to be worth having: 14px is
+   legible on a phone without the screen feeling loose. */
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+/* A flashcard turning over. The deck is re-rendered wholesale on a flip, so
+   only the incoming face exists — a half-turn from edge-on carries the gesture
+   without needing both faces on screen at once. */
+@keyframes flip{from{opacity:.15;transform:rotateY(-78deg)}}
 /* An implicit to-keyframe animates to the element's own computed style, which
    is how the answered options colour in without a transition — the DOM node
    they would have transitioned from no longer exists. */
@@ -295,30 +314,39 @@ display:flex;justify-content:space-between}
 border-left-color:var(--rule);color:var(--ink)}}
 @keyframes dim{from{opacity:1}}
 
-.wrap.enter{animation:fade 140ms var(--ease) both}
-.enter .choice{animation:rise 170ms var(--ease) both}
-.enter .choice:nth-child(2){animation-delay:25ms}
-.enter .choice:nth-child(3){animation-delay:50ms}
-.enter .choice:nth-child(4){animation-delay:75ms}
-.enter .gradebar,.enter .btns{animation:rise 170ms var(--ease) 60ms both}
+/* A question arrives in reading order — the prompt first, then what you do
+   about it. Each step stays inside INSTRUMENT's 140–180ms; the stagger is
+   what makes the sequence legible, not a longer duration on any one part. */
+.wrap.enter{animation:fade 140ms var(--ease) backwards}
+.enter .qhead{animation:rise 160ms var(--ease) backwards}
+.enter .panel{animation:rise 180ms var(--ease) 40ms backwards}
+.enter .choice{animation:rise 180ms var(--ease) backwards}
+.enter .choice:nth-child(1){animation-delay:60ms}
+.enter .choice:nth-child(2){animation-delay:95ms}
+.enter .choice:nth-child(3){animation-delay:130ms}
+.enter .choice:nth-child(4){animation-delay:165ms}
+.enter .gradebar,.enter .btns{animation:rise 180ms var(--ease) 120ms backwards}
 
-/* The verdict is the one thing on screen that was not there a moment ago. */
-.panel.reveal{animation:rise 180ms var(--ease) both}
-.choice.right,.choice.wrong{animation:mark 200ms var(--ease) both}
-.choice.muted{animation:dim 200ms var(--ease) both}
-.deckpanel .face{animation:rise 160ms var(--ease) both}
+/* The verdict is the one thing on screen that was not there a moment ago.
+   Declared after `.enter .panel` deliberately: equal specificity, so the
+   later rule is the one that wins when a panel is both. */
+.panel.reveal{animation:rise 180ms var(--ease) backwards}
+.choice.right,.choice.wrong{animation:mark 200ms var(--ease) backwards}
+.choice.muted{animation:dim 200ms var(--ease) backwards}
+.sec{perspective:1100px}
+.deckpanel{animation:flip 180ms var(--ease) backwards}
 
 /* Press feedback. Scale only — a shadow or a colour flip would break the
    paper ground, and the panel spine has to stay where it is. */
 .btn{transition:opacity 160ms var(--ease),transform 90ms var(--ease)}
-.btn:not(:disabled):active{opacity:.75;transform:scale(.985)}
+.btn:not(:disabled):active{opacity:.75;transform:scale(.97)}
 .choice{transition:border-color 160ms var(--ease),background 160ms var(--ease),
 transform 90ms var(--ease)}
-.choice:not(:disabled):active{transform:scale(.99)}
+.choice:not(:disabled):active{transform:scale(.975)}
+.choice:not(:disabled):active .k{color:var(--red)}
 /* .grade carries its own transition in grade.css, which is concatenated after
    this file — the press state for it lives there, next to the rule it extends. */
-.deckpanel{transition:border-color 160ms var(--ease),transform 90ms var(--ease)}
-.deckpanel:active{transform:scale(.995)}
+.deckpanel{transition:border-color 160ms var(--ease)}
 
 @media(max-width:420px){
 .prompt{font-size:35px}
@@ -333,5 +361,6 @@ transform 90ms var(--ease)}
 @media(prefers-reduced-motion:reduce){
 *{transition:none!important;animation:none!important}
 .btn:not(:disabled):active,.choice:not(:disabled):active,
-.grade:active,.deckpanel:active{transform:none!important}
+.grade:active{transform:none!important}
+.sec{perspective:none!important}
 }
