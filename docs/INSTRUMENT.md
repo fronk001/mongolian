@@ -26,9 +26,15 @@ implementation; if the two disagree, the CSS is wrong.
    invented to make a screen feel better.
 4. **Mongolian is the largest thing.** Cyrillic sits at the top of the type
    scale, uncrowded. English is mono, small and grey — reference, not content.
-5. **Every Mongolian string carries its English.** Not a subset. Buttons,
-   section headers, verdicts, labels, badges. It is switchable off from
-   Тохиргоо, and off is a preference, never a default.
+5. **Interface chrome is English only.** Buttons, section headers, verdicts,
+   labels, badges — the app's own voice — are English, full stop. Stacking a
+   Mongolian label over its English gloss on every control was overstimulating:
+   two languages read on every button, every header, every verdict, for text
+   that is never itself the learning content. Mongolian appears only where it
+   *is* the content being taught or tested — a flashcard face, a sentence
+   prompt, a vocabulary translation in a context chip — and there it still
+   carries English alongside it, because a translation without its pair is not
+   a translation.
 
 ## Colour
 
@@ -44,16 +50,24 @@ Official Mongolian flag standard, fixed 8 July 2011.
 | `#5A6068` | labels and English glosses — **7.0:1 on paper** |
 | `#9CA2A9` | disabled only; never carries meaning |
 | `#C4272F` | flag red — primary action, live state, errors |
-| `#015197` | flag blue — correct, known, verified, meters |
+| `#015197` | flag blue — known, verified, progress meters |
+| `#1E7A46` | green — a right answer, right now, in this question |
 | `#F9CF02` | Soyombo gold — goal, level, streak, badges |
 | `rgba(20,22,26,.13)` | hairline, all divisions |
+
+**Green is scoped to correctness, not to "known."** Blue still names the
+dashboard's verified/known/progress domain — reviews landed, known-word
+counts, the goal meter. Green is the narrower, louder signal for "this answer,
+just now, was right": the verdict panel, the matching choice, the continue
+button that follows it. The two domains overlap in meaning but not on screen,
+so nothing claims both at once.
 
 **Gold is never type.** `#F9CF02` on paper is 1.6:1. It appears only as a
 fill — bands, meters, badge grounds — with ink on top. A gold word is a bug.
 
 **Red is both action and error.** They never appear as peers on one screen: a
 primary button is red when nothing has gone wrong, and a wrong answer is red
-when there is no primary button. «Дахин» is the one grade that reports a
+when there is no primary button. "Again" is the one grade that reports a
 failure, so it carries the error red, not the action red.
 
 Two consequences on a question screen, both load-bearing:
@@ -61,8 +75,10 @@ Two consequences on a question screen, both load-bearing:
 - The prompt panel's red spine means *answer this now*, so it is dropped the
   moment the question is answered. Otherwise the prompt and a wrong verdict sit
   on one screen both claiming red, and the colour stops naming anything.
-- The continue button after a multiple-choice answer is red when the answer was
-  right and **secondary when it was wrong** — the verdict already owns red.
+- The continue button after a multiple-choice answer is green when the answer
+  was right — same green as the verdict that produced it — and **secondary
+  when it was wrong**, because the wrong verdict already owns red and a
+  secondary "continue" does not compete with it for a colour it did not earn.
 
 ## Type
 
@@ -106,20 +122,22 @@ reference layer harder to read than the content layer, that change is wrong.
   label, and it is what the scheduler will actually do. It appears where only
   the learner knows how hard the recall was: typed word cards and sentences.
 - **Multiple choice** — four options, keyboard 1–4. After answering: the truth
-  turns blue, the wrong pick turns red and strikes through, the rest mute. No
+  turns green, the wrong pick turns red and strikes through, the rest mute. No
   two options may ever read the same.
 
   **The app grades a closed set itself.** Four options were on screen and one
-  was picked, so whether it was recalled is not in doubt — a right pick is
-  «Сайн», a wrong one «Дахин», and the card offers one button to carry on.
-  «Амархан байсан» is the single judgement left with the learner, because
+  was picked, so whether it was recalled is not in doubt — a right pick grades
+  "Good", a wrong one "Again", and the card offers one button to carry on.
+  "That was easy" is the single judgement left with the learner, because
   "easy" is the one thing the pick cannot reveal. Asking for a grade here made
   the learner answer the same question twice, the second time as a row of
   future dates — and the interval, which INSTRUMENT still requires on screen,
   now prints as a `NEXT` readout beside the verdict rather than as a question.
 - **Flashcard deck** — Mongolian faces up, tap or Space to flip, then a
   decision that routes the word. Never shows both sides at once.
-- **Badge** — gold pill, Mongolian label, English gloss beneath the row.
+- **Badge** — gold pill, English label. The lexicon still names each badge in
+  Mongolian too (`BADGES` in `core/goals.js`), pending Luna or Sarnai, but the
+  pill itself shows only what the interface now speaks.
 - **Waveform** / **recording credit chip** — *not yet built (audio phase).*
 
 ## Layout & motion
@@ -138,12 +156,13 @@ gone — it is on the dashboard, the screen you go to in order to read it.
 
 The same test applies to everything else on a question screen. A line that
 tells the learner what they can already see is noise once it has been read the
-first time, and it is on screen for every question after that. «АСУУЛТ ·
-PROMPT» over a 44px word, "write it in mongolian" under a field whose
-placeholder already says «монголоор бич», and a legend explaining the colour
-of the context chips were all cut on those grounds. Glosses under Mongolian
-chrome are **not** in this category and are never cut — the rule is fewer
-elements, not less English.
+first time, and it is on screen for every question after that. A boxed
+"PROMPT" label over a 44px word, "write it in mongolian" under a field whose
+placeholder already says the same thing, and a legend explaining the colour of
+the context chips were all cut on those grounds. Glosses that translate actual
+Mongolian content — a flashcard face, a sentence prompt, a vocabulary chip —
+are **not** in this category and are never cut: the rule is fewer elements,
+not less translation.
 
 Transitions 140–180ms, `cubic-bezier(.2,0,0,1)`. Nothing bounces. Grading a
 card advances instantly. The one celebration is the session-close screen,
@@ -194,10 +213,11 @@ Two mechanics worth knowing before editing this:
 
 ## Copy
 
-Interface chrome is Mongolian; telemetry and system labels are uppercase Latin
-mono (DUE, RET, ACC, RECALL). Instructional, never flattering — «Сонсоод
-давт», not «Гоё байна!». English sits under the Mongolian in mono grey. Weak
-areas are named plainly with a percentage, no softening.
+Interface chrome is English; telemetry and system labels are uppercase Latin
+mono (DUE, RET, ACC, RECALL). Instructional, never flattering. Weak areas are
+named plainly with a percentage, no softening. Mongolian appears only as
+learning content — a flashcard face, a sentence prompt, a vocabulary
+translation — never as the app's own voice.
 
 Where a number cannot yet be measured, the interface says so — «not measured
 yet», «rate needs two days of history» — and never prints a zero in place of

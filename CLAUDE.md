@@ -42,16 +42,23 @@ the build only copies, concatenates CSS, generates icons, and stamps sw.js.
 ## Rules
 
 - **Instrument design system.** Read `docs/INSTRUMENT.md` before touching UI.
-  v3 ("Соёмбо") is a paper ground with the flag's own colours; red names
-  action and error, blue names known and correct, gold is the goal layer only
-  and is **never** used as type (1.6:1 on paper).
+  v3 ("Соёмбо") is a paper ground with the flag's own colours plus one addition:
+  red names action and error, blue names known/verified/progress, green names
+  a right answer right now (verdict panel, matching choice, the continue
+  button that follows it), gold is the goal layer only and is **never** used
+  as type (1.6:1 on paper).
   The rule that bites: *numbers are real* — the app now has XP, levels,
   streaks and badges, but every one is derived from an event that actually
   happened (a card graded, a stability gained, a session finished). Adding a
   figure that cannot be traced to a real event breaks the system.
-- **Every Mongolian string carries its English.** Buttons, headers, verdicts,
-  labels, badges — not a subset. `gl()` in `views.js`. Off is a preference in
-  Тохиргоо, never a default.
+- **Interface chrome is English only.** Buttons, headers, verdicts, labels,
+  badges — the app's own voice — are English, full stop; stacking a Mongolian
+  label over its English gloss on every control read as overstimulating.
+  Mongolian still appears wherever it *is* the content being taught or
+  tested — a flashcard face, a sentence prompt, a vocabulary translation in a
+  context chip — and there it still carries its English pair, because a
+  translation without one is not a translation. `gl()`/`gli()` in `views.js`
+  render those content-pair captions unconditionally now.
 - **Offline first.** No CDNs, no external requests, ever. Fonts are self-hosted.
 - **Never break backup codes.** `importCode()` must keep accepting v1 (Leitner)
   codes forever. Verify with a round-trip test after any schema change —
@@ -166,8 +173,10 @@ created it, per device — a backup code is a manual transfer, not a sync, and
 - `lastExport` — day a code actually left the device. Only set when a copy or
   share succeeded; a dismissed iOS share sheet must not record one.
   `exportAge()` returns days since, or null. The home screen warns at 14 days.
-- `gloss` — English under Mongolian chrome (INSTRUMENT: mono grey, 11.5px).
-  On by default, switchable from Тохиргоо.
+- `gloss` — legacy field from when chrome carried an English gloss under its
+  Mongolian and the pairing was switchable. Chrome is English-only now, so
+  nothing reads this field any more; it is kept only because backup codes are
+  additive-only and old codes still carry it.
 - `mcMode` — word cards as multiple choice. Off gives a text field graded by
   the same `gradeText()` the sentences use. Switchable mid-question, both ways.
   A multiple-choice answer **grades itself** — right is «Сайн», wrong is

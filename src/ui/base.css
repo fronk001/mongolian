@@ -26,9 +26,9 @@
 --muted:#5A6068;         /* labels and glosses — 7.0:1 on paper */
 --dim:#9CA2A9;           /* disabled only, never carries meaning */
 
---red:#C4272F; --blue:#015197; --gold:#F9CF02;
---red-soft:rgba(196,39,47,.35); --blue-soft:rgba(1,81,151,.35);
---red-wash:rgba(196,39,47,.06); --blue-wash:rgba(1,81,151,.06);
+--red:#C4272F; --blue:#015197; --gold:#F9CF02; --green:#1E7A46;
+--red-soft:rgba(196,39,47,.35); --blue-soft:rgba(1,81,151,.35); --green-soft:rgba(30,122,70,.35);
+--red-wash:rgba(196,39,47,.06); --blue-wash:rgba(1,81,151,.06); --green-wash:rgba(30,122,70,.07);
 --gold-wash:rgba(249,207,2,.16);
 
 --rule:rgba(20,22,26,.13);
@@ -54,6 +54,7 @@ letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .mono.n{text-transform:none;letter-spacing:.06em}
 .mono.red{color:var(--red)}
 .mono.blue{color:var(--blue)}
+.mono.green{color:var(--green)}
 
 /* Boxed label — variant C's signature. Names what a panel is measuring. */
 .lab{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;
@@ -61,6 +62,7 @@ letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
 border:1px solid var(--rule);border-radius:3px;padding:2px 6px}
 .lab.red{color:var(--red);border-color:var(--red-soft)}
 .lab.blue{color:var(--blue);border-color:var(--blue-soft)}
+.lab.green{color:var(--green);border-color:var(--green-soft)}
 
 /* ---- English gloss ---------------------------------------------------
    Was 10px in --muted2 (#5E646A on #15181B ≈ 2.9:1) — the reference layer
@@ -94,6 +96,7 @@ border-bottom:1px solid var(--ink);padding-bottom:12px}
 border-left:3px solid var(--rule);border-radius:3px;padding:12px 13px;margin-top:9px}
 .panel.red{border-left-color:var(--red)}
 .panel.blue{border-left-color:var(--blue)}
+.panel.green{border-left-color:var(--green)}
 .panel.gold{border-left-color:var(--gold);
 background:linear-gradient(90deg,var(--gold-wash),rgba(249,207,2,0) 62%),var(--panel)}
 .panel.flush{padding:0}
@@ -109,6 +112,7 @@ background:linear-gradient(90deg,var(--gold-wash),rgba(249,207,2,0) 62%),var(--p
 .big .u{font-size:14px;color:var(--muted);font-weight:400;letter-spacing:0}
 .big.blue{color:var(--blue)}
 .big.red{color:var(--red)}
+.big.green{color:var(--green)}
 
 .grid2{display:grid;grid-template-columns:1fr 1fr}
 .grid2>div{padding:10px 12px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
@@ -225,9 +229,9 @@ transition:border-color 160ms var(--ease),background 160ms var(--ease)}
 .choice .k{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);flex:none}
 .choice .txt{flex:1}
 .choice:hover:not(:disabled){border-color:var(--rule);border-left-color:var(--muted)}
-.choice.right{border-color:var(--blue);border-left-color:var(--blue);
-color:var(--blue);background:var(--blue-wash)}
-.choice.right .k{color:var(--blue)}
+.choice.right{border-color:var(--green);border-left-color:var(--green);
+color:var(--green);background:var(--green-wash)}
+.choice.right .k{color:var(--green)}
 .choice.wrong{border-color:var(--red);border-left-color:var(--red);color:var(--red);
 background:var(--red-wash);text-decoration:line-through}
 .choice.wrong .k{color:var(--red)}
@@ -239,6 +243,7 @@ background:var(--red-wash);text-decoration:line-through}
 font-size:14px;font-weight:600;cursor:pointer;border:1px solid transparent;line-height:1.25;
 transition:opacity 160ms var(--ease)}
 .btn.primary{background:var(--red);color:#fff}
+.btn.correct{background:var(--green);color:#fff}
 .btn.secondary{background:var(--panel);border-color:var(--rule);color:var(--ink)}
 .btn.ghost{background:transparent;border-color:var(--rule);color:var(--muted)}
 .btn:disabled{border-color:var(--rule2);color:var(--dim);background:transparent;cursor:default}
@@ -251,7 +256,7 @@ transition:opacity 160ms var(--ease)}
 .fb{margin-top:14px;border-top:1px solid var(--rule);padding-top:12px}
 .fb .verdict{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;
 text-transform:uppercase;font-weight:700}
-.fb .verdict.ok{color:var(--blue)}
+.fb .verdict.ok{color:var(--green)}
 .fb .verdict.no{color:var(--red)}
 .fb .ans{font-size:19px;font-weight:500;margin-top:8px;letter-spacing:-.01em}
 .fb .yours{font-size:13px;color:var(--muted);margin-top:6px}
@@ -260,7 +265,7 @@ text-transform:uppercase;font-weight:700}
 .diff .near{color:var(--muted)}
 
 /* ---- spelling note ---------------------------------------------------
-   Accepted, but one letter out. Sits inside the blue "correct" panel with a
+   Accepted, but one letter out. Sits inside the green "correct" panel with a
    red label: the answer counted, the spelling still needs saying. */
 .spell{margin-top:8px;font-size:17px;line-height:1.35}
 .spell .was{color:var(--red);text-decoration:line-through;text-decoration-thickness:1px}

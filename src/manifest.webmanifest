@@ -1,6 +1,6 @@
 {
-  "name": "Монгол хэл — Instrument",
-  "short_name": "Монгол",
+  "name": "Mongolian — Instrument",
+  "short_name": "Mongolian",
   "description": "Offline Mongolian study app with FSRS scheduling",
   "start_url": "./",
   "scope": "./",

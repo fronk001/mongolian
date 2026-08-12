@@ -9,57 +9,51 @@ export const esc = s => String(s)
   .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 export const pct = n => Math.round(n * 100);
 
-/**
- * English gloss under a piece of Mongolian chrome.
- *
- * INSTRUMENT: "English sits under the Mongolian in mono grey." Every piece of
- * Mongolian the interface shows carries one — buttons, section headers,
- * verdicts, labels. Switchable off from Хадгалалт once the chrome is familiar.
- */
-const gl = (en, on) => on ? `<div class="gl">${esc(en)}</div>` : '';
-/** Same, inline — for a gloss that sits beside its Mongolian rather than under it. */
-const gli = (en, on) => on ? `<span class="gl inline-gl">${esc(en)}</span>` : '';
+/** A small explanatory caption under a figure or control — mono grey, English only. */
+const gl = en => `<div class="gl">${esc(en)}</div>`;
+/** Same, inline — sits beside its line rather than under it. */
+const gli = en => `<span class="gl inline-gl">${esc(en)}</span>`;
 
 /**
  * "Correct, but you misspelt it."
  *
  * A slip is not a forgotten word, so it grades as correct — but silently
  * accepting it teaches the slip. The note names what was typed, what the
- * spelling should be, and why the grade bar is pointing at «Хэцүү».
+ * spelling should be, and why the grade bar is pointing at "Hard".
  */
-export function typoNote(fb, gloss) {
+export function typoNote(fb) {
   if (!fb || !fb.typo) return '';
   return `<div style="margin-top:11px;padding-top:10px;border-top:1px solid var(--rule2)">
-    <span class="lab red">БИЧГИЙН АЛДАА · SPELLING</span>
+    <span class="lab red">SPELLING</span>
     <div class="spell">
       <div class="was">${esc(fb.given.trim())}</div>
       <div class="is"><span class="arrow">→</span>${esc(fb.matched)}</div>
     </div>
-    ${gloss ? `<div class="gl raw">accepted — one letter out, so it is graded «Хэцүү», not «Сайн»</div>` : ''}
+    <div class="gl raw">accepted — one letter out, so it is graded Hard, not Good</div>
   </div>`;
 }
 
 /** Shown when the answer matched a listed alternative rather than the canonical form. */
-function altNote(fb, gloss) {
+function altNote(fb) {
   if (!fb || !fb.ok || !fb.alternative) return '';
-  return gloss ? `<div class="gl">accepted alternative — the listed answer is different wording</div>` : '';
+  return `<div class="gl">accepted alternative — the listed answer is different wording</div>`;
 }
 
 /** Monday-first, matching weekCells(). */
-const WEEKDAYS = ['Да','Мя','Лх','Пү','Ба','Бя','Ня'];
-const monthLabel = key => `${Number(key.slice(5,7))}-р сар`;
+const WEEKDAYS = ['MO','TU','WE','TH','FR','SA','SU'];
+const monthLabel = key =>
+  new Date(key.slice(0, 7) + '-01T00:00:00Z')
+    .toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }).toUpperCase();
 const dateLabel = key =>
   new Date(key + 'T00:00:00Z').toLocaleDateString('en-GB',
     { day:'2-digit', month:'short', year:'numeric' }).toUpperCase();
 
-export function header(st, sub, en, gloss) {
+export function header(st, sub) {
   return `<div class="top">
     <div>
-      <div class="mono">МОНГОЛ ХЭЛ · FSRS</div>
-      <h1>${esc(sub || 'Өнөөдөр')}</h1>
-      ${gl(en || 'today', gloss)}
-      <div class="sub">${st.tracked} үг · ${st.due} давтах</div>
-      ${gl(`${st.tracked} words tracked · ${st.due} due`, gloss)}
+      <div class="mono">MONGOLIAN · FSRS</div>
+      <h1>${esc(sub)}</h1>
+      <div class="sub">${st.tracked} words tracked · ${st.due} due</div>
     </div>
     <div class="mono right">${new Date().toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short'}).toUpperCase()}<br>
     RET ${pct(st.avgRetrievability)}%<br>ACC ${pct(st.accuracy)}%</div>
@@ -86,7 +80,7 @@ export function lessonBar(done, total) {
     <div class="rail">${segs}</div>
     <div class="barfoot">
       <span class="mono">${done} / ${total}</span>
-      <button class="exit" data-act="home" title="гарах · exit">✕</button>
+      <button class="exit" data-act="home" title="exit">✕</button>
     </div>
   </div>`;
 }
@@ -97,14 +91,12 @@ export function retrievabilityMeter(r) {
     <span class="mono">${pct(r)}%</span></div>`;
 }
 
-const GRADE_LABELS = ['Дахин', 'Хэцүү', 'Сайн', 'Амархан'];
-const GRADE_EN = ['again', 'hard', 'good', 'easy'];
+const GRADE_LABELS = ['Again', 'Hard', 'Good', 'Easy'];
 
-export function gradeBar(previewIvls, selected, gloss) {
+export function gradeBar(previewIvls, selected) {
   return `<div class="gradebar">${GRADE_LABELS.map((l, i) => `
     <button class="grade${selected === i + 1 ? ' sel' : ''}" data-act="grade" data-g="${i + 1}">
       <div class="lbl">${l}</div>
-      ${gloss ? `<div class="gl">${GRADE_EN[i]}</div>` : ''}
       <div class="ivl">${fmtInterval(previewIvls[i])}</div>
     </button>`).join('')}</div>`;
 }
@@ -121,16 +113,15 @@ export function contextChips(ids, targetIds, byId) {
  * Backup staleness. Real telemetry: days since a code was actually exported
  * on this device, never a nag with an invented urgency score.
  */
-export function backupNotice(age, gloss) {
+export function backupNotice(age) {
   if (age !== null && age < 14) return '';
   const never = age === null;
   return `<div class="panel red">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div><div class="mn" style="font-size:14px;font-weight:600">Нөөц хуулбар аваарай</div>
-        ${gl('export a backup code', gloss)}</div>
+      <div><div style="font-size:14px;font-weight:600">Export a backup code</div>
+        <div class="gl">progress lives only on this device — there is no sync</div></div>
       <div class="mono red">${never ? 'NEVER' : age + 'D AGO'}</div>
     </div>
-    <div class="gl" style="margin-top:7px">progress lives only on this device — there is no sync</div>
   </div>`;
 }
 
@@ -156,7 +147,7 @@ function monthGrid(cells) {
     <div class="month">${cells.map(c => `<i class="${c.state}"></i>`).join('')}</div>`;
 }
 
-function badgeRow(earned, gloss) {
+function badgeRow(earned) {
   const has = new Set(earned);
   const won = BADGES.filter(b => has.has(b.id));
   const locked = BADGES.length - won.length;
@@ -164,10 +155,9 @@ function badgeRow(earned, gloss) {
     return `<div class="gl" style="margin-top:8px">no milestones yet — the first arrives when you finish a session</div>`;
   }
   return `<div class="badges">
-      ${won.map(b => `<span class="badge" title="${esc(b.en)}">${esc(b.mn)}</span>`).join('')}
+      ${won.map(b => `<span class="badge" title="${esc(b.en)}">${esc(b.en)}</span>`).join('')}
       ${locked ? `<span class="badge locked">+${locked}</span>` : ''}
     </div>
-    ${gloss ? `<div class="gl" style="margin-top:8px">${won.map(b => b.en).join(' · ')}</div>` : ''}
     <div class="mono" style="margin-top:6px">${won.length} / ${BADGES.length} EARNED</div>`;
 }
 
@@ -178,36 +168,36 @@ function badgeRow(earned, gloss) {
  * point is that it is his sentence, in his words, on the screen every day;
  * a default would make it wallpaper.
  */
-function purposeBand(purpose, gloss, editing) {
+function purposeBand(purpose, editing) {
   if (editing) {
     return `<div class="panel gold">
-      <span class="lab">ЯАГААД · WHY</span>
-      ${gl('one sentence — why this is worth the time', gloss)}
+      <span class="lab">WHY</span>
+      ${gl('one sentence — why this is worth the time')}
       <textarea class="text" id="purposebox" rows="2" maxlength="240"
         placeholder="…">${esc(purpose || '')}</textarea>
       <div class="inline" style="margin-top:10px">
-        <button class="btn secondary" data-act="purpose-save">Хадгалах${gl('save', gloss)}</button>
-        <button class="btn ghost" data-act="purpose-cancel">Болих${gl('cancel', gloss)}</button>
+        <button class="btn secondary" data-act="purpose-save">Save</button>
+        <button class="btn ghost" data-act="purpose-cancel">Cancel</button>
       </div>
     </div>`;
   }
   if (!purpose) {
     return `<div class="panel gold">
-      <span class="lab">ЯАГААД · WHY</span>
+      <span class="lab">WHY</span>
       <div class="gl" style="margin-top:8px">why you are doing this — it shows here every day</div>
-      <div class="btns"><button class="btn secondary" data-act="purpose">Зорилгоо бичих${gl('write your reason', gloss)}</button></div>
+      <div class="btns"><button class="btn secondary" data-act="purpose">Write your reason</button></div>
     </div>`;
   }
   return `<div class="panel gold">
-    <span class="lab">ЯАГААД · WHY</span>
+    <span class="lab">WHY</span>
     <div style="font-size:14.5px;font-weight:500;line-height:1.5;margin-top:8px">${esc(purpose)}</div>
     <div style="display:flex;justify-content:flex-end;margin-top:8px">
-      <button class="btn ghost slim" data-act="purpose">Засах${gl('edit', gloss)}</button></div>
+      <button class="btn ghost slim" data-act="purpose">Edit</button></div>
   </div>`;
 }
 
 export function viewDash(p, st, session, extra, ctx = {}) {
-  const { gloss, exportAge, today, editPurpose } = ctx;
+  const { exportAge, today, editPurpose } = ctx;
   const diag = session.diagnostics;
   const nothing = diag.dueCount + diag.newCount === 0;
   const history = p.history || [];
@@ -226,25 +216,25 @@ export function viewDash(p, st, session, extra, ctx = {}) {
   const rate = intakeRate(history, today);
   const eta = projectDate(st.known, goal, rate, today);
 
-  return header(st, 'Өнөөдөр', 'today', gloss) +
-    backupNotice(exportAge === undefined ? null : exportAge, gloss) +
-    purposeBand(p.purpose, gloss, editPurpose) +
+  return header(st, 'Today') +
+    backupNotice(ctx.exportAge === undefined ? null : exportAge) +
+    purposeBand(p.purpose, editPurpose) +
 
     // ---- the week: the period one lesson can actually move ----------
-    `<div class="h"><span class="mono">Энэ долоо хоног</span><span class="mono">THIS WEEK</span></div>
+    `<div class="h"><span class="mono">THIS WEEK</span></div>
     <div class="panel red">
       <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div class="big">${doneThisWeek}<span class="u"> / 7 хоног</span></div>
-        <span class="lab red">ЦУВАА ${run}</span>
+        <div class="big">${doneThisWeek}<span class="u"> / 7 days</span></div>
+        <span class="lab red">STREAK ${run}</span>
       </div>
-      ${gloss ? `<div class="gl">${doneThisWeek} of 7 days · ${run}-day streak${best > run ? ` · best ${best}` : ''}</div>` : ''}
+      <div class="gl">${doneThisWeek} of 7 days · ${run}-day streak${best > run ? ` · best ${best}` : ''}</div>
       ${weekStrip(cells, today)}
     </div>
 
     <div class="goldband">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-        <div><div class="mono">ЭНЭ ХИЧЭЭЛ · THIS LESSON</div>
-          <div class="big" style="margin-top:5px">${worth.items}<span class="u"> зүйл</span></div></div>
+        <div><div class="mono">THIS LESSON</div>
+          <div class="big" style="margin-top:5px">${worth.items}<span class="u"> items</span></div></div>
         <div style="text-align:right">
           <div class="big" style="font-size:26px">${worth.weekShare ? '+1' : '✓'}</div>
           <div class="mono" style="margin-top:2px">${worth.weekShare ? 'DAY OF 7' : 'DONE TODAY'}</div></div>
@@ -253,55 +243,54 @@ export function viewDash(p, st, session, extra, ctx = {}) {
     </div>
 
     <div class="panel red rows">
-      <div class="wline"><span class="mn">Давтах</span><span class="en">due reviews</span><span class="n">${diag.dueCount}</span></div>
-      <div class="wline"><span class="mn">Шинэ үг</span><span class="en">new words</span><span class="n">${diag.newCount}</span></div>
-      <div class="wline"><span class="mn">Өгүүлбэр</span><span class="en">sentences</span><span class="n">${diag.sentenceCount}</span></div>
-      <div class="wline"><span class="mn">Ойлгомжтой</span><span class="en">comprehensible</span><span class="n">${pct(diag.avgComprehensibility)}%</span></div>
+      <div class="wline"><span class="mn">Due reviews</span><span class="n">${diag.dueCount}</span></div>
+      <div class="wline"><span class="mn">New words</span><span class="n">${diag.newCount}</span></div>
+      <div class="wline"><span class="mn">Sentences</span><span class="n">${diag.sentenceCount}</span></div>
+      <div class="wline"><span class="mn">Comprehensible</span><span class="n">${pct(diag.avgComprehensibility)}%</span></div>
     </div>
 
     <div class="btns"><button class="btn primary" data-act="start"${nothing ? ' disabled' : ''}>
-      ${nothing ? 'Өнөөдөр давтах зүйл алга' : 'Эхлэх →'}${
-        gl(nothing ? 'nothing due today' : `start · ${worth.items} items · ~${worth.minutes} min`, gloss)}</button></div>
+      ${nothing ? 'Nothing due today' : `Start →${gli(`${worth.items} items · ~${worth.minutes} min`)}`}</button></div>
 
     <!-- ---- below: what the work has already produced ---------------- -->
-    <div class="h"><span class="mono">Долоо хоногийн дүн</span><span class="mono">WEEK SO FAR</span></div>
+    <div class="h"><span class="mono">WEEK SO FAR</span></div>
     <div class="panel blue flush"><div class="grid2">
-      <div><span class="lab">ДАВТАЛТ</span><div class="big">${wt.reviews}</div><div class="gl">reviews landed</div></div>
-      <div><span class="lab">ШИНЭ ҮГ</span><div class="big">${wt.newWords}</div><div class="gl">new words met</div></div>
-      <div><span class="lab">ТОГТСОН</span><div class="big blue">${wt.knownGain === null ? '—' : '+' + wt.knownGain}</div>
+      <div><span class="lab">REVIEWS</span><div class="big">${wt.reviews}</div><div class="gl">reviews landed</div></div>
+      <div><span class="lab">NEW WORDS</span><div class="big">${wt.newWords}</div><div class="gl">new words met</div></div>
+      <div><span class="lab">KNOWN</span><div class="big blue">${wt.knownGain === null ? '—' : '+' + wt.knownGain}</div>
         <div class="gl">${wt.knownGain === null ? 'not measured yet' : 'crossed into known'}</div></div>
-      <div><span class="lab">ЦАГТАА</span><div class="big">${onTime === null ? '—' : pct(onTime) + '%'}</div>
+      <div><span class="lab">ON TIME</span><div class="big">${onTime === null ? '—' : pct(onTime) + '%'}</div>
         <div class="gl">${onTime === null ? 'no reviews yet' : 'reviews on time'}</div></div>
     </div></div>
 
     <div class="h"><span class="mono">${monthLabel(today)}</span><span class="mono">MONTH · ${mt.days}/${monthCells(history, today).filter(c => c.day).length}</span></div>
     <div class="panel">
       ${monthGrid(monthCells(history, today))}
-      ${gloss ? `<div class="gl" style="margin-top:9px">each square is a day you finished a session · ${mt.reviews} reviews this month</div>` : ''}
+      <div class="gl" style="margin-top:9px">each square is a day you finished a session · ${mt.reviews} reviews this month</div>
     </div>
 
-    <div class="h"><span class="mono">Түвшин</span><span class="mono">LEVEL</span></div>
+    <div class="h"><span class="mono">LEVEL</span></div>
     <div class="panel gold">
       <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div class="big">${lvl.level}<span class="u"> түвшин</span></div>
+        <div class="big">${lvl.level}<span class="u"> level</span></div>
         <span class="lab">${p.xp || 0} XP</span>
       </div>
       <div class="meter gold"><i style="width:${Math.max(2, pct(lvl.share))}%"></i></div>
       <div class="gl">${lvl.toNext === null
         ? 'top level — the goal itself'
         : `${lvl.toNext} more known words to level ${lvl.level + 1} · xp comes from reviews graded`}</div>
-      ${badgeRow(p.badges || [], gloss)}
+      ${badgeRow(p.badges || [])}
     </div>
 
-    <div class="h"><span class="mono">Зорилго</span><span class="mono">GOAL</span></div>
+    <div class="h"><span class="mono">GOAL</span></div>
     <div class="panel blue">
       <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div class="big">${st.known}<span class="u"> / ${goal.toLocaleString('en-GB')} үг</span></div>
+        <div class="big">${st.known}<span class="u"> / ${goal.toLocaleString('en-GB')} words</span></div>
         <span class="lab blue">B1 · ${(st.known / goal * 100).toFixed(1)}%</span>
       </div>
       <div class="meter gold"><i style="width:${Math.max(0.6, st.known / goal * 100)}%"></i></div>
       <div class="wline" style="margin-top:6px">
-        <span class="mn" style="font-size:13px">${rate === null ? '—' : (rate >= 0 ? '+' : '') + rate.toFixed(1) + ' үг'}</span>
+        <span class="mn" style="font-size:13px">${rate === null ? '—' : (rate >= 0 ? '+' : '') + rate.toFixed(1) + ' words'}</span>
         <span class="en">${rate === null ? 'rate needs two days of history' : 'known words per day, last 14d'}</span></div>
       <div class="wline">
         <span class="mn" style="font-size:13px">${eta ? dateLabel(eta) : '—'}</span>
@@ -310,27 +299,27 @@ export function viewDash(p, st, session, extra, ctx = {}) {
       <div class="mono red" style="margin-top:7px">CORPUS CEILING · ${ctx.corpusWords || 0} WORDS WRITTEN</div>
     </div>` +
     (extra || '') +
-    `<div class="foot"><span class="mono">INSTRUMENT v3 · СОЁМБО</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
+    `<div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
    Flashcard deck — how new words arrive.
 
    Was a static panel with the word and its translation already showing,
-   and one «Ойлголоо» button. Nothing was asked of the learner, so nothing
-   was retrieved. Now the Mongolian faces up, the English is behind a flip,
+   and one button. Nothing was asked of the learner, so nothing was
+   retrieved. Now the Mongolian faces up, the English is behind a flip,
    and each card ends in a decision that actually routes the word.
    ══════════════════════════════════════════════════════════════════════ */
 
 export function viewDeck(item, ctx) {
-  const { deckI, flipped, gloss } = ctx;
+  const { deckI, flipped } = ctx;
   const words = item.words;
   const w = words[deckI];
   const dots = words.map((_, i) =>
     `<i class="${i < deckI ? 'done' : i === deckI ? 'now' : ''}"></i>`).join('');
 
   return `<div class="sec">
-    <div class="qhead"><span class="tag red">Шинэ үг</span>
+    <div class="qhead"><span class="tag red">NEW WORD</span>
       <span class="mono">NEW ${deckI + 1}/${words.length}</span></div>
     <div class="deckdots" style="grid-template-columns:repeat(${words.length},1fr)">${dots}</div>
 
@@ -338,17 +327,17 @@ export function viewDeck(item, ctx) {
       ${flipped
         ? `<div class="face en">${esc(w.en)}</div>
            <div class="gl">${esc(w.mn)}</div>
-           <div class="flip"><span class="lab">ҮГ #${w.id}</span></div>`
+           <div class="flip"><span class="lab">WORD #${w.id}</span></div>`
         : `<div class="face">${esc(w.mn)}</div>
-           <div class="flip"><span class="lab red">ЭРГҮҮЛЭХ · TAP TO FLIP</span></div>`}
+           <div class="flip"><span class="lab red">TAP TO FLIP</span></div>`}
     </div>
 
     <div class="btns">
-      <button class="btn primary" data-act="deck-learn">Сурах${gl('learn it — queue for review', gloss)}</button>
-      <button class="btn secondary" data-act="deck-known">Мэдэж байна${gl('i know this — schedule it further out', gloss)}</button>
+      <button class="btn primary" data-act="deck-learn">Learn${gli('queue for review')}</button>
+      <button class="btn secondary" data-act="deck-known">I know this${gli('schedule it further out')}</button>
     </div>
     ${deckI > 0 ? `<div class="inline" style="margin-top:8px">
-      <button class="btn ghost slim" data-act="deck-back">← Буцах${gl('back', gloss)}</button></div>` : ''}
+      <button class="btn ghost slim" data-act="deck-back">← Back</button></div>` : ''}
   </div>`;
 }
 
@@ -358,7 +347,7 @@ export function viewDeck(item, ctx) {
 
 export function viewCard(item, ctx) {
   const { word } = item;
-  const { fb, previewIvls, r, dir, gloss, choices, picked, mcMode } = ctx;
+  const { fb, previewIvls, r, dir, choices, picked, mcMode } = ctx;
   const front = dir === 'mge' ? word.mn : word.en;
   const back  = dir === 'mge' ? word.en : word.mn;
   const answered = picked !== null && picked !== undefined;
@@ -368,7 +357,7 @@ export function viewCard(item, ctx) {
       <span class="tag">${dir === 'mge' ? 'MGL → ENG' : 'ENG → MGL'}</span>
       <span class="mono">CARD · ${item.isNew ? 'NEW' : 'REVIEW'}</span></div>`;
 
-  /* No «АСУУЛТ · PROMPT» label: the tag above already says which way round the
+  /* No boxed "prompt" label: the tag above already says which way round the
      card is, and a boxed label naming a 44px word as "the prompt" is a line of
      text on every question that tells you nothing you cannot see.
 
@@ -409,10 +398,10 @@ export function viewCard(item, ctx) {
     const ivl = answered ? fmtInterval(previewIvls[correct ? 2 : 0]) : '';
     return `<div class="sec">${head}${prompt}
       <div class="choices">${rows}</div>
-      ${answered ? `<div class="panel ${correct ? 'blue' : 'red'} reveal">
+      ${answered ? `<div class="panel ${correct ? 'green' : 'red'} reveal">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
           <div>
-            <span class="lab ${correct ? 'blue' : 'red'}">${correct ? 'ЗӨВ · CORRECT' : 'БУРУУ · WRONG'}</span>
+            <span class="lab ${correct ? 'green' : 'red'}">${correct ? 'CORRECT' : 'WRONG'}</span>
             <div style="font-size:15px;font-weight:500;margin-top:7px">${esc(word.mn)} — ${esc(word.en)}</div>
           </div>
           <div style="text-align:right;flex:none">
@@ -424,14 +413,15 @@ export function viewCard(item, ctx) {
       </div>` : ''}
       ${answered
         /* INSTRUMENT: red is action and red is error, and the two never appear
-           as peers. When the verdict panel is red the button steps back to
-           secondary, or the screen shows two different reds meaning two
-           different things at once. */
+           as peers. A correct answer's continue button carries the same green
+           as the verdict that produced it; a wrong answer's verdict already
+           owns red, so the button steps back to secondary rather than
+           claiming red for a second, different reason. */
         ? `<div class="btns">
-             <button class="btn ${correct ? 'primary' : 'secondary'}" data-act="card-next" data-g="${correct ? 3 : 1}">Үргэлжлүүлэх${gl('continue', gloss)}</button>
-             ${correct ? `<button class="btn ghost slim" data-act="card-next" data-g="4">Амархан байсан${gl('that was easy — wait longer before asking again', gloss)}</button>` : ''}
+             <button class="btn ${correct ? 'correct' : 'secondary'}" data-act="card-next" data-g="${correct ? 3 : 1}">Continue</button>
+             ${correct ? `<button class="btn ghost slim" data-act="card-next" data-g="4">That was easy${gli('wait longer before asking again')}</button>` : ''}
            </div>`
-        : `<div class="btns"><button class="btn ghost" data-act="mc-off">Бичиж хариулах${gl('type the answer instead — harder', gloss)}</button></div>`}
+        : `<div class="btns"><button class="btn ghost" data-act="mc-off">Type the answer instead</button></div>`}
     </div>`;
   }
 
@@ -442,28 +432,26 @@ export function viewCard(item, ctx) {
   const toMn = dir === 'egm';
   return `<div class="sec">${head}${prompt}
     ${fb
-      ? `<div class="panel ${fb.ok ? 'blue' : 'red'} reveal">
-           <span class="lab ${fb.ok ? 'blue' : 'red'}">${fb.ok ? 'ЗӨВ · CORRECT' : 'ЗӨРҮҮ · MISMATCH'}</span>
+      ? `<div class="panel ${fb.ok ? 'green' : 'red'} reveal">
+           <span class="lab ${fb.ok ? 'green' : 'red'}">${fb.ok ? 'CORRECT' : 'MISMATCH'}</span>
            <div class="fb" style="margin-top:0;border-top:0;padding-top:8px">
              <div class="ans">${esc(back)}</div>
-             ${fb.given ? `<div class="yours">Таны хариу — ${esc(fb.given)}${gli('your answer', gloss)}</div>`
-               : gloss ? '<div class="gl">nothing typed</div>' : ''}
+             ${fb.given ? `<div class="yours">Your answer — ${esc(fb.given)}</div>`
+               : '<div class="gl">nothing typed</div>'}
              ${fb.close && !fb.ok ? `<div class="gl">close — check the spelling</div>` : ''}
            </div>
-           ${typoNote(fb, gloss)}
+           ${typoNote(fb)}
            ${recall}
          </div>
-         ${gradeBar(previewIvls, fb.ok ? (fb.typo ? 2 : undefined) : 1, gloss)}`
-      /* The placeholder already says «монголоор бич» in the language being
-         asked for, and the tag above says which way round the card is. An
-         English line repeating it a third time is the kind of text that is
-         read once and then sits on every question for ever. */
+         ${gradeBar(previewIvls, fb.ok ? (fb.typo ? 2 : undefined) : 1)}`
+      /* The placeholder already says which language is being asked for, and
+         the tag above says which way round the card is. */
       : `<textarea class="text" id="ansbox" rows="1" autocapitalize="off" autocorrect="off"
-           spellcheck="false" placeholder="${toMn ? 'монголоор бич' : 'англиар бич'}"></textarea>
+           spellcheck="false" placeholder="${toMn ? 'type in Mongolian' : 'type in English'}"></textarea>
          <div class="btns">
-           <button class="btn primary" data-act="check-word">Шалгах${gl('check', gloss)}</button>
+           <button class="btn primary" data-act="check-word">Check</button>
            ${choices && choices.usable
-             ? `<button class="btn ghost" data-act="mc-on">Сонголтоор${gl('use multiple choice instead — easier', gloss)}</button>` : ''}
+             ? `<button class="btn ghost" data-act="mc-on">Use multiple choice instead</button>` : ''}
          </div>`}
   </div>`;
 }
@@ -474,7 +462,7 @@ export function viewCard(item, ctx) {
    ══════════════════════════════════════════════════════════════════════ */
 
 export function viewSentence(item, ctx) {
-  const { fb, previewIvls, byId, gloss } = ctx;
+  const { fb, previewIvls, byId } = ctx;
   const s = item.sentence;
   const toMn = item.dir === 'egm';
   const prompt = toMn ? s.en : s.mn;
@@ -482,26 +470,26 @@ export function viewSentence(item, ctx) {
     <div class="qhead"><span class="tag">${toMn ? 'ENG → MGL' : 'MGL → ENG'}</span>
       <span class="mono">i+${item.weak} · ${pct(item.comprehensible)}% KNOWN</span></div>
     <div class="panel${fb ? '' : ' red'}">
-      <span class="lab">ОРЧУУЛ · TRANSLATE</span>
+      <span class="lab">TRANSLATE</span>
       <div class="prompt ${toMn ? 'en' : 'sm'}" style="margin-top:9px">${esc(prompt)}</div>
       ${s.note ? `<div class="subnote">${esc(s.note)}</div>` : ''}
       ${fb ? '' : `<textarea class="text" id="ansbox" rows="2" autocapitalize="off"
         autocorrect="off" spellcheck="false"
-        placeholder="${toMn ? 'монголоор бич' : 'англиар бич'}"></textarea>`}
+        placeholder="${toMn ? 'type in Mongolian' : 'type in English'}"></textarea>`}
     </div>
-    ${fb ? `<div class="panel ${fb.ok ? 'blue' : 'red'} reveal">
-        <span class="lab ${fb.ok ? 'blue' : 'red'}">${fb.ok ? 'ЗӨВ · CORRECT' : 'ЗӨРҮҮ · MISMATCH'}</span>
+    ${fb ? `<div class="panel ${fb.ok ? 'green' : 'red'} reveal">
+        <span class="lab ${fb.ok ? 'green' : 'red'}">${fb.ok ? 'CORRECT' : 'MISMATCH'}</span>
         <div class="fb" style="margin-top:0;border-top:0;padding-top:8px">
           <div class="ans diff">${fb.diff.map(t =>
             `<span class="${t.state === 'miss' ? 'miss' : t.state === 'near' ? 'near' : 'hit'}">${esc(t.tok)}</span>`).join(' ')}</div>
-          ${altNote(fb, gloss)}
-          ${fb.given ? `<div class="yours">Таны хариу — ${esc(fb.given)}${gli('your answer', gloss)}</div>` : ''}
+          ${altNote(fb)}
+          ${fb.given ? `<div class="yours">Your answer — ${esc(fb.given)}</div>` : ''}
           ${contextChips(item.targetIds, item.targetIds, byId)}
         </div>
-        ${typoNote(fb, gloss)}
+        ${typoNote(fb)}
       </div>
-      ${gradeBar(previewIvls, fb.ok ? (fb.typo ? 2 : undefined) : 1, gloss)}`
-      : `<div class="btns"><button class="btn primary" data-act="submit">Шалгах${gl('check', gloss)}</button></div>`}
+      ${gradeBar(previewIvls, fb.ok ? (fb.typo ? 2 : undefined) : 1)}`
+      : `<div class="btns"><button class="btn primary" data-act="submit">Check</button></div>`}
   </div>`;
 }
 
@@ -510,7 +498,7 @@ export function viewSentence(item, ctx) {
    ══════════════════════════════════════════════════════════════════════ */
 
 export function viewDone(summary, st, p, ctx = {}) {
-  const { gloss, today } = ctx;
+  const { today } = ctx;
   const history = p.history || [];
   const cells = weekCells(history, today);
   const doneThisWeek = cells.filter(c => c.state === 'done').length;
@@ -518,10 +506,10 @@ export function viewDone(summary, st, p, ctx = {}) {
   const lvl = levelFor(st.known);
   const fresh = (summary.newBadges || []).map(id => byBadgeId[id]).filter(Boolean);
 
-  return header(st, 'Дууслаа', 'finished', gloss) +
+  return header(st, 'Finished') +
     `<div class="goldband">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-        <div><div class="mono">ӨНӨӨДӨР · TODAY</div>
+        <div><div class="mono">TODAY</div>
           <div class="big" style="margin-top:5px">+${summary.xp}<span class="u"> XP</span></div></div>
         <div style="text-align:right"><div class="big" style="font-size:26px">${doneThisWeek}/7</div>
           <div class="mono" style="margin-top:2px">THIS WEEK</div></div>
@@ -529,22 +517,21 @@ export function viewDone(summary, st, p, ctx = {}) {
       <div class="gl">${summary.reviews} reviews graded · ${summary.newWords} new words met · ${run}-day streak</div>
     </div>
 
-    <div class="h"><span class="mono">Долоо хоног</span><span class="mono">WEEK</span></div>
+    <div class="h"><span class="mono">WEEK</span></div>
     <div class="panel red">${weekStrip(cells, today)}</div>
 
     <div class="panel blue flush"><div class="grid2">
-      <div><span class="lab">ДАВТАЛТ</span><div class="big">${summary.reviews}</div><div class="gl">graded this session</div></div>
-      <div><span class="lab">ЗӨВ</span><div class="big blue">${summary.reviews ? pct(summary.right / summary.reviews) : 0}%</div><div class="gl">answered correctly</div></div>
-      <div><span class="lab">ТОГТСОН</span><div class="big">${st.known}</div><div class="gl">words known overall</div></div>
-      <div><span class="lab">ТҮВШИН</span><div class="big">${lvl.level}</div>
+      <div><span class="lab">REVIEWS</span><div class="big">${summary.reviews}</div><div class="gl">graded this session</div></div>
+      <div><span class="lab green">CORRECT</span><div class="big green">${summary.reviews ? pct(summary.right / summary.reviews) : 0}%</div><div class="gl">answered correctly</div></div>
+      <div><span class="lab">KNOWN</span><div class="big">${st.known}</div><div class="gl">words known overall</div></div>
+      <div><span class="lab">LEVEL</span><div class="big">${lvl.level}</div>
         <div class="gl">${lvl.toNext === null ? 'top level' : `${lvl.toNext} words to next`}</div></div>
     </div></div>` +
 
-    (fresh.length ? `<div class="h"><span class="mono">Шинэ тэмдэг</span><span class="mono">NEW MILESTONE</span></div>
+    (fresh.length ? `<div class="h"><span class="mono">NEW MILESTONE</span></div>
       <div class="panel gold">${fresh.map(b => `
         <div class="earned"><span class="dot"></span>
-          <div><div style="font-size:14px;font-weight:600">${esc(b.mn)}</div>
-            ${gl(b.en, gloss)}</div></div>`).join('')}</div>` : '') +
+          <div><div style="font-size:14px;font-weight:600">${esc(b.en)}</div></div></div>`).join('')}</div>` : '') +
 
-    `<div class="btns"><button class="btn primary" data-act="home">Хаах${gl('close', gloss)}</button></div>`;
+    `<div class="btns"><button class="btn primary" data-act="home">Close</button></div>`;
 }

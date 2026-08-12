@@ -18,14 +18,13 @@ let S = {
   fb: null, tools: false, msg: '',
   deckI: 0, flipped: false,          // flashcard deck position
   picked: null,                       // chosen multiple-choice index
-  skip: new Set(),                    // words dismissed with «Мэдэж байна»
+  skip: new Set(),                    // words dismissed with "I know this"
   graded: new Set(),                  // words already graded this session
   editPurpose: false,
   summary: blankSummary()
 };
 
 const fsrs = () => makeFSRS(undefined, P.desiredRetention);
-const glossOn = () => P.gloss !== false;
 const mcOn = () => P.mcMode !== false;
 
 // How many words are drilled on their own each lesson. A cycle rather than a
@@ -88,7 +87,6 @@ function renderKey() {
 
 function render() {
   const st = stats(P, { words: WORDS });
-  const gloss = glossOn();
   const today = dayKey();
   const key = renderKey();
   const fresh = key !== lastKey;
@@ -97,11 +95,11 @@ function render() {
 
   if (S.screen === 'home') {
     el.innerHTML = V.viewDash(P, st, todaySession(), toolsPanel(), {
-      gloss, today, exportAge: exportAge(P),
+      today, exportAge: exportAge(P),
       corpusWords: POOL.length, editPurpose: S.editPurpose
     });
   } else if (S.screen === 'done') {
-    el.innerHTML = V.viewDone(S.summary, st, P, { gloss, today });
+    el.innerHTML = V.viewDone(S.summary, st, P, { today });
   } else {
     const item = current();
     if (!item) { finish(); return; }
@@ -112,7 +110,7 @@ function render() {
 
     let body;
     if (item.kind === 'deck') {
-      body = V.viewDeck(item, { deckI: S.deckI, flipped: S.flipped, gloss });
+      body = V.viewDeck(item, { deckI: S.deckI, flipped: S.flipped });
     } else if (item.kind === 'card') {
       body = V.viewCard(item, {
         fb: S.fb,
@@ -121,15 +119,13 @@ function render() {
         dir: dirFor(item),
         choices: choicesFor(item),
         picked: S.picked,
-        mcMode: mcOn(),
-        gloss
+        mcMode: mcOn()
       });
     } else {
       body = V.viewSentence(item, {
         fb: S.fb,
         previewIvls: previewFor(item.targetIds[0]),
-        byId: BYID,
-        gloss
+        byId: BYID
       });
     }
     // No dashboard header during a lesson: see lessonBar() on why the
@@ -143,49 +139,44 @@ function render() {
 }
 
 function toolsPanel() {
-  const gloss = glossOn();
-  const g = en => gloss ? `<div class="gl">${V.esc(en)}</div>` : '';
+  const g = en => `<div class="gl">${V.esc(en)}</div>`;
   if (!S.tools) return `<div class="btns" style="margin-top:18px">
-    <button class="btn ghost" data-act="tools">Тохиргоо ▾${g('settings and backup')}</button></div>`;
+    <button class="btn ghost" data-act="tools">Settings ▾${g('settings and backup')}</button></div>`;
 
   const age = exportAge(P);
   const canShare = typeof navigator !== 'undefined' && !!navigator.share;
-  return `<div class="h" style="margin-top:20px"><span class="mono">Тохиргоо</span><span class="mono">SETTINGS</span></div>
+  return `<div class="h" style="margin-top:20px"><span class="mono">SETTINGS</span></div>
     <div class="panel">
       <div class="wline">
-        <div style="flex:1"><div class="mn">Сонголтоор асуух</div>${g('multiple choice on word cards')}</div>
-        <button class="btn ghost slim" data-act="mc">${mcOn() ? 'Асаалттай' : 'Унтраалттай'}${g(mcOn() ? 'on' : 'off — you type instead')}</button>
+        <div style="flex:1"><div class="mn">Multiple choice</div>${g('on word cards')}</div>
+        <button class="btn ghost slim" data-act="mc">${mcOn() ? 'On' : 'Off'}${g(mcOn() ? 'on' : 'off — you type instead')}</button>
       </div>
       <div class="wline">
-        <div style="flex:1"><div class="mn">Үгийн сорил</div>${g('word cards per lesson — drilled on their own, before the sentences')}</div>
-        <button class="btn ghost slim" data-act="drills">${drillCount() || 'Хаалттай'}${
+        <div style="flex:1"><div class="mn">Word drills</div>${g('word cards per lesson — drilled on their own, before the sentences')}</div>
+        <button class="btn ghost slim" data-act="drills">${drillCount() || 'Off'}${
           g(drillCount() ? 'per lesson, when there is that much due' : 'off — only words no sentence covers')}</button>
-      </div>
-      <div class="wline">
-        <div style="flex:1"><div class="mn">Англи орчуулга</div>${g('english gloss under the mongolian')}</div>
-        <button class="btn ghost slim" data-act="gloss">${gloss ? 'Асаалттай' : 'Унтраалттай'}</button>
       </div>
     </div>
 
-    <div class="h"><span class="mono">Хадгалалт</span><span class="mono">BACKUP CODE</span></div>
+    <div class="h"><span class="mono">BACKUP CODE</span></div>
     <div class="panel ${age === null || age >= 14 ? 'red' : 'blue'}">
       <div class="wline">
-        <div style="flex:1"><div class="mn">Сүүлд хадгалсан</div>${g('last export')}</div>
+        <div style="flex:1"><div class="mn">Last export</div></div>
         <div class="mono${age === null || age >= 14 ? ' red' : ''}">${
           age === null ? 'NEVER' : age === 0 ? 'TODAY' : age + 'D AGO'}</div>
       </div>
       <div class="mono" style="margin-top:14px">EXPORT</div>
       <textarea class="code" id="outcode" readonly>${V.esc(encodeCode(P))}</textarea>
       <div class="inline" style="margin-top:8px">
-        <button class="btn secondary" data-act="copy">Хуулах${g('copy')}</button>
-        ${canShare ? `<button class="btn secondary" data-act="share">Илгээх${g('share')}</button>` : ''}
+        <button class="btn secondary" data-act="copy">Copy</button>
+        ${canShare ? `<button class="btn secondary" data-act="share">Share</button>` : ''}
       </div>
       <div class="mono" style="margin-top:14px">IMPORT</div>
       <textarea class="code" id="incode" placeholder="paste code (v1 or v2)"></textarea>
-      ${S.msg ? `<div class="mono" style="margin-top:8px;color:${S.msg[0] === '!' ? 'var(--red)' : 'var(--blue)'}">${V.esc(S.msg.replace(/^!/, ''))}</div>` : ''}
+      ${S.msg ? `<div class="mono" style="margin-top:8px;color:${S.msg[0] === '!' ? 'var(--red)' : 'var(--green)'}">${V.esc(S.msg.replace(/^!/, ''))}</div>` : ''}
       <div class="inline" style="margin-top:10px">
-        <button class="btn secondary" data-act="import">Оруулах${g('import')}</button>
-        <button class="btn ghost" data-act="tools">Хаах${g('close')}</button>
+        <button class="btn secondary" data-act="import">Import</button>
+        <button class="btn ghost" data-act="tools">Close</button>
       </div>
       <div class="gl" style="margin-top:10px">importing replaces everything on this device — it does not merge</div>
     </div>`;
@@ -215,7 +206,7 @@ async function copyCode() {
   return true;
 }
 
-/** Advance past any card whose word was dismissed with «Мэдэж байна». */
+/** Advance past any card whose word was dismissed with "I know this". */
 function advance() {
   S.fb = null; S.picked = null; S.deckI = 0; S.flipped = false;
   do { S.i++; } while (
@@ -329,7 +320,7 @@ document.addEventListener('click', e => {
   // ---- multiple choice ------------------------------------------------
   else if (act === 'pick') { S.picked = parseInt(t.getAttribute('data-i'), 10); render(); }
   // A closed set of four: the app scored the answer, so it grades it too —
-  // «Сайн» for a right pick, «Дахин» for a wrong one. «Амархан байсан» is the
+  // "Good" for a right pick, "Again" for a wrong one. "That was easy" is the
   // one judgement the learner still holds, and it is optional.
   else if (act === 'card-next') grade(parseInt(t.getAttribute('data-g'), 10));
   else if (act === 'mc-off') { P.mcMode = false; save(P); S.picked = null; render(); }
@@ -385,31 +376,30 @@ document.addEventListener('click', e => {
   else if (act === 'purpose-cancel') { S.editPurpose = false; render(); }
 
   else if (act === 'tools') { S.tools = !S.tools; S.msg = ''; render(); }
-  else if (act === 'gloss') { P.gloss = !glossOn(); save(P); render(); }
   else if (act === 'copy') {
     copyCode().then(ok => {
       if (ok) markExported();
-      S.msg = ok ? 'Хуулсан' : '!Хуулж чадсангүй';
+      S.msg = ok ? 'Copied' : '!Could not copy';
       render();
     });
   }
   else if (act === 'share') {
     // iOS share sheet: the only one-tap route off the device, and it never
     // touches the network — the OS hands the text to whatever app is picked.
-    navigator.share({ title: 'Монгол хэл — нөөц код', text: encodeCode(P) })
-      .then(() => { markExported(); S.msg = 'Илгээсэн'; render(); })
+    navigator.share({ title: 'Mongolian — backup code', text: encodeCode(P) })
+      .then(() => { markExported(); S.msg = 'Shared'; render(); })
       .catch(err => {
         // Dismissing the sheet is not a failure, and must not claim a backup.
         if (err && err.name === 'AbortError') return;
-        S.msg = '!Илгээж чадсангүй';
+        S.msg = '!Could not share';
         render();
       });
   }
   else if (act === 'import') {
     const box = document.getElementById('incode');
     const next = importCode(box ? box.value : '');
-    if (next) { P = next; save(P); S.msg = 'Амжилттай' + (next.migratedFrom ? ' (v1 → v2)' : ''); }
-    else S.msg = '!Код буруу байна';
+    if (next) { P = next; save(P); S.msg = 'Imported' + (next.migratedFrom ? ' (v1 → v2)' : ''); }
+    else S.msg = '!Invalid code';
     render();
   }
 });
@@ -460,9 +450,32 @@ async function boot() {
   // option against a noun gives the answer away by register alone.
   POOL = WORDS.filter(x => x.drill !== false);
   requestPersistence();
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
+  registerServiceWorker();
   render();
 }
 boot();
+
+/**
+ * A home-screen PWA on iOS is resumed from memory, not re-navigated to, so the
+ * browser's own "check for a new service worker" pass may never run — the app
+ * can sit on a build from weeks ago indefinitely, silently. This checks for an
+ * update on boot and again every time the app returns to the foreground, and
+ * reloads once a new version has taken over so the swap is never stuck behind
+ * a stale cache.
+ */
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    const check = () => reg.update().catch(() => {});
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') check();
+    });
+  }).catch(() => {});
+
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloaded) return;
+    reloaded = true;
+    window.location.reload();
+  });
+}
