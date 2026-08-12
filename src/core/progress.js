@@ -39,7 +39,11 @@ export function blank() {
     purpose: '',         // the ЯАГААД line, shown on the dashboard every day
     goalWords: 2500,     // B1 estimate. Research figure, not a CEFR spec.
     xp: 0,
-    badges: []
+    badges: [],
+    // Grammar topic practice (src/data/grammar.json). Keyed by topic id, not
+    // FSRS — practice is on demand, not scheduled, so this is just a running
+    // right/wrong count per topic. See core/grammar.js.
+    grammar: {}
   };
 }
 

@@ -3,25 +3,35 @@ import { makeFSRS, dayKey, daysBetween } from '../core/fsrs.js';
 import { load, save, stats, encodeCode, importCode, exportAge, recordDay } from '../core/progress.js';
 import { buildSession, applyGrade } from '../core/scheduler.js';
 import { gradeAnswer, diffTokens } from '../core/grade.js';
-import { buildChoices } from '../core/choices.js';
-import { xpFor, earnedBadges, stepCount } from '../core/goals.js';
+import { buildChoices, shuffle, makeRng, hashSeed } from '../core/choices.js';
+import { xpFor, earnedBadges, stepCount, levelFor, xpForGrammar } from '../core/goals.js';
+import { gradeDrill, applyGrammarGrade, topicMastery } from '../core/grammar.js';
 import * as V from './views.js';
 
 const el = document.getElementById('app');
-let WORDS = [], SENTENCES = [], BYID = {}, POOL = [];
+let WORDS = [], SENTENCES = [], GRAMMAR = [], BYID = {}, POOL = [];
 let P = load();
 
-const blankSummary = () => ({ reviews: 0, right: 0, newWords: 0, xp: 0, onTime: 0, late: 0, newBadges: [] });
+const blankSummary = () => ({ reviews: 0, right: 0, newWords: 0, xp: 0, onTime: 0, late: 0, newBadges: [], levelBefore: 1, leveledTo: null });
+const blankGrammarSummary = () => ({ xp: 0, right: 0, wrong: 0 });
 
 let S = {
-  screen: 'home', session: null, i: 0,
-  fb: null, tools: false, msg: '',
+  screen: 'home', tab: 'today', session: null, i: 0,
+  fb: null, msg: '',
   deckI: 0, flipped: false,          // flashcard deck position
   picked: null,                       // chosen multiple-choice index
   skip: new Set(),                    // words dismissed with "I know this"
   graded: new Set(),                  // words already graded this session
   editPurpose: false,
-  summary: blankSummary()
+  summary: blankSummary(),
+  // ---- grammar topic practice (separate from the daily FSRS session) -----
+  gTopic: null,      // the open topic, or null
+  gStep: -1,         // -1 = intro/summary, 0..drills.length-1 = a drill, drills.length = done
+  gPicked: null,     // choice drill: picked option index
+  gFb: null,         // transform/build drill: grade result, once checked
+  gBank: [],         // build drill: shuffled word list for the current step
+  gBuild: [],        // build drill: tapped bank indices, in order
+  gSummary: blankGrammarSummary()
 };
 
 const fsrs = () => makeFSRS(undefined, P.desiredRetention);
@@ -80,7 +90,9 @@ function choicesFor(item) {
  */
 let lastKey = null;
 function renderKey() {
-  if (S.screen !== 'run') return `${S.screen}:${S.tools}:${S.editPurpose}`;
+  if (S.screen === 'home') return `home:${S.tab}:${S.editPurpose}`;
+  if (S.screen === 'grammar') return `grammar:${S.gTopic ? S.gTopic.id : ''}:${S.gStep}`;
+  if (S.screen !== 'run') return `${S.screen}`;
   const item = current();
   return `run:${S.i}:${item && item.kind === 'deck' ? S.deckI + ':' + S.flipped : ''}`;
 }
@@ -94,12 +106,31 @@ function render() {
   el.className = fresh ? 'wrap enter' : 'wrap';
 
   if (S.screen === 'home') {
-    el.innerHTML = V.viewDash(P, st, todaySession(), toolsPanel(), {
-      today, exportAge: exportAge(P),
-      corpusWords: POOL.length, editPurpose: S.editPurpose
-    });
+    el.className += ' tabbed';
+    const ctx = { today, exportAge: exportAge(P), corpusWords: POOL.length, editPurpose: S.editPurpose };
+    let body;
+    if (S.tab === 'progress') body = V.viewProgress(P, st, ctx);
+    else if (S.tab === 'grammar') body = V.viewGrammarList(GRAMMAR, P);
+    else if (S.tab === 'achievements') body = V.viewAchievements(P, st, ctx);
+    else if (S.tab === 'settings') body = settingsPage();
+    else body = V.viewToday(P, st, todaySession(), ctx);
+    el.innerHTML = body + V.tabBar(S.tab);
   } else if (S.screen === 'done') {
     el.innerHTML = V.viewDone(S.summary, st, P, { today });
+  } else if (S.screen === 'grammar') {
+    const topic = S.gTopic;
+    if (!topic) { S.screen = 'home'; S.tab = 'grammar'; render(); return; }
+    let body;
+    if (S.gStep === -1) {
+      body = V.viewGrammarIntro(topic);
+    } else if (S.gStep >= topic.drills.length) {
+      body = V.viewGrammarDone(topic, S.gSummary, topicMastery(P.grammar[topic.id]));
+    } else {
+      body = V.viewGrammarDrill(topic, topic.drills[S.gStep], S.gStep, topic.drills.length, {
+        picked: S.gPicked, fb: S.gFb, bank: S.gBank, build: S.gBuild
+      });
+    }
+    el.innerHTML = body;
   } else {
     const item = current();
     if (!item) { finish(); return; }
@@ -138,14 +169,13 @@ function render() {
   if (box && !('ontouchstart' in window)) box.focus();
 }
 
-function toolsPanel() {
+/** The Settings tab — options plus the backup code, always shown in full now that it is its own page. */
+function settingsPage() {
   const g = en => `<div class="gl">${V.esc(en)}</div>`;
-  if (!S.tools) return `<div class="btns" style="margin-top:18px">
-    <button class="btn ghost" data-act="tools">Settings ▾${g('settings and backup')}</button></div>`;
-
   const age = exportAge(P);
   const canShare = typeof navigator !== 'undefined' && !!navigator.share;
-  return `<div class="h" style="margin-top:20px"><span class="mono">SETTINGS</span></div>
+  return V.pageHead('SETTINGS') +
+    `<div class="h" style="margin-top:10px"><span class="mono">OPTIONS</span></div>
     <div class="panel">
       <div class="wline">
         <div style="flex:1"><div class="mn">Multiple choice</div>${g('on word cards')}</div>
@@ -176,10 +206,10 @@ function toolsPanel() {
       ${S.msg ? `<div class="mono" style="margin-top:8px;color:${S.msg[0] === '!' ? 'var(--red)' : 'var(--green)'}">${V.esc(S.msg.replace(/^!/, ''))}</div>` : ''}
       <div class="inline" style="margin-top:10px">
         <button class="btn secondary" data-act="import">Import</button>
-        <button class="btn ghost" data-act="tools">Close</button>
       </div>
       <div class="gl" style="margin-top:10px">importing replaces everything on this device — it does not merge</div>
-    </div>`;
+    </div>
+    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
 }
 
 /** Record that a code actually left the device. Only called on success. */
@@ -240,6 +270,12 @@ function finish() {
   P.badges = earnedBadges(P, { stats: st, today, perfectSentence: S.summary.perfect });
   S.summary.newBadges = P.badges.filter(b => !before.has(b));
 
+  // A level crossed during this session, not just reported on it — the one
+  // thing INSTRUMENT's "no fanfare but session-close" rule still gets a
+  // distinct callout for, because it is rarer than a badge and never silent.
+  const levelNow = levelFor(st.known).level;
+  if (levelNow > S.summary.levelBefore) S.summary.leveledTo = levelNow;
+
   save(P);
   S.screen = 'done';
   render();
@@ -283,6 +319,33 @@ function grade(g) {
   advance();
 }
 
+/**
+ * Grammar practice has no FSRS stability to earn XP off, so this is flatter
+ * than awardGrade() — a base for the attempt, a bonus for getting it right —
+ * but it is still real: nothing here fires without a drill being answered.
+ * Mastery is a running right/wrong count per topic, not per-drill; a topic
+ * is practised on demand, never scheduled.
+ */
+function awardGrammarGrade(ok) {
+  applyGrammarGrade(P, S.gTopic.id, ok);
+  const xp = xpForGrammar(ok);
+  S.gSummary.xp += xp;
+  P.xp = (P.xp || 0) + xp;      // lifetime total, same figure the word/sentence XP moves
+  S.gSummary.right += ok ? 1 : 0;
+  S.gSummary.wrong += ok ? 0 : 1;
+  save(P);
+}
+
+/** Shuffle a fresh word bank when a build drill comes into view. */
+function setupGrammarStep() {
+  const topic = S.gTopic;
+  if (!topic || S.gStep < 0 || S.gStep >= topic.drills.length) return;
+  const drill = topic.drills[S.gStep];
+  if (drill.kind === 'build') {
+    S.gBank = shuffle(drill.words, makeRng(hashSeed(drill.id)));
+  }
+}
+
 document.addEventListener('click', e => {
   const t = e.target && e.target.closest ? e.target.closest('[data-act]') : null;
   if (!t || t.disabled) return;
@@ -293,9 +356,13 @@ document.addEventListener('click', e => {
     S.fb = null; S.picked = null;
     S.deckI = 0; S.flipped = false; S.skip = new Set(); S.graded = new Set();
     S.summary = blankSummary();
+    // The level going in, so finish() can tell a level gained during this
+    // session from a level the learner was already sitting at.
+    S.summary.levelBefore = levelFor(stats(P, { words: WORDS }).known).level;
     render();
   }
   else if (act === 'home') { S.screen = 'home'; S.session = null; render(); }
+  else if (act === 'tab') { S.tab = t.getAttribute('data-tab'); S.msg = ''; render(); }
   else if (act === 'next') advance();
 
   // ---- flashcard deck ------------------------------------------------
@@ -375,7 +442,52 @@ document.addEventListener('click', e => {
   }
   else if (act === 'purpose-cancel') { S.editPurpose = false; render(); }
 
-  else if (act === 'tools') { S.tools = !S.tools; S.msg = ''; render(); }
+  // ---- grammar topic practice ------------------------------------------
+  else if (act === 'grammar-open') {
+    const topic = GRAMMAR.find(g => g.id === t.getAttribute('data-id'));
+    if (!topic) return;
+    S.gTopic = topic; S.gStep = -1; S.gPicked = null; S.gFb = null;
+    S.gBank = []; S.gBuild = []; S.gSummary = blankGrammarSummary();
+    S.screen = 'grammar';
+    render();
+  }
+  else if (act === 'grammar-begin') { S.gStep = 0; setupGrammarStep(); render(); }
+  else if (act === 'grammar-exit') { S.screen = 'home'; S.tab = 'grammar'; S.gTopic = null; render(); }
+  else if (act === 'grammar-pick') {
+    const drill = S.gTopic.drills[S.gStep];
+    const i = parseInt(t.getAttribute('data-i'), 10);
+    S.gPicked = i;
+    awardGrammarGrade(gradeDrill(drill, drill.options[i]).ok);
+    render();
+  }
+  else if (act === 'grammar-check') {
+    const drill = S.gTopic.drills[S.gStep];
+    const box = document.getElementById('ansbox');
+    const given = box ? box.value : '';
+    const g = gradeDrill(drill, given, Math.max(0, P.strictness - 0.15));
+    S.gFb = { ...g, given };
+    awardGrammarGrade(g.ok);
+    render();
+  }
+  else if (act === 'grammar-build-tap') {
+    const i = parseInt(t.getAttribute('data-i'), 10);
+    if (!S.gBuild.includes(i)) S.gBuild.push(i);
+    render();
+  }
+  else if (act === 'grammar-build-remove') { S.gBuild.pop(); render(); }
+  else if (act === 'grammar-build-check') {
+    const drill = S.gTopic.drills[S.gStep];
+    const g = gradeDrill(drill, S.gBuild.map(i => S.gBank[i]));
+    S.gFb = g;
+    awardGrammarGrade(g.ok);
+    render();
+  }
+  else if (act === 'grammar-continue') {
+    S.gStep++; S.gPicked = null; S.gFb = null; S.gBuild = [];
+    setupGrammarStep();
+    render();
+  }
+
   else if (act === 'copy') {
     copyCode().then(ok => {
       if (ok) markExported();
@@ -408,7 +520,8 @@ document.addEventListener('keydown', e => {
   if (e.target && /^(TEXTAREA|INPUT)$/.test(e.target.tagName) && e.key !== 'Enter') return;
 
   if (e.key === 'Enter' && !e.shiftKey) {
-    const order = ['submit', 'check-word', 'card-next', 'deck-learn', 'next'];
+    const order = ['submit', 'check-word', 'grammar-check', 'grammar-build-check',
+      'card-next', 'grammar-continue', 'deck-learn', 'next'];
     for (const act of order) {
       const b = document.querySelector(`[data-act="${act}"]`);
       if (b) { e.preventDefault(); b.click(); return; }
@@ -423,7 +536,8 @@ document.addEventListener('keydown', e => {
   // answered — the two never share a screen.
   if (/^[1-4]$/.test(e.key)) {
     const n = parseInt(e.key, 10);
-    const pick = document.querySelector(`.choice[data-act="pick"][data-i="${n - 1}"]:not(:disabled)`);
+    const pick = document.querySelector(`.choice[data-act="pick"][data-i="${n - 1}"]:not(:disabled)`) ||
+      document.querySelector(`.choice[data-act="grammar-pick"][data-i="${n - 1}"]:not(:disabled)`);
     if (pick) { e.preventDefault(); pick.click(); return; }
     const g = document.querySelector(`[data-act="grade"][data-g="${n}"]`);
     if (g) { e.preventDefault(); g.click(); }
@@ -440,11 +554,12 @@ async function requestPersistence() {
 }
 
 async function boot() {
-  const [w, s] = await Promise.all([
+  const [w, s, g] = await Promise.all([
     fetch('./data/words.json').then(r => r.json()),
-    fetch('./data/sentences.json').then(r => r.json())
+    fetch('./data/sentences.json').then(r => r.json()),
+    fetch('./data/grammar.json').then(r => r.json())
   ]);
-  WORDS = w; SENTENCES = s;
+  WORDS = w; SENTENCES = s; GRAMMAR = g;
   BYID = Object.fromEntries(WORDS.map(x => [x.id, x]));
   // Distractors come from drillable vocabulary only: offering «байна» as an
   // option against a noun gives the answer away by register alone.

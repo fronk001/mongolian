@@ -1,0 +1,163 @@
+[
+ {
+  "id": "g_byna",
+  "level": "A1",
+  "title": "There is / exists: байна, байгаа, байдаг",
+  "summary": "All three come from the verb 'to be'. Байна states something true right now (or very soon), typically something you can see or point to. Байгаа also states something true right now, but something not currently visible to the speaker — still real, just not in view. Байдаг states something habitually or generally true, not tied to this moment. Negatives: байхгүй (no ... right now / not visible), байдаггүй (not generally the case).",
+  "sourceCite": "Nomiin Ger — Beginner Mongolian Part 1, Lesson 5 (p.48-50)",
+  "reviewed": false,
+  "examples": [
+   { "mn": "Сүү ширээн дээр байна.", "en": "The milk is on the table (right now, in view)." },
+   { "mn": "Ном байшинд байгаа.", "en": "The book is at home (right now, though not in view)." },
+   { "mn": "Манай байшинд муур байдаг.", "en": "We have a cat at home (as a rule, generally)." },
+   { "mn": "Хоол байхгүй.", "en": "There is no food (right now)." }
+  ],
+  "drills": [
+   { "kind": "choice", "id": "g_byna_1",
+     "prompt": "Ном ширээн дээр ___. (right now — you can see it)",
+     "options": ["байна", "байгаа", "байдаг", "байхгүй"], "answer": "байна" },
+   { "kind": "choice", "id": "g_byna_2",
+     "prompt": "Манай байшинд муур ___. (we generally keep one)",
+     "options": ["байдаг", "байна", "байгаа", "байсан"], "answer": "байдаг" },
+   { "kind": "choice", "id": "g_byna_3",
+     "prompt": "Цахилгаан ___. (there is no electricity right now)",
+     "options": ["байхгүй", "байдаггүй", "байгаагүй", "байна"], "answer": "байхгүй" },
+   { "kind": "transform", "id": "g_byna_4",
+     "from": "Сүү ширээн дээр байна.", "fromEn": "The milk is on the table.",
+     "to": "Сүү ширээн дээр байхгүй.", "toEn": "The milk is NOT on the table.",
+     "hint": "negate existence: байна → байхгүй" },
+   { "kind": "build", "id": "g_byna_5",
+     "en": "We keep a cat at home (generally).", "mn": "Муур байшинд байдаг",
+     "words": ["Муур", "байшинд", "байдаг"] }
+  ]
+ },
+ {
+  "id": "g_qparticle",
+  "level": "A1",
+  "title": "Question particles (уу / юу / бэ / вэ)",
+  "summary": "A yes/no question adds a particle to the end of a statement, the way a question mark does in English. уу/үү (or юу/юү after a long vowel) turn a statement into a yes/no question — which one depends on vowel harmony. A wh-question (who, what, where) instead adds бэ after a word ending in м, н or в, and вэ after anything else.",
+  "sourceCite": "Nomiin Ger — Beginner Mongolian Part 1, Lesson 1 (p.2-5)",
+  "reviewed": false,
+  "examples": [
+   { "mn": "Энэ ном уу?", "en": "Is this a book?" },
+   { "mn": "Та монгол хүн үү?", "en": "Are you Mongolian?" },
+   { "mn": "Таны нэр хэн бэ?", "en": "What is your name?" },
+   { "mn": "Энэ юу вэ?", "en": "What is this?" }
+  ],
+  "drills": [
+   { "kind": "choice", "id": "g_qparticle_1",
+     "prompt": "Choose the particle: 'Энэ таны ном ___?'",
+     "options": ["уу", "бэ", "вэ", "юу"], "answer": "уу" },
+   { "kind": "choice", "id": "g_qparticle_2",
+     "prompt": "Choose the particle: 'Таны нэр хэн ___?'",
+     "options": ["бэ", "уу", "юу", "вэ"], "answer": "бэ" },
+   { "kind": "choice", "id": "g_qparticle_3",
+     "prompt": "Choose the particle: 'Та монгол хүн ___?'",
+     "options": ["үү", "уу", "бэ", "вэ"], "answer": "үү" },
+   { "kind": "transform", "id": "g_qparticle_4",
+     "from": "Энэ ном.", "fromEn": "This is a book.",
+     "to": "Энэ ном уу?", "toEn": "Is this a book?",
+     "hint": "add -уу to turn a statement into a yes/no question" },
+   { "kind": "build", "id": "g_qparticle_5",
+     "en": "What is your name?", "mn": "Таны нэр хэн бэ",
+     "words": ["Таны", "нэр", "хэн", "бэ"] }
+  ]
+ },
+ {
+  "id": "g_tai",
+  "level": "A1",
+  "title": "Having and lacking: -тай / -тэй / -той, and -гүй",
+  "summary": "Adding -тай (-тэй, -той by vowel harmony: а/у → -тай, э/и/ө/ү → -тэй, о/ё → -той) to a noun means 'have' or 'with'. -гүй, unchanged by harmony, is the opposite: 'lack' or 'without'. Compare this to байна/байгаа: -тай marks something more lasting or defining (Би машинтай — I own a car), while байна/байгаа marks having something right now, not necessarily for good (Надад машин байгаа — I have a car, for now).",
+  "sourceCite": "Nomiin Ger — Beginner Mongolian Part 1, Lesson 2 (p.11-14)",
+  "reviewed": false,
+  "examples": [
+   { "mn": "Би хоёр ахтай.", "en": "I have two older brothers." },
+   { "mn": "Тэр мөнгөгүй.", "en": "He/she has no money." },
+   { "mn": "Би сүүтэй цай уудаг.", "en": "I drink tea with milk (habitually)." },
+   { "mn": "Энэ ном зурагтай.", "en": "This book has pictures." }
+  ],
+  "drills": [
+   { "kind": "choice", "id": "g_tai_1",
+     "prompt": "машин (car) + have → ?",
+     "options": ["машинтай", "машинтэй", "машинтой", "машингүй"], "answer": "машинтай" },
+   { "kind": "choice", "id": "g_tai_2",
+     "prompt": "сүү (milk) + with → сүү___ цай (tea with milk)",
+     "options": ["сүүтэй", "сүүтай", "сүүтой", "сүүгүй"], "answer": "сүүтэй" },
+   { "kind": "choice", "id": "g_tai_3",
+     "prompt": "'I have no money' (мөнгө = money)",
+     "options": ["Би мөнгөгүй.", "Би мөнгөтэй.", "Би мөнгөтой.", "Би мөнгөнгүй."],
+     "answer": "Би мөнгөгүй." },
+   { "kind": "transform", "id": "g_tai_4",
+     "from": "Би сүүтэй цай уудаг.", "fromEn": "I drink tea with milk.",
+     "to": "Би сүүгүй цай уудаг.", "toEn": "I drink tea without milk.",
+     "hint": "-тэй ('with') → -гүй ('without')" },
+   { "kind": "build", "id": "g_tai_5",
+     "en": "This book has pictures.", "mn": "Энэ ном зурагтай",
+     "words": ["Энэ", "ном", "зурагтай"] }
+  ]
+ },
+ {
+  "id": "g_accusative",
+  "level": "A2",
+  "title": "Marking the object: -ыг / -ийг",
+  "summary": "The direct object of a sentence can take -ыг (after back-vowel words), -ийг (after front-vowel words, and back-vowel words ending in ж/ч/ш/г/ь/и), or just -г (after a long vowel). It marks a specific, known object — 'the book', not 'a book' — and is often dropped when the object is general or indefinite. 'Би ном уншина' (I'll read a book/books) and 'Би номыг уншина' (I'll read the book) are both grammatical; the ending is what tells them apart.",
+  "sourceCite": "Modern Mongolian: A course book (Gaunt & Bayarmandakh), Chapter One p.5-6",
+  "reviewed": false,
+  "examples": [
+   { "mn": "Хаалгыг хаагаач.", "en": "Please close the door." },
+   { "mn": "Ном уншина.", "en": "I'll read a book (some book, unspecified)." },
+   { "mn": "Тэр номыг уншина.", "en": "He/she will read that book (a specific one)." }
+  ],
+  "drills": [
+   { "kind": "choice", "id": "g_accusative_1",
+     "prompt": "Хаалга___ хаагаач. (Please close the door.)",
+     "options": ["ыг", "ийг", "д", "тай"], "answer": "ыг" },
+   { "kind": "choice", "id": "g_accusative_2",
+     "prompt": "Хоол___ идье. (Let's eat the food — a specific plate of it)",
+     "options": ["ыг", "ийг", "д", "аас"], "answer": "ыг" },
+   { "kind": "choice", "id": "g_accusative_3",
+     "prompt": "Which means 'He reads a book' (some book, not a specific one)?",
+     "options": ["Тэр ном уншина.", "Тэр номыг уншина.", "Тэр номд уншина.", "Тэр номтой уншина."],
+     "answer": "Тэр ном уншина." },
+   { "kind": "transform", "id": "g_accusative_4",
+     "from": "Тэр ном уншина.", "fromEn": "He/she will read a book.",
+     "to": "Тэр номыг уншина.", "toEn": "He/she will read that book.",
+     "hint": "add -ыг once the book is one specific, known book" },
+   { "kind": "build", "id": "g_accusative_5",
+     "en": "Please close the door.", "mn": "Хаалгыг хаагаач",
+     "words": ["Хаалгыг", "хаагаач"] }
+  ]
+ },
+ {
+  "id": "g_habitual",
+  "level": "A2",
+  "title": "Habitual present: -даг / -дэг / -дог / -дөг",
+  "summary": "Added to a verb stem, this ending states something done habitually, regularly, or as a matter of routine — not just today. 'Би ном уншдаг' is 'I read books' in the sense of a habit or an occupation, not a description of what is happening right now. English 'usually' or 'often' is often implied rather than translated. The vowel changes by harmony, the same four-way pattern as -тай/-тэй/-той/-той in the previous topic.",
+  "sourceCite": "Modern Mongolian: A course book (Gaunt & Bayarmandakh), Chapter Four p.35-38",
+  "reviewed": false,
+  "examples": [
+   { "mn": "Би ном уншдаг.", "en": "I read books (habitually)." },
+   { "mn": "Би өглөө цай уудаг.", "en": "I drink tea in the morning (habitually)." },
+   { "mn": "Ээж минь сайхан хоол хийдэг.", "en": "My mother cooks well (habitually)." }
+  ],
+  "drills": [
+   { "kind": "choice", "id": "g_habitual_1",
+     "prompt": "хий- (do/make) + habitual → ?",
+     "options": ["хийдэг", "хийдаг", "хийдог", "хийдөг"], "answer": "хийдэг" },
+   { "kind": "choice", "id": "g_habitual_2",
+     "prompt": "угаа- (wash) + habitual → ?",
+     "options": ["угаадаг", "угаадэг", "угаадог", "угаагүй"], "answer": "угаадаг" },
+   { "kind": "choice", "id": "g_habitual_3",
+     "prompt": "Which means 'I read books' (as a habit)?",
+     "options": ["Би ном уншдаг.", "Би ном уншина.", "Би ном уншиж байна.", "Би ном уншсан."],
+     "answer": "Би ном уншдаг." },
+   { "kind": "transform", "id": "g_habitual_4",
+     "from": "Би өглөө цай уудаг.", "fromEn": "I drink tea in the morning (habitually).",
+     "to": "Би одоо цай ууж байна.", "toEn": "I am drinking tea right now.",
+     "hint": "-даг (habit) → -ж байна (happening right now)" },
+   { "kind": "build", "id": "g_habitual_5",
+     "en": "My mother cooks well.", "mn": "Ээж минь сайхан хоол хийдэг",
+     "words": ["Ээж", "минь", "сайхан", "хоол", "хийдэг"] }
+  ]
+ }
+]

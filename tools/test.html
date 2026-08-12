@@ -40,8 +40,9 @@ import { buildChoices, distractors, makeRng, faceKey } from '../src/core/choices
 import {
   streak, bestStreak, weekCells, monthCells, weekStart, monthStart, weekday,
   periodTotals, punctuality, intakeRate, projectDate, levelFor, xpFor,
-  earnedBadges, lessonWorth, stepCount, LEVELS, BADGES
+  earnedBadges, lessonWorth, stepCount, LEVELS, BADGES, xpForGrammar
 } from '../src/core/goals.js';
+import { gradeDrill, applyGrammarGrade, topicMastery, MASTERY_MIN_ATTEMPTS } from '../src/core/grammar.js';
 
 const out = document.getElementById('out');
 let pass = 0, fail = 0;
@@ -58,6 +59,7 @@ const ok = (name, cond, why = '') => {
 
 const W = await (await fetch('../src/data/words.json')).json();
 const S = await (await fetch('../src/data/sentences.json')).json();
+const G = await (await fetch('../src/data/grammar.json')).json();
 
 // ---------------------------------------------------------------- fsrs
 section('fsrs');
@@ -665,6 +667,101 @@ section('goals and consistency');
   ok('a finished today is worth no more of the week',
      lessonWorth(sw, h(['2026-08-10']), '2026-08-10').weekShare === 0);
   ok('estimated minutes are positive', worth.minutes >= 1);
+}
+
+// ---------------------------------------------------------------- grammar
+// Grammar topics (src/data/grammar.json) are a separate, on-demand practice
+// area — not scheduled by buildSession() — but the content still has to be
+// well-formed and the grading/mastery logic still has to be correct.
+section('grammar');
+{
+  ok('grammar.json has topics', G.length > 0, `${G.length} topics`);
+  ok('every topic has the required fields',
+     G.every(t => t.id && t.level && t.title && t.summary && t.sourceCite &&
+       Array.isArray(t.examples) && t.examples.length > 0 &&
+       Array.isArray(t.drills) && t.drills.length > 0));
+  ok('every topic id is unique', new Set(G.map(t => t.id)).size === G.length);
+  ok('every example has mn and en', G.every(t => t.examples.every(e => e.mn && e.en)));
+  ok('every topic is pending review, like a fresh lexicon entry',
+     G.every(t => t.reviewed === false),
+     'machine-written grammar content should not ship as confirmed — see CLAUDE.md');
+
+  const allDrills = G.flatMap(t => t.drills);
+  ok('every drill is a known kind',
+     allDrills.every(d => ['choice', 'transform', 'build'].includes(d.kind)),
+     allDrills.filter(d => !['choice', 'transform', 'build'].includes(d.kind)).map(d => d.kind).join(', '));
+
+  const choiceDrills = allDrills.filter(d => d.kind === 'choice');
+  ok('every choice drill\'s answer is one of its options',
+     choiceDrills.every(d => d.options.includes(d.answer)),
+     choiceDrills.filter(d => !d.options.includes(d.answer)).map(d => d.id).join(', '));
+  ok('no choice drill repeats an option',
+     choiceDrills.every(d => new Set(d.options).size === d.options.length),
+     choiceDrills.filter(d => new Set(d.options).size !== d.options.length).map(d => d.id).join(', '));
+  ok('picking the right option grades correct',
+     choiceDrills.every(d => gradeDrill(d, d.answer).ok));
+  ok('picking a wrong option grades incorrect',
+     choiceDrills.every(d => d.options.filter(o => o !== d.answer)
+       .every(wrong => !gradeDrill(d, wrong).ok)));
+
+  const transformDrills = allDrills.filter(d => d.kind === 'transform');
+  ok('a transform drill\'s own answer grades correct',
+     transformDrills.every(d => gradeDrill(d, d.to).ok));
+  ok('a transform drill rejects the untransformed sentence',
+     transformDrills.every(d => d.from === d.to || !gradeDrill(d, d.from).ok));
+
+  const buildDrills = allDrills.filter(d => d.kind === 'build');
+  ok('a build drill\'s own word order grades correct',
+     buildDrills.every(d => gradeDrill(d, d.words).ok));
+  ok('a build drill in the wrong order grades incorrect',
+     buildDrills.every(d => {
+       if (d.words.length < 2) return true;
+       const swapped = [...d.words];
+       [swapped[0], swapped[1]] = [swapped[1], swapped[0]];
+       return !gradeDrill(d, swapped).ok;
+     }));
+  ok('every build drill\'s words join into its own mn field',
+     buildDrills.every(d => d.words.join(' ') === d.mn),
+     buildDrills.filter(d => d.words.join(' ') !== d.mn).map(d => d.id).join(', '));
+
+  // Mastery: a running right/wrong count per topic, withheld until there is
+  // enough of a sample — never an early 100% or 0% off one lucky guess.
+  let pg = blank();
+  const topicId = G[0].id;
+  ok('an untouched topic has no mastery reading yet',
+     topicMastery(pg.grammar[topicId]) === null);
+  for (let i = 0; i < MASTERY_MIN_ATTEMPTS - 1; i++) applyGrammarGrade(pg, topicId, true);
+  ok('mastery stays withheld just under the attempt threshold',
+     topicMastery(pg.grammar[topicId]) === null,
+     `${MASTERY_MIN_ATTEMPTS - 1} attempts`);
+  applyGrammarGrade(pg, topicId, false);
+  const m = topicMastery(pg.grammar[topicId]);
+  ok('mastery appears once the threshold is reached',
+     m !== null && m >= 0 && m <= 1, `got ${m}`);
+  ok('mastery reflects the right/wrong split',
+     Math.abs(m - (MASTERY_MIN_ATTEMPTS - 1) / MASTERY_MIN_ATTEMPTS) < 1e-9, `got ${m}`);
+  ok('right and wrong are tracked independently',
+     pg.grammar[topicId].right === MASTERY_MIN_ATTEMPTS - 1 && pg.grammar[topicId].wrong === 1);
+
+  // XP: flatter than xpFor() since there is no stability curve here, but
+  // still nothing without an actual graded attempt.
+  ok('a correct drill earns more xp than an incorrect one',
+     xpForGrammar(true) > xpForGrammar(false));
+  ok('even a wrong attempt earns the base — showing up is not nothing',
+     xpForGrammar(false) > 0);
+
+  // Additive-only, like every other field in blank(): a code written before
+  // this feature existed must still import, and gain grammar:{} as a default.
+  ok('blank state carries an empty grammar map', JSON.stringify(blank().grammar) === '{}');
+  const richG = Object.assign(blank(), { grammar: { [topicId]: { right: 3, wrong: 1, last: '2026-08-10' } } });
+  const backG = importCode(encodeCode(richG));
+  ok('grammar progress survives a round-trip',
+     JSON.stringify(backG.grammar) === JSON.stringify(richG.grammar));
+  const preGrammar = blank();
+  delete preGrammar.grammar;
+  const inG = importCode(encodeCode(preGrammar));
+  ok('a code written before grammar topics existed still imports and defaults to {}',
+     inG !== null && JSON.stringify(inG.grammar) === '{}');
 }
 
 // ------------------------------------------- backup codes vs the new fields

@@ -43,6 +43,27 @@ def load_badges():
     return [m.groupdict() for m in BADGE_RE.finditer(src)]
 
 
+def load_grammar():
+    """Every full Mongolian sentence in a pending topic: the examples, plus
+    each transform drill's before/after and each build drill's target order.
+    Choice-drill options are left out — a bare case ending or suffix
+    fragment out of context is not something a verdict can usefully attach
+    to; the sentences that use them are what actually needs checking."""
+    grammar = json.loads((SRC / "grammar.json").read_text(encoding="utf-8"))
+    items = []
+    for t in grammar:
+        if t.get("reviewed") is not False:
+            continue
+        lines = [e["mn"] for e in t["examples"]]
+        for d in t["drills"]:
+            if d["kind"] == "transform":
+                lines += [d["from"], d["to"]]
+            elif d["kind"] == "build":
+                lines.append(d["mn"])
+        items.append({"id": t["id"], "title": t["title"], "lines": lines})
+    return items
+
+
 def collect():
     sentences = json.loads((SRC / "sentences.json").read_text(encoding="utf-8"))
     words = json.loads((SRC / "words.json").read_text(encoding="utf-8"))
@@ -56,7 +77,8 @@ def collect():
          "drill": w.get("drill") is not False}
         for w in words if w.get("reviewed") is False
     ]
-    return {"sentences": items, "lexicon": lexicon, "badges": load_badges()}
+    return {"sentences": items, "lexicon": lexicon, "badges": load_badges(),
+            "grammar": load_grammar()}
 
 
 # --------------------------------------------------------------------- sheet
@@ -148,6 +170,12 @@ border-radius:4px;background:var(--panel);color:var(--muted);cursor:pointer}
 <div class="en" style="margin-top:8px">Short labels shown when Fred reaches a milestone.
   The English says what each is meant to mean.</div>
 <div id="badges"></div>
+
+<h2>4. Дүрмийн сэдэв <span class="en">— grammar topics</span></h2>
+<div class="en" style="margin-top:8px">A short grammar lesson with example sentences. Mark the whole
+  topic Зөв if every Mongolian line reads naturally; mark it Буруу and say what's wrong if
+  something doesn't sound right — a single verdict for the topic, not one per line.</div>
+<div id="grammar"></div>
 </div>
 
 <div class="bar">
@@ -163,9 +191,9 @@ const DATA = __DATA__;
 const TOTAL = __TOTAL__;
 const KEY = 'mng_review_v1';
 
-let state = { alts:{}, added:{}, lexicon:{}, badges:{} };
+let state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{} };
 try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
-for (const k of ['alts','added','lexicon','badges']) state[k] = state[k] || {};
+for (const k of ['alts','added','lexicon','badges','grammar']) state[k] = state[k] || {};
 
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
   .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -214,6 +242,17 @@ function render() {
     </div>`;
   }).join('');
 
+  document.getElementById('grammar').innerHTML = DATA.grammar.map(t => {
+    const v = state.grammar[t.id] || {};
+    return `<div class="item ${v.verdict ? 'done' : ''}">
+      <div class="q">${esc(t.title)}</div>
+      <div class="en" style="margin-top:8px;line-height:1.7">${t.lines.map(esc).join('<br>')}</div>
+      ${picker('grammar', t.id, v.verdict)}
+      <input class="free" data-grammar="${esc(t.id)}" placeholder="Юу засах вэ — what should change (if wrong)"
+        value="${esc(v.text || '')}">
+    </div>`;
+  }).join('');
+
   progress();
 }
 
@@ -241,6 +280,7 @@ function progress() {
   }
   n += Object.values(state.lexicon).filter(x => x.verdict).length;
   n += Object.values(state.badges).filter(x => x.verdict).length;
+  n += Object.values(state.grammar).filter(x => x.verdict).length;
   document.getElementById('n').textContent = n;
   document.getElementById('fill').style.width = (100 * n / TOTAL) + '%';
   return n;
@@ -266,7 +306,8 @@ document.addEventListener('click', e => {
     if (bucket[key] === v) { delete bucket[key]; chosen = undefined; }
     else bucket[key] = v;
   } else {
-    const store = group === 'lexicon' ? state.lexicon : state.badges;
+    const store = group === 'lexicon' ? state.lexicon
+      : group === 'badges' ? state.badges : state.grammar;
     const cur = store[key] = store[key] || {};
     if (cur.verdict === v) { delete cur.verdict; chosen = undefined; }
     else cur.verdict = v;
@@ -291,6 +332,10 @@ document.addEventListener('input', e => {
     const cur = state.badges[t.dataset.badge] || {};
     cur.text = t.value;
     state.badges[t.dataset.badge] = cur;
+  } else if (t.dataset.grammar !== undefined) {
+    const cur = state.grammar[t.dataset.grammar] || {};
+    cur.text = t.value;
+    state.grammar[t.dataset.grammar] = cur;
   } else return;
   save();
   progress();
@@ -298,7 +343,7 @@ document.addEventListener('input', e => {
 
 document.getElementById('clear').addEventListener('click', () => {
   if (!confirm('Бүх хариултыг арилгах уу? — clear every answer?')) return;
-  state = { alts:{}, added:{}, lexicon:{}, badges:{} };
+  state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{} };
   localStorage.removeItem(KEY);
   render();
 });
@@ -322,7 +367,7 @@ render();
 def build_sheet():
     data = collect()
     total = (sum(len(s["alts"]) for s in data["sentences"])
-             + len(data["lexicon"]) + len(data["badges"]))
+             + len(data["lexicon"]) + len(data["badges"]) + len(data["grammar"]))
     html = (SHEET
             .replace("__DATA__", json.dumps(data, ensure_ascii=False))
             .replace("__TOTAL__", str(total)))
@@ -332,6 +377,7 @@ def build_sheet():
           f" across {len(data['sentences'])} sentences")
     print(f"  {len(data['lexicon'])} lexicon entries")
     print(f"  {len(data['badges'])} badge names")
+    print(f"  {len(data['grammar'])} grammar topics")
     print(f"  {total} decisions in total")
 
 
@@ -426,14 +472,36 @@ def apply(path):
             w["reviewed"] = True
             signed += 1
 
+    grammar = json.loads((SRC / "grammar.json").read_text(encoding="utf-8"))
+    gram = review.get("grammar") or {}
+    gsigned = 0
+    gflagged = []
+    for t in grammar:
+        v = gram.get(t["id"])
+        if not v:
+            continue
+        verdict = v.get("verdict")
+        text = (v.get("text") or "").strip()
+        if verdict == "yes":
+            t["reviewed"] = True
+            gsigned += 1
+        elif verdict == "no":
+            # A topic mixes several lines; there is no single field to correct
+            # automatically the way a lexicon gloss has one. Flagged for Fred
+            # to edit in grammar.json by hand, same as a badge name.
+            gflagged.append((t["id"], t["title"], text or "(no note left)"))
+
     (SRC / "sentences.json").write_text(
         json.dumps(sentences, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     (SRC / "words.json").write_text(
         json.dumps(words, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    (SRC / "grammar.json").write_text(
+        json.dumps(grammar, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
     print(f"sentences: {kept} confirmed, {removed} removed, {new} added by hand, "
           f"{settled} sentences now altReviewed")
     print(f"lexicon:   {signed} signed off, {corrected} glosses corrected, {noted} notes kept")
+    print(f"grammar:   {gsigned} topics signed off")
 
     if promoted:
         print("\ncanonical replaced — every variant was rejected and she wrote one:")
@@ -450,6 +518,12 @@ def apply(path):
         print("\nbadge names to change by hand in src/core/goals.js:")
         for k, v in badges.items():
             print(f"  {k}: {v}")
+
+    if gflagged:
+        print("\ngrammar topics flagged wrong — edit by hand in src/data/grammar.json:")
+        for tid, title, note in gflagged:
+            print(f"  {tid} ({title}): {note}")
+
     print("\nre-run `py tools/coverage.py` and `tools/test.html` after applying.")
 
 

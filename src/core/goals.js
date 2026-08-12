@@ -242,6 +242,21 @@ export function xpFor(prevS, nextS) {
   return XP_BASE + Math.round(Math.min(XP_CAP, gain));
 }
 
+/**
+ * XP for one graded grammar drill.
+ *
+ * Grammar practice has no FSRS stability to measure a gain against — it is
+ * on demand, not scheduled — so this is flatter than xpFor(): a small base
+ * for attempting, a bonus for getting it right. Still real: nothing here
+ * fires without a drill actually being answered.
+ */
+export const GRAMMAR_XP_BASE = 3;
+export const GRAMMAR_XP_BONUS = 3;
+
+export function xpForGrammar(ok) {
+  return GRAMMAR_XP_BASE + (ok ? GRAMMAR_XP_BONUS : 0);
+}
+
 // ---------------------------------------------------------------- badges
 
 /**

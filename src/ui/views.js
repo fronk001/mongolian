@@ -4,6 +4,7 @@ import {
   weekCells, monthCells, weekTotals, monthTotals, punctuality, streak, bestStreak,
   intakeRate, projectDate, levelFor, lessonWorth, byBadgeId, BADGES
 } from '../core/goals.js';
+import { topicMastery } from '../core/grammar.js';
 
 export const esc = s => String(s)
   .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -196,7 +197,38 @@ function purposeBand(purpose, editing) {
   </div>`;
 }
 
-export function viewDash(p, st, session, extra, ctx = {}) {
+/**
+ * Bottom tab bar — the four pages a session-free visit can land on. Each tab
+ * carries a top spine in the colour of the domain it owns (red = act now,
+ * blue = known/verified, gold = the goal layer), the same naming rule the
+ * panels use, just rotated onto a horizontal strip. Gold is a fill only —
+ * INSTRUMENT forbids it as type — so the active label stays ink, not gold.
+ * No tab bar shows during a lesson: `render()` only emits this on 'home'.
+ */
+const TABS = [
+  { id: 'today', label: 'Today', dom: 'red' },
+  { id: 'progress', label: 'Progress', dom: 'blue' },
+  { id: 'grammar', label: 'Grammar', dom: '' },
+  { id: 'achievements', label: 'Achievements', dom: 'gold' },
+  { id: 'settings', label: 'Settings', dom: '' }
+];
+export function tabBar(active) {
+  return `<nav class="tabbar">${TABS.map(t => `
+    <button class="tab${t.id === active ? ' on ' + t.dom : ''}" data-act="tab" data-tab="${t.id}">
+      <span class="mono">${t.label}</span>
+    </button>`).join('')}</nav>`;
+}
+
+/** A page's own section title — lighter than the full header, no repeated RET/ACC. */
+export const pageHead = title => `<div class="h" style="margin-top:0"><span class="mono">${title}</span></div>`;
+
+/* ══════════════════════════════════════════════════════════════════════
+   Today — the one page with something to act on, so the only one that
+   keeps the full header. What to study now: streak, today's lesson worth,
+   the counts behind it, the way in.
+   ══════════════════════════════════════════════════════════════════════ */
+
+export function viewToday(p, st, session, ctx = {}) {
   const { exportAge, today, editPurpose } = ctx;
   const diag = session.diagnostics;
   const nothing = diag.dueCount + diag.newCount === 0;
@@ -204,17 +236,9 @@ export function viewDash(p, st, session, extra, ctx = {}) {
 
   const cells = weekCells(history, today);
   const doneThisWeek = cells.filter(c => c.state === 'done').length;
-  const wt = weekTotals(history, today);
-  const mt = monthTotals(history, today);
-  const onTime = punctuality(wt);
   const run = streak(history, today);
   const best = bestStreak(history);
   const worth = lessonWorth(session, history, today);
-
-  const goal = p.goalWords || 2500;
-  const lvl = levelFor(st.known);
-  const rate = intakeRate(history, today);
-  const eta = projectDate(st.known, goal, rate, today);
 
   return header(st, 'Today') +
     backupNotice(ctx.exportAge === undefined ? null : exportAge) +
@@ -250,10 +274,23 @@ export function viewDash(p, st, session, extra, ctx = {}) {
     </div>
 
     <div class="btns"><button class="btn primary" data-act="start"${nothing ? ' disabled' : ''}>
-      ${nothing ? 'Nothing due today' : `Start →${gli(`${worth.items} items · ~${worth.minutes} min`)}`}</button></div>
+      ${nothing ? 'Nothing due today' : `Start →${gli(`${worth.items} items · ~${worth.minutes} min`)}`}</button></div>`;
+}
 
-    <!-- ---- below: what the work has already produced ---------------- -->
-    <div class="h"><span class="mono">WEEK SO FAR</span></div>
+/* ══════════════════════════════════════════════════════════════════════
+   Progress — what the work has already produced. A look-back page, never
+   the one you land on to start something.
+   ══════════════════════════════════════════════════════════════════════ */
+
+export function viewProgress(p, st, ctx = {}) {
+  const { today } = ctx;
+  const history = p.history || [];
+  const wt = weekTotals(history, today);
+  const mt = monthTotals(history, today);
+  const onTime = punctuality(wt);
+
+  return pageHead('PROGRESS') +
+    `<div class="h" style="margin-top:10px"><span class="mono">WEEK SO FAR</span></div>
     <div class="panel blue flush"><div class="grid2">
       <div><span class="lab">REVIEWS</span><div class="big">${wt.reviews}</div><div class="gl">reviews landed</div></div>
       <div><span class="lab">NEW WORDS</span><div class="big">${wt.newWords}</div><div class="gl">new words met</div></div>
@@ -269,7 +306,24 @@ export function viewDash(p, st, session, extra, ctx = {}) {
       <div class="gl" style="margin-top:9px">each square is a day you finished a session · ${mt.reviews} reviews this month</div>
     </div>
 
-    <div class="h"><span class="mono">LEVEL</span></div>
+    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Achievements — the goal and game layer, on its own page instead of
+   folded under the daily dashboard.
+   ══════════════════════════════════════════════════════════════════════ */
+
+export function viewAchievements(p, st, ctx = {}) {
+  const { today, corpusWords } = ctx;
+  const history = p.history || [];
+  const goal = p.goalWords || 2500;
+  const lvl = levelFor(st.known);
+  const rate = intakeRate(history, today);
+  const eta = projectDate(st.known, goal, rate, today);
+
+  return pageHead('ACHIEVEMENTS') +
+    `<div class="h" style="margin-top:10px"><span class="mono">LEVEL</span></div>
     <div class="panel gold">
       <div style="display:flex;justify-content:space-between;align-items:baseline">
         <div class="big">${lvl.level}<span class="u"> level</span></div>
@@ -296,10 +350,154 @@ export function viewDash(p, st, session, extra, ctx = {}) {
         <span class="mn" style="font-size:13px">${eta ? dateLabel(eta) : '—'}</span>
         <span class="en">${eta ? 'projected at this rate' : 'no projection at this rate'}</span></div>
       <div class="gl" style="margin-top:8px">known = fsrs stability ≥ 21d · b1 target is a research estimate, not a cefr spec</div>
-      <div class="mono red" style="margin-top:7px">CORPUS CEILING · ${ctx.corpusWords || 0} WORDS WRITTEN</div>
-    </div>` +
-    (extra || '') +
-    `<div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
+      <div class="mono red" style="margin-top:7px">CORPUS CEILING · ${corpusWords || 0} WORDS WRITTEN</div>
+    </div>
+
+    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Grammar — topic explanations plus a short mixed drill set.
+
+   A separate, on-demand section: it does not touch buildSession() or FSRS
+   scheduling. A topic is practised when opened, not scheduled to come due.
+   ══════════════════════════════════════════════════════════════════════ */
+
+export function viewGrammarList(topics, p) {
+  const rows = topics.map(t => {
+    const m = topicMastery(p.grammar[t.id]);
+    const readout = m === null ? 'not measured yet' : `${pct(m)}% right`;
+    return `<button class="choice" data-act="grammar-open" data-id="${esc(t.id)}">
+      <span class="k">${esc(t.level)}</span>
+      <span class="txt">${esc(t.title)}</span>
+      <span class="mono" style="flex:none">${readout}</span>
+    </button>`;
+  }).join('');
+  return pageHead('GRAMMAR') +
+    `<div class="gl" style="margin-top:8px">short explanations plus a mixed drill set — practise any time, at your own pace</div>
+    <div class="choices" style="margin-top:12px">${rows}</div>
+    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
+}
+
+export function viewGrammarIntro(topic) {
+  const exRows = topic.examples.map(e =>
+    `<div class="wline"><span class="mn">${esc(e.mn)}</span><span class="en">${esc(e.en)}</span></div>`
+  ).join('');
+  return `<div class="sec">
+    <div class="qhead"><span class="tag">${esc(topic.level)}</span>
+      <span class="mono">GRAMMAR</span></div>
+    <div class="panel">
+      <div style="font-size:15px;font-weight:600">${esc(topic.title)}</div>
+      <div style="font-size:14px;color:var(--ink2);line-height:1.55;margin-top:8px">${esc(topic.summary)}</div>
+    </div>
+    <div class="panel rows">${exRows}</div>
+    <div class="gl" style="margin-top:8px">${esc(topic.sourceCite)}</div>
+    <div class="btns">
+      <button class="btn primary" data-act="grammar-begin">Start drills${gli(`${topic.drills.length} items`)}</button>
+      <button class="btn ghost" data-act="grammar-exit">← All topics</button>
+    </div>
+  </div>`;
+}
+
+/**
+ * One drill, any kind. `ctx` carries only what that kind needs:
+ *   choice     picked (index or null)
+ *   transform  fb (grade result, or null before checking)
+ *   build      bank (shuffled word list), build (tapped indices), fb
+ */
+export function viewGrammarDrill(topic, drill, idx, total, ctx = {}) {
+  const { picked, fb, bank, build } = ctx;
+  const head = `<div class="qhead"><span class="tag">${esc(topic.level)}</span>
+    <span class="mono">${idx + 1} / ${total}</span></div>`;
+
+  if (drill.kind === 'choice') {
+    const answered = picked !== null && picked !== undefined;
+    const rows = drill.options.map((opt, i) => {
+      let cls = '';
+      if (answered) {
+        if (opt === drill.answer) cls = ' right';
+        else if (i === picked) cls = ' wrong';
+        else cls = ' muted';
+      }
+      return `<button class="choice${cls}" data-act="grammar-pick" data-i="${i}"${answered ? ' disabled' : ''}>
+        <span class="k">${i + 1}</span><span class="txt">${esc(opt)}</span></button>`;
+    }).join('');
+    const correct = answered && drill.options[picked] === drill.answer;
+    return `<div class="sec">${head}
+      <div class="panel${answered ? '' : ' red'}">
+        <div class="prompt en">${esc(drill.prompt)}</div>
+      </div>
+      <div class="choices">${rows}</div>
+      ${answered ? `<div class="panel ${correct ? 'green' : 'red'} reveal">
+          <span class="lab ${correct ? 'green' : 'red'}">${correct ? 'CORRECT' : 'WRONG'}</span>
+          <div style="font-size:15px;font-weight:500;margin-top:7px">${esc(drill.answer)}</div>
+        </div>
+        <div class="btns"><button class="btn ${correct ? 'correct' : 'secondary'}" data-act="grammar-continue">Continue</button></div>`
+        : ''}
+    </div>`;
+  }
+
+  if (drill.kind === 'transform') {
+    return `<div class="sec">${head}
+      <div class="panel${fb ? '' : ' red'}">
+        <span class="lab">TRANSFORM</span>
+        <div class="prompt sm" style="margin-top:9px">${esc(drill.from)}</div>
+        <div class="subnote">${esc(drill.fromEn)} — ${esc(drill.hint)}</div>
+        ${fb ? '' : `<textarea class="text" id="ansbox" rows="2" autocapitalize="off"
+          autocorrect="off" spellcheck="false" placeholder="type the transformed sentence"></textarea>`}
+      </div>
+      ${fb ? `<div class="panel ${fb.ok ? 'green' : 'red'} reveal">
+          <span class="lab ${fb.ok ? 'green' : 'red'}">${fb.ok ? 'CORRECT' : 'MISMATCH'}</span>
+          <div class="fb" style="margin-top:0;border-top:0;padding-top:8px">
+            <div class="ans diff">${fb.diff.map(t =>
+              `<span class="${t.state === 'miss' ? 'miss' : t.state === 'near' ? 'near' : 'hit'}">${esc(t.tok)}</span>`).join(' ')}</div>
+          </div>
+        </div>
+        <div class="btns"><button class="btn ${fb.ok ? 'correct' : 'secondary'}" data-act="grammar-continue">Continue</button></div>`
+        : `<div class="btns"><button class="btn primary" data-act="grammar-check">Check</button></div>`}
+    </div>`;
+  }
+
+  // build: tap word tiles into the right order.
+  const bankRow = bank.map((w, i) => {
+    const used = build.includes(i);
+    return `<button class="tile-word" data-act="grammar-build-tap" data-i="${i}"${used ? ' disabled' : ''}>${esc(w)}</button>`;
+  }).join('');
+  const complete = build.length === drill.words.length;
+  return `<div class="sec">${head}
+    <div class="panel${fb ? '' : ' red'}">
+      <span class="lab">BUILD</span>
+      <div class="prompt sm" style="margin-top:9px">${esc(drill.en)}</div>
+      <div class="buildline">${build.length
+        ? `<span style="font-size:19px">${build.map(i => esc(bank[i])).join(' ')}</span>`
+        : `<span class="empty">tap words below</span>`}</div>
+    </div>
+    ${fb ? '' : `<div class="wordbank">${bankRow}</div>
+      <div class="btns">
+        ${build.length ? `<button class="btn ghost slim" data-act="grammar-build-remove">⌫ Remove last</button>` : ''}
+        <button class="btn primary" data-act="grammar-build-check"${complete ? '' : ' disabled'}>Check</button>
+      </div>`}
+    ${fb ? `<div class="panel ${fb.ok ? 'green' : 'red'} reveal">
+        <span class="lab ${fb.ok ? 'green' : 'red'}">${fb.ok ? 'CORRECT' : 'WRONG ORDER'}</span>
+        <div style="font-size:19px;font-weight:500;margin-top:7px">${esc(drill.mn)}</div>
+      </div>
+      <div class="btns"><button class="btn ${fb.ok ? 'correct' : 'secondary'}" data-act="grammar-continue">Continue</button></div>`
+      : ''}
+  </div>`;
+}
+
+export function viewGrammarDone(topic, summary, mastery) {
+  const readout = mastery === null ? 'not measured yet' : `${pct(mastery)}%`;
+  return `<div class="goldband">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div><div class="mono">TOPIC</div>
+          <div class="big" style="margin-top:5px">+${summary.xp}<span class="u"> XP</span></div></div>
+        <div style="text-align:right"><div class="big" style="font-size:26px">${readout}</div>
+          <div class="mono" style="margin-top:2px">MASTERY</div></div>
+      </div>
+      <div class="gl">${esc(topic.title)} — ${summary.right} of ${summary.right + summary.wrong} correct this pass</div>
+    </div>
+    <div class="btns"><button class="btn primary" data-act="grammar-exit">Done</button></div>`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -527,6 +725,14 @@ export function viewDone(summary, st, p, ctx = {}) {
       <div><span class="lab">LEVEL</span><div class="big">${lvl.level}</div>
         <div class="gl">${lvl.toNext === null ? 'top level' : `${lvl.toNext} words to next`}</div></div>
     </div></div>` +
+
+    (summary.leveledTo ? `<div class="h"><span class="mono">LEVEL UP</span></div>
+      <div class="panel gold reveal">
+        <div style="display:flex;align-items:baseline;gap:10px">
+          <div class="big" style="font-size:34px">${summary.leveledTo}</div>
+          <div class="gl raw" style="margin-top:0">level ${summary.leveledTo - 1} → ${summary.leveledTo}, crossed this session</div>
+        </div>
+      </div>` : '') +
 
     (fresh.length ? `<div class="h"><span class="mono">NEW MILESTONE</span></div>
       <div class="panel gold">${fresh.map(b => `
