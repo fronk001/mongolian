@@ -1,9 +1,9 @@
 /**
- * Sync in the interface: the SYNC panel in Settings, the notice on Today when
- * something needs doing, and the sign-in form.
+ * Sync in the interface: the SYNC panel in Settings, the dot and the notice on
+ * Today, and the sign-in form.
  *
- * Nothing shows on Today while sync works: the online copy is the backup, so
- * the backup-code reminder steps aside too. The form lives outside #app on
+ * Only the dot shows on Today while sync works: the online copy is the backup,
+ * so the backup-code reminder steps aside too. The form lives outside #app on
  * purpose: #app is rebuilt from a string on every change, which would wipe a
  * half-typed password.
  */
@@ -74,6 +74,24 @@ export function syncPanel(st) {
       </div>
       ${s.actions ? `<div class="inline" style="margin-top:10px">${s.actions}</div>` : ''}
     </div>`;
+}
+
+// The dot's colour for each state of the panel above. Red only when it needs
+// you; on its way (connecting, offline, a change still going up) is a ring.
+const DOT = { error: 'red', off: 'red', 'signed-out': 'red', connecting: 'wait', offline: 'wait', on: 'on' };
+
+/**
+ * Sync at a glance, top right of Today: the panel's state as a dot, so a
+ * device that isn't in step can't go unnoticed. Blue like the panel's ON, not
+ * green: green only ever means a right answer (INSTRUMENT). Tapping it opens
+ * Settings, which says why in words.
+ */
+export function syncDot(st) {
+  if (st.mode === 'off') return '';
+  const s = describe(st);
+  const tone = s.status === 'SYNCING' ? 'wait' : DOT[s.key];
+  const label = `Sync: ${s.status.toLowerCase()}`;
+  return `<button class="syncdot ${tone}" data-act="tab" data-tab="settings" title="${label}" aria-label="${label}, open settings"></button>`;
 }
 
 function notice(title, note, status) {

@@ -278,6 +278,13 @@ Rules: `firestore.rules` in the Life Hub repo covers both apps; Fred pastes it.
   while synced (the online copy is the backup, so the 14-day code reminder
   steps aside), a red notice for SIGNED OUT / NOT SYNCING. The sign-in form
   is outside `#app` (re-renders would wipe typing).
+- **The dot** (`syncDot()`, top right of Today, before the date): the panel's
+  state at a glance, derived from `describe()` so the two never disagree.
+  Solid blue = ON; blue ring = CONNECTING / OFFLINE / SYNCING (on its way,
+  nothing to do); solid red = OFF / SIGNED OUT / NOT SYNCING (needs Fred).
+  Blue, not the green Fred first suggested: green only ever means a right
+  answer (INSTRUMENT). Tapping it opens Settings; a 26px target around a
+  7px dot, negative margins so it takes no room in the header.
 - **Reloads only when idle**: after an offline start the SDK import is
   cached as failed, so the retry reloads the page — only on the Today/other
   tabs with nothing typed (`idle()`), and only after an `online` event or
@@ -308,7 +315,8 @@ morphology drills are not built — see `ROADMAP.md`.
 the published app) and in the installed iPhone app, and confirmed both show
 the same progress. Until then the laptop had quietly kept its own copy (27
 words from the August import) while the online copy stayed empty: a device
-that was never signed in looks exactly like a synced one on Today.
+that was never signed in looked exactly like a synced one on Today. The sync
+dot on Today ("Sync" above) is the answer to that.
 
 **Known limit:** 184 lexicon entries (154 drillable, 30 reference) over 164
 sentences. Simulation shows the i+1 selector runs out of new material around

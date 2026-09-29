@@ -49,14 +49,15 @@ const dateLabel = key =>
   new Date(key + 'T00:00:00Z').toLocaleDateString('en-GB',
     { day:'2-digit', month:'short', year:'numeric' }).toUpperCase();
 
-export function header(st, sub) {
+/** `dot`: sync at a glance, Today only (syncDot() in account.js). */
+export function header(st, sub, dot = '') {
   return `<div class="top">
     <div>
       <div class="mono">MONGOLIAN · FSRS</div>
       <h1>${esc(sub)}</h1>
       <div class="sub">${st.tracked} words tracked · ${st.due} due</div>
     </div>
-    <div class="mono right">${new Date().toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short'}).toUpperCase()}<br>
+    <div class="mono right">${dot}${new Date().toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short'}).toUpperCase()}<br>
     RET ${pct(st.avgRetrievability)}%<br>ACC ${pct(st.accuracy)}%</div>
   </div>`;
 }
@@ -241,7 +242,7 @@ export function viewToday(p, st, session, ctx = {}) {
   const best = bestStreak(history);
   const worth = lessonWorth(session, history, today);
 
-  return header(st, 'Today') +
+  return header(st, 'Today', ctx.dot) +
     // Sync's notice when app.js passes one: it stands in for the backup
     // reminder, which only applies while this device doesn't sync.
     (ctx.notice !== undefined ? ctx.notice : backupNotice(ctx.exportAge === undefined ? null : exportAge)) +

@@ -64,6 +64,17 @@ progress too.
   progress stays on it, and online. Signing in again picks it up and adds
   anything you did in between.
 
+## The dot on Today
+
+The small dot next to the date, top right of Today, shows sync at a glance.
+Tap it to open Settings, which says the same in words.
+
+- **Blue**: this device is in step (ON).
+- **Blue ring**: on its way: connecting for a moment when the app opens,
+  offline, or a change still going up. Nothing to do.
+- **Red**: needs you. This device isn't signed in (OFF), the sign-in ended
+  (SIGNED OUT), or the database refused something (NOT SYNCING).
+
 ## What Sync in Settings can say
 
 - **OFF**: this device isn't syncing. Tap **Sign in**.

@@ -86,6 +86,17 @@ border-bottom:1px solid var(--ink);padding-bottom:12px}
 .top h1{font-size:23px;font-weight:600;letter-spacing:-.03em;line-height:1.05;margin-top:7px}
 .top .sub{font-size:13px;color:var(--muted);margin-top:5px}
 .top .right{text-align:right;line-height:1.85;white-space:nowrap}
+/* Sync at a glance, before the date (syncDot() in account.js): blue in step,
+   a blue ring on its way, red when it needs you. A 7px dot in a 26px target;
+   the negative margins keep the target from taking any room in the line. */
+.syncdot{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;
+width:26px;height:26px;margin:-9px -4px -9px -9px;padding:0;border:0;background:none;
+cursor:pointer;transition:transform 90ms var(--ease)}
+.syncdot::before{content:'';width:7px;height:7px;border-radius:50%}
+.syncdot.on::before{background:var(--blue)}
+.syncdot.wait::before{box-shadow:inset 0 0 0 1.5px var(--blue)}
+.syncdot.red::before{background:var(--red)}
+.syncdot:active{transform:scale(.96)}
 
 /* ---- section header -------------------------------------------------- */
 .h{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px}
@@ -422,6 +433,6 @@ transform 90ms var(--ease)}
 @media(prefers-reduced-motion:reduce){
 *{transition:none!important;animation:none!important}
 .btn:not(:disabled):active,.choice:not(:disabled):active,
-.grade:active,.tab:active{transform:none!important}
+.grade:active,.tab:active,.syncdot:active{transform:none!important}
 .sec{perspective:none!important}
 }

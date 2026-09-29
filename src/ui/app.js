@@ -10,7 +10,7 @@ import { createSync } from '../sync/engine.js';
 import { firebaseBackend } from '../sync/firebase.js';
 import { firebaseConfig } from '../sync/firebase-config.js';
 import * as V from './views.js';
-import { syncPanel, todayNotice, openSignIn, signInOpen } from './account.js';
+import { syncPanel, syncDot, todayNotice, openSignIn, signInOpen } from './account.js';
 
 const el = document.getElementById('app');
 // ?fake-sync=<device>: sync against a pretend server kept in this browser
@@ -158,7 +158,8 @@ function render({ keep = false } = {}) {
     el.className += ' tabbed';
     const ctx = {
       today, exportAge: exportAge(P), corpusWords: POOL.length, editPurpose: S.editPurpose,
-      notice: todayNotice(syncStatus(), V.backupNotice(exportAge(P)))
+      notice: todayNotice(syncStatus(), V.backupNotice(exportAge(P))),
+      dot: syncDot(syncStatus())
     };
     let body;
     if (S.tab === 'progress') body = V.viewProgress(P, st, ctx);

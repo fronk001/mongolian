@@ -74,6 +74,8 @@ try {
   await until(() => text(f, '#app').includes('Export a backup code'), 'the backup reminder');
   check('not synced yet: the backup reminder says sync is the way out',
     text(f, '#app').includes('sign in under settings to sync it'));
+  check('not synced yet: a red dot on Today, named for screen readers',
+    $(f, '.syncdot.red') && $(f, '.syncdot').getAttribute('aria-label') === 'Sync: off, open settings');
   tab(f, 'settings');
   await until(() => $(f, '[data-sync=off]'), 'the sync panel');
   check('Settings opens on SYNC, off, with a sign-in button',
@@ -93,11 +95,28 @@ try {
   tab(f, 'today');
   await until(() => $(f, '.top .sub'), 'Today');
   check('Today: no backup reminder once synced', !text(f, '#app').includes('Export a backup code'));
+  await until(() => $(f, '.syncdot.on'), 'the dot turning blue');
+  check('synced: the dot is blue, and says so', $(f, '.syncdot').title === 'Sync: on');
+  $(f, '.syncdot').click();
+  await until(() => $(f, '[data-sync=on]'), 'Settings, from the dot');
+  check('tapping the dot opens Settings', true);
+  tab(f, 'today');
+  // Offline is on its way, not wrong: a ring, never red. Blue again once back.
+  const nav = f.contentWindow.navigator;
+  Object.defineProperty(nav, 'onLine', { configurable: true, get: () => false });
+  f.contentWindow.dispatchEvent(new Event('offline'));
+  await until(() => $(f, '.syncdot.wait'), 'the ring while offline');
+  check('offline: a blue ring, not red', $(f, '.syncdot').title === 'Sync: offline');
+  delete nav.onLine;
+  f.contentWindow.dispatchEvent(new Event('online'));
+  await until(() => $(f, '.syncdot.on'), 'blue again once online');
+  check('back online: blue again', true);
 
   // ---- the phone joins -------------------------------------------------------
   await go(g, '../dist/index.html?fake-sync=phone');
   await until(() => $(g, '.top .sub'), 'the phone dashboard');
   check('phone: its own progress first', text(g, '.top .sub').startsWith('2 words tracked'));
+  check('phone: red before signing in', !!$(g, '.syncdot.red'));
   tab(g, 'settings');
   await until(() => $(g, '[data-act=sync-sign-in]'), 'the phone sync panel');
   $(g, '[data-act=sync-sign-in]').click();
@@ -106,6 +125,8 @@ try {
   tab(g, 'today');
   await until(() => text(g, '.top .sub').startsWith('5 words tracked'), 'the combined progress on the phone');
   check('phone: progress from both devices', true);
+  await until(() => $(g, '.syncdot.on'), 'the phone dot turning blue');
+  check('phone: blue once signed in', true);
   await until(() => text(f, '.top .sub').startsWith('5 words tracked'), 'the combined progress on the laptop');
   check('laptop: the phone\'s words appear by themselves', true);
   check('both days are online', online().history.length === 2);
@@ -139,6 +160,7 @@ try {
   tab(g, 'today');
   await until(() => $(g, '.top .sub'), 'Today');
   check('signed out: the backup reminder is back', text(g, '#app').includes('Export a backup code'));
+  check('signed out: the dot is red again', !!$(g, '.syncdot.red'));
 } catch (e) {
   log.push({ name: e.message, ok: false });
 }
