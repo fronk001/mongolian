@@ -43,6 +43,9 @@ import {
   earnedBadges, lessonWorth, stepCount, LEVELS, BADGES, xpForGrammar
 } from '../src/core/goals.js';
 import { gradeDrill, applyGrammarGrade, topicMastery, MASTERY_MIN_ATTEMPTS } from '../src/core/grammar.js';
+import {
+  toDocs, fromDocs, diff, patchesFor, applyMerge, overlay, rebase, mergeStates, same, itemsDoc, BUCKET
+} from '../src/core/sync.js';
 
 const out = document.getElementById('out');
 let pass = 0, fail = 0;
@@ -806,6 +809,219 @@ section('backup survives the redesign fields');
   ok('v1 lands on the new defaults',
      v1in.mcMode === true && v1in.xp === 0 && v1in.goalWords === 2500);
   ok('v1 box level still seeds stability', v1in.items[90].s > 0);
+}
+
+// ---------------------------------------------------------------- sync
+// How progress is laid out online, what a change sends, and how two copies
+// are combined. The engine driving this, with two pretend devices, is tested
+// in tools/engine-test.html.
+{
+  const clone = x => JSON.parse(JSON.stringify(x));
+  const addDay = (key, n) => new Date(Date.parse(key + 'T00:00:00Z') + n * 86400000).toISOString().slice(0, 10);
+
+  // A real record: two weeks of lessons through the real scheduler, graded
+  // once per word per session like awardGrade(), plus the fields the app
+  // sets around them.
+  function study(p, from, days) {
+    for (let n = 0; n < days; n++) {
+      const today = addDay(from, n);
+      const sess = buildSession(p, W, S, { today });
+      const seen = new Set();
+      let xp = 0;
+      sess.items.filter(i => i.kind !== 'deck').forEach(i => idsOf(i).forEach(id => {
+        if (seen.has(id)) return;
+        seen.add(id);
+        const prev = p.items[id];
+        const next = applyGrade(p, id, 3, { today });
+        xp += xpFor(prev?.s, next.s);
+      }));
+      p.xp += xp;
+      recordDay(p, { date: today, tracked: Object.keys(p.items).length, due: 0, known: 0,
+        reviews: seen.size, newWords: 0, onTime: seen.size, late: 0, xp });
+      p.lastDate = today;
+    }
+    return p;
+  }
+  const grade = (p, id, g, today) => {
+    const prev = p.items[id];
+    const next = applyGrade(p, id, g, { today });
+    p.xp += xpFor(prev?.s, next.s);
+    return p;
+  };
+
+  const rec = study(blank(), '2026-09-20', 14);
+  rec.history.unshift({ date: '2025-12-30', tracked: 3, due: 1, known: 0, reviews: 4, newWords: 3, onTime: 4, late: 0, xp: 30 });
+  rec.purpose = 'Сарнайн гэр бүлтэй ярих';
+  rec.mcMode = false;
+  rec.wordDrills = 0;
+  rec.badges = ['first', 'week7'];
+  applyGrammarGrade(rec, G[0].id, true, '2026-10-01');
+  applyGrammarGrade(rec, G[0].id, false, '2026-10-02');
+  const docs = toDocs(rec);
+  const words = Object.keys(rec.items);
+
+  section('sync: layout online');
+  ok('a real record to test with', words.length > 20 && rec.history.length === 15,
+     `${words.length} words, ${rec.history.length} days`);
+  ok('each word is filed in its hundred-word document',
+     words.every(id => docs[itemsDoc(id)].items[id] && Math.floor(id / BUCKET) === Number(itemsDoc(id).slice(6))));
+  ok('word ids 90, 150 and 273 land in items-0, items-1 and items-2',
+     itemsDoc(90) === 'items-0' && itemsDoc('150') === 'items-1' && itemsDoc(273) === 'items-2');
+  ok('main carries no words, history or introductions',
+     !('items' in docs.main) && !('history' in docs.main) && !('introduced' in docs.main));
+  ok('history is filed per year, keyed by day',
+     docs['2025'].history['2025-12-30'].reviews === 4 && Object.keys(docs['2026'].history).length === 14);
+  ok('badges and introduced words become sets',
+     docs.main.badges.week7 === true &&
+     rec.introduced.every(id => docs[itemsDoc(id)].introduced[String(id)] === true));
+
+  const back = fromDocs(docs);
+  ok('the record round-trips', same(toDocs(back), docs));
+  ok('every word\'s FSRS state comes back exactly', same(back.items, rec.items));
+  ok('introduced words come back as numbers',
+     back.introduced.length === rec.introduced.length && back.introduced.every(id => typeof id === 'number'));
+  ok('history comes back in date order, all of it',
+     back.history.length === 15 && back.history.every((h, i) => !i || back.history[i - 1].date < h.date));
+  ok('settings survive, Cyrillic and falsy values included',
+     back.purpose === rec.purpose && back.mcMode === false && back.wordDrills === 0 && back.xp === rec.xp);
+  ok('sync bookkeeping (main.seq) never reaches the progress',
+     !('seq' in fromDocs({ ...docs, main: { ...docs.main, seq: { phone: 4 } } })));
+  const bare = fromDocs({ main: { schema: 2, xp: 5 } });
+  ok('a sparse online copy still gives a complete record',
+     bare.xp === 5 && same(bare.items, {}) && bare.history.length === 0 && same(bare.grammar, {}) && bare.mcMode === true);
+  ok('a record migrated from a v1 code round-trips',
+     same(toDocs(fromDocs(toDocs(migrateV1(v1)))), toDocs(migrateV1(v1))));
+
+  const twice = toDocs(Object.assign(blank(), { history: [
+    { date: '2026-09-01', reviews: 2, known: 5, xp: 20 }, { date: '2026-09-01', reviews: 3, known: 7, xp: 30 }] }));
+  const folded = twice['2026'].history['2026-09-01'];
+  ok('two rows for one day fold the way recordDay() folds them',
+     folded.reviews === 5 && folded.xp === 50 && folded.known === 7, JSON.stringify(folded));
+  const undated = toDocs(Object.assign(blank(), { history: [{ tracked: 3, due: 1 }] }));
+  ok('a row without a date is kept, not dropped',
+     fromDocs(undated).history.length === 1 && fromDocs(undated).history[0].tracked === 3);
+
+  // Firestore: 1 MiB and 40,000 index entries per document; every leaf is
+  // two entries (ascending and descending).
+  const leaves = o => Object.values(o).reduce((n, v) =>
+    n + (v && typeof v === 'object' && !Array.isArray(v) ? leaves(v) : 1), 0);
+  const all = W.filter(w => w.drill !== false).map(w => w.id);
+  const full = Object.assign(blank(), { items: {}, introduced: all });
+  all.forEach(id => { full.items[id] = { s: 30.5, d: 5.2, due: '2026-10-01', last: '2026-09-01', reps: 9, lapses: 1, right: 8, wrong: 1 }; });
+  const biggest = Math.max(...Object.entries(toDocs(full)).filter(([id]) => id.startsWith('items-')).map(([, d]) => leaves(d) * 2));
+  ok('every word document stays far below Firestore\'s limits', biggest < 4000,
+     `largest: ${biggest} index entries with every drillable word learned`);
+
+  section('sync: what a change sends');
+  const DEL = Symbol('delete');
+  const land = (a, b) => {
+    const out = toDocs(a);
+    for (const w of patchesFor(diff(toDocs(a), toDocs(b)), DEL)) out[w.id] = applyMerge(out[w.id] || {}, w.data, DEL);
+    return out;
+  };
+  const known = words[0];
+  const g1 = grade(clone(rec), Number(known), 3, '2026-10-04');
+  const ops1 = diff(docs, toDocs(g1));
+  ok('grading a word sends that word whole, plus the xp',
+     ops1.length === 2 && same(ops1.map(o => o.path.join('.')).sort(), [`${itemsDoc(known)}.items.${known}`, 'main.xp'].sort()),
+     JSON.stringify(ops1.map(o => o.path.join('.'))));
+  ok('each change carries what was there before',
+     same(ops1.find(o => o.path[1] === 'items').from, rec.items[known]) && ops1.find(o => o.path[1] === 'xp').from === rec.xp);
+  const fresh = W.find(w => w.drill !== false && !rec.items[w.id]).id;
+  const ops2 = diff(docs, toDocs(grade(clone(rec), fresh, 3, '2026-10-04')));
+  ok('a new word is introduced as well', ops2.some(o => o.path.join('.') === `${itemsDoc(fresh)}.introduced.${fresh}`));
+
+  const g2 = clone(g1);
+  recordDay(g2, { date: '2026-10-04', tracked: 30, due: 2, known: 1, reviews: 1, newWords: 0, onTime: 1, late: 0, xp: 9 });
+  applyGrammarGrade(g2, G[1].id, true, '2026-10-04');
+  g2.mcMode = true;
+  g2.badges.push('perfect');
+  ok('a day, a grammar drill, a setting and a badge land exactly', same(land(g1, g2), toDocs(g2)));
+  const newRow = diff(toDocs(g1), toDocs(g2)).filter(o => o.path[0] === '2026');
+  ok('a new day travels field by field, so two devices\' counts can add up',
+     newRow.length > 3 && newRow.every(o => o.path.length === 4));
+  const older = migrateV1(v1);
+  ok('importing an older code removes what is gone, online too', same(toDocs(fromDocs(land(g2, older))), toDocs(older)));
+  ok('removing a whole year never leaves an empty day behind',
+     Object.keys(land(g2, older)['2026'] || {}).length === 0 && !diff(toDocs(g2), toDocs(older)).some(o => o.path.length === 1));
+  ok('nothing changed, nothing sent', diff(docs, toDocs(clone(rec))).length === 0);
+
+  section('sync: two copies combined (first sign-in)');
+  // The same record, then studied apart: the laptop on the 4th, the phone
+  // on the 5th, a word on both.
+  const shared = words[1];
+  const laptop = grade(clone(rec), Number(shared), 3, '2026-10-04');
+  const onlyL = W.find(w => w.drill !== false && !rec.items[w.id]).id;
+  grade(laptop, onlyL, 3, '2026-10-04');
+  recordDay(laptop, { date: '2026-10-04', tracked: 40, reviews: 2, xp: 18 });
+  laptop.lastDate = '2026-10-04';
+  laptop.purpose = 'Сарнай';
+  const phone = grade(clone(rec), Number(shared), 1, '2026-10-05');
+  const onlyP = W.find(w => w.drill !== false && !rec.items[w.id] && w.id !== onlyL).id;
+  grade(phone, onlyP, 3, '2026-10-05');
+  recordDay(phone, { date: '2026-10-05', tracked: 41, reviews: 2, xp: 12 });
+  phone.lastDate = '2026-10-05';
+  phone.purpose = '';
+  phone.mcMode = true;
+  phone.badges.push('perfect');
+  applyGrammarGrade(phone, G[0].id, true, '2026-10-05');
+
+  const m = mergeStates(phone, laptop);
+  ok('words studied on either device are all there',
+     m.items[onlyL] && m.items[onlyP] && m.introduced.includes(onlyL) && m.introduced.includes(onlyP));
+  ok('a word studied on both keeps the more recent review', same(m.items[shared], phone.items[shared]));
+  ok('every day from both is kept', m.history.some(h => h.date === '2026-10-04') &&
+     m.history.some(h => h.date === '2026-10-05') && m.history.length === 17, `${m.history.length} days`);
+  ok('xp is the higher figure, never a double count of the shared part',
+     m.xp === Math.max(laptop.xp, phone.xp));
+  ok('badges from either', m.badges.includes('perfect') && m.badges.includes('week7'));
+  ok('grammar keeps the count with more attempts', same(m.grammar[G[0].id], phone.grammar[G[0].id]));
+  ok('settings come from the copy studied most recently', m.mcMode === true && m.lastDate === '2026-10-05');
+  ok('a reason written on either survives', m.purpose === 'Сарнай');
+  ok('it does not matter which device signs in first', same(toDocs(m), toDocs(mergeStates(laptop, phone))));
+  ok('a fresh device takes the online copy as it is', same(toDocs(mergeStates(blank(), rec)), docs));
+  ok('combining a copy with itself changes nothing', same(toDocs(mergeStates(rec, clone(rec))), docs));
+  const dayA = Object.assign(blank(), { history: [{ date: '2026-10-06', reviews: 9, xp: 80, known: 4 }] });
+  const dayB = Object.assign(blank(), { history: [{ date: '2026-10-06', reviews: 4, xp: 90, known: 6 }] });
+  ok('a day on both keeps the fuller row whole, never a figure from each',
+     same(mergeStates(dayB, dayA).history[0], dayA.history[0]) && same(mergeStates(dayA, dayB).history[0], dayA.history[0]));
+
+  section('sync: offline changes re-applied (rebase)');
+  // The phone went offline at `rec` and made `ops`; meanwhile the laptop's
+  // lesson reached the database.
+  const offline = diff(docs, toDocs(phone));
+  ok('nothing changed online: every change goes up exactly as made', same(rebase(offline, docs), offline));
+  const online = toDocs(laptop);
+  const up = overlay(online, rebase(offline, online));
+  const upXp = up.main.xp;
+  ok('xp: both lessons count', upXp === rec.xp + (laptop.xp - rec.xp) + (phone.xp - rec.xp),
+     `got ${upXp}, want ${rec.xp} + ${laptop.xp - rec.xp} + ${phone.xp - rec.xp}`);
+  ok('a word studied on both keeps the more recent review',
+     same(get(up, [itemsDoc(shared), 'items', shared]), phone.items[shared]));
+  const late = diff(toDocs(rec), toDocs(grade(clone(rec), Number(shared), 3, '2026-10-03')));
+  ok('...and an older offline review gives way to a newer one online',
+     same(get(overlay(online, rebase(late, online)), [itemsDoc(shared), 'items', shared]), laptop.items[shared]));
+  ok('words from both are there', get(up, [itemsDoc(onlyL), 'items', String(onlyL)]) && get(up, [itemsDoc(onlyP), 'items', String(onlyP)]));
+  ok('last studied keeps the later day', up.main.lastDate === '2026-10-05');
+  ok('a setting changed offline is the latest word', up.main.mcMode === true);
+
+  // Both finished a lesson on the same day while apart: the day's counters add up.
+  const sameDay = d => { const p = clone(rec); recordDay(p, { date: '2026-10-07', tracked: 40, known: 3, ...d }); return p; };
+  const dayOnline = toDocs(sameDay({ reviews: 15, xp: 100, onTime: 15 }));
+  const dayOps = diff(docs, toDocs(sameDay({ reviews: 20, xp: 150, onTime: 18, late: 2, known: 4 })));
+  const dayUp = overlay(dayOnline, rebase(dayOps, dayOnline))['2026'].history['2026-10-07'];
+  ok('a day studied on both: counters add up, snapshots take the latest',
+     dayUp.reviews === 35 && dayUp.xp === 250 && dayUp.onTime === 33 && dayUp.late === 2 && dayUp.known === 4,
+     JSON.stringify(dayUp));
+  ok('the first day keeps the earliest',
+     rebase([{ path: ['main', 'createdAt'], value: '2026-09-01', from: '2026-08-01' }], { main: { createdAt: '2026-07-01' } }).length === 0);
+  ok('a deletion goes through as it is',
+     same(rebase([{ path: ['main', 'purpose'], del: true, from: 'x' }], { main: { purpose: 'y' } }), [{ path: ['main', 'purpose'], del: true, from: 'x' }]));
+  // A batch re-applied, then refused and re-applied again on the next start,
+  // against a database that has not moved: its figures must not grow again.
+  ok('re-applying a change twice adds it once', same(rebase(rebase(offline, online), online), rebase(offline, online)));
+
+  function get(o, path) { return path.reduce((x, k) => (x && typeof x === 'object' ? x[k] : undefined), o); }
 }
 
 // ---------------------------------------------------------------- summary

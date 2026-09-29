@@ -20,6 +20,19 @@ open `http://localhost:8000/tools/test.html`. It imports the real modules from
 `src/core/`, so a green run is a statement about the shipped code. `serve.py`
 sends `no-store` — without it the browser silently tests stale modules.
 
+Or headless, from the command line (exit 0 = pass; ported from Life Hub):
+
+```
+py tools/run_tests.py                          # tools/test.html: core, sync layout/merge/rebase included
+py tools/run_tests.py tools/engine-test.html   # sync engine: devices + pretend server
+py build.py && py tools/run_tests.py tools/smoke.html   # built app, two frames syncing
+py tools/run_tests.py tools/firebase-check.html # real Firebase SDK from the CDN (internet, no account)
+```
+
+Run the first two after any change to `src/core/` or `src/sync/`; the smoke
+test after touching `ui/`, `sw.js` or `build.py`; the Firebase check after
+touching `firebase.js` or bumping the SDK version.
+
 `build.mjs` and `tools/test.mjs` are the original Node versions. They cannot
 run here and are not maintained; `build.py` and `tools/test.html` are
 authoritative.
@@ -29,11 +42,16 @@ authoritative.
 ```
 src/core/     fsrs.js scheduler.js progress.js grade.js    ← pure logic, no DOM
               goals.js choices.js                          ← goal/streak/XP telemetry, MC distractors
-src/ui/       app.js views.js *.css                        ← DOM lives only here
+              sync.js                                      ← online layout, diff, merge, rebase
+src/sync/     engine.js (queue, sign-in flow, rules below), firebase.js (the only file
+              that knows Firebase), firebase-config.js, fake-backend.js (tests, ?fake-sync)
+src/ui/       app.js views.js account.js *.css             ← DOM lives only here
 src/data/     words.json sentences.json                    ← large; avoid reading unless changing content
-build.py      copies files, rewrites 2 imports in app.js, injects SW precache list
-tools/        serve.py (dev server), test.html (test suite)
+build.py      copies files, rewrites app.js's imports, injects SW precache list
+tools/        serve.py (dev server), run_tests.py (headless), test.html (core suite),
+              engine-test.html, smoke.html, firebase-check.html
               mockups*.html — design references for the v3 redesign, not shipped
+SYNC.md       Fred's steps to turn sync on
 ```
 
 No bundler and no npm dependencies. Browsers load the ES modules directly;
@@ -59,7 +77,12 @@ the build only copies, concatenates CSS, generates icons, and stamps sw.js.
   context chip — and there it still carries its English pair, because a
   translation without one is not a translation. `gl()`/`gli()` in `views.js`
   render those content-pair captions unconditionally now.
-- **Offline first.** No CDNs, no external requests, ever. Fonts are self-hosted.
+- **Offline first.** The app opens and studies with no connection at all.
+  Fonts are self-hosted; no CDNs. The one external request is sync's
+  Firebase SDK from gstatic, loaded after the first paint and needed only
+  for sync — CI's URL check allows exactly that address in
+  `dist/sync/firebase.js` and nothing else. The service worker only handles
+  same-origin requests, so sync traffic never goes through it.
 - **Never break backup codes.** `importCode()` must keep accepting v1 (Leitner)
   codes forever. Verify with a round-trip test after any schema change —
   `tools/test.html` covers both the v1 wire format
@@ -166,13 +189,15 @@ so a code written before a field existed imports with its default rather than
 being rejected — that property is what keeps old backup codes working, and
 `tools/test.html` asserts it for both v1 and pre-redesign v2 codes.
 
-There is no server and no sync. Progress exists only in the browser that
-created it, per device — a backup code is a manual transfer, not a sync, and
-`importCode()` **replaces** the whole state rather than merging.
+Progress lives in the browser that created it; with sync on (below) it is
+also kept online and shared by every device signed in. A backup code is a
+manual transfer, and `importCode()` **replaces** the whole state rather than
+merging — while synced, the online copy too (`commit(P, { replace: true })`).
 
 - `lastExport` — day a code actually left the device. Only set when a copy or
   share succeeded; a dismissed iOS share sheet must not record one.
-  `exportAge()` returns days since, or null. The home screen warns at 14 days.
+  `exportAge()` returns days since, or null. The home screen warns at 14 days,
+  but only while the device doesn't sync (`todayNotice()` in `account.js`).
 - `gloss` — legacy field from when chrome carried an English gloss under its
   Mongolian and the pairing was switchable. Chrome is English-only now, so
   nothing reads this field any more; it is kept only because backup codes are
@@ -200,6 +225,71 @@ created it, per device — a backup code is a manual transfer, not a sync, and
   appending twice would make two sessions in a day read as two streak days,
   which rewards re-opening the app instead of doing the work.
 
+## Sync
+
+Built 28 Sep 2026, on the pattern of Life Hub's (`../life-hub`, its CLAUDE.md
+"Sync"): Firestore + Firebase Auth (email + password) in the **same project
+and account** (`life-hub-fred`, the "Mongolian" web app registration in
+`src/sync/firebase-config.js`), SDK 12.19.0 as ES modules from gstatic. The
+app is initialised under its own name (`'mongolian'`) so its sign-in never
+tangles with Life Hub's where both share an origin (fronk001.github.io).
+Rules: `firestore.rules` in the Life Hub repo covers both apps; Fred pastes it.
+
+- **Layout** (`core/sync.js`), under `users/{uid}/mongolian/`: `main`
+  (settings, xp, badges and grammar as maps, `seq`), `items-N` (words
+  N·100…N·100+99: `items` = FSRS state, `introduced` = set), `YYYY` (history
+  rows keyed by day). A word is 16 index entries; one document would hit
+  Firestore's 40k-entry limit at ~2,500 words — the B1 goal — so buckets.
+- **Changes** are `diff()` ops on that layout, each with `from` (the old
+  value). A word's FSRS state is one value (atomic); everything else is
+  field by field, so separate words and separate days never collide.
+- **Local first.** The app still saves `P` to localStorage on every change;
+  `save()` in app.js then calls `sync.commit(P)`, which queues the ops in
+  `mng_study_v2:sync` (`{ owner, device, seq, pending }`) until confirmed.
+  The first paint never waits for the SDK.
+- **First sign-in of a device combines** (`mergeStates`): per word the later
+  review (`last`, then reps), every history day (a day on both keeps the
+  fuller row whole), badges/introduced united, grammar per topic the count
+  with more attempts, **xp = max** (no common base: a sum would count the
+  shared part twice), settings from the copy with the later `lastDate`. So
+  sign-in order doesn't matter and no last code transfer is needed. An
+  empty cache never counts as an empty server (`fromCache`).
+- **After that the server wins**: each snapshot, overlaid with this device's
+  pending ops, replaces `P` (`adopt()` in app.js). It redraws only when
+  `quiet()` — not mid-lesson/drill, nothing half-typed.
+- **Offline changes are rebased** when sent (`rebase`): a field still at
+  `from` goes as is (always, while online); otherwise counters (xp, a day's
+  reviews/newWords/onTime/late/xp, grammar right/wrong) add this device's
+  gain to the server's figure, a word keeps the later review, lastDate /
+  lastExport the later, createdAt the earlier, the rest last-writer. Batches
+  are held (not handed to the SDK) whenever the last snapshot was fromCache,
+  so the SDK never replays stale absolute values. Imports (`replace`) and the
+  join batch are never rebased.
+- **No double counting**: each batch writes `main.seq.{device} = n` in the
+  same atomic commit; on the first live snapshot, pending batches with
+  `seq <= main.seq[device]` landed already (ack lost when the app closed)
+  and are dropped. A join batch that never landed makes the next start join
+  again.
+- **Sign out** only stops syncing: owner/pending cleared, progress kept; the
+  next sign-in combines again. A session that ends by itself keeps the owner
+  and keeps queueing.
+- **UI** (`ui/account.js`): SYNC panel first on Settings (OFF / CONNECTING /
+  ON / OFFLINE / SYNCING / SIGNED OUT / NOT SYNCING); Today shows nothing
+  while synced (the online copy is the backup, so the 14-day code reminder
+  steps aside), a red notice for SIGNED OUT / NOT SYNCING. The sign-in form
+  is outside `#app` (re-renders would wipe typing).
+- **Reloads only when idle**: after an offline start the SDK import is
+  cached as failed, so the retry reloads the page — only on the Today/other
+  tabs with nothing typed (`idle()`), and only after an `online` event or
+  the app coming back into view (never in a loop). A new service-worker
+  version waits the same way; the very first install reloads nothing.
+- **Dev switch** `?fake-sync=<device>`: the pretend server in localStorage
+  (`mng:fake-server`), on a progress copy under `mng_study_v2:fake:<device>`
+  — the real progress is never touched. Test accounts in `fake-backend.js`.
+- Known, accepted: two devices grading at the same instant while both are
+  online, or in the ≤10 s before the SDK notices a dead connection, resolve
+  xp last-writer-wins. Real use is one device at a time.
+
 ## Current status
 
 FSRS-6 scheduling with i+1 sentence selection, Instrument v3 ("Соёмбо") on
@@ -208,6 +298,10 @@ directions (multiple choice or typed, switchable mid-question), and a week-led
 dashboard carrying the goal and achievement layers.
 Deployed target is GitHub Pages (`DEPLOY.md`). Audio, richer content packs and
 morphology drills are not built — see `ROADMAP.md`.
+
+**Sync (28 Sep 2026):** built and tested (core, engine, smoke, real-SDK
+check). Waiting on Fred: publish the rules (SYNC.md step 1), then sign in on
+the laptop and in the installed iPhone app.
 
 **Known limit:** 184 lexicon entries (154 drillable, 30 reference) over 164
 sentences. Simulation shows the i+1 selector runs out of new material around

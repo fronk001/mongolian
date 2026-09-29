@@ -77,11 +77,12 @@ export function recordDay(p, entry) {
 }
 
 /**
- * Days since a backup code was last taken on this device, or null if never.
+ * Days since a backup code was last taken, or null if never.
  *
- * Progress lives only in this browser's localStorage — there is no server and
- * no sync — so an exported code is the only thing that survives a cleared
- * store, an iOS update or a lost phone.
+ * Without sync, progress lives only in this browser's localStorage, so an
+ * exported code is the only thing that survives a cleared store, an iOS
+ * update or a lost phone. With sync on, the online copy does that job, and
+ * the app stops asking for codes (see todayNotice() in ui/account.js).
  */
 export function exportAge(p, today = dayKey()) {
   if (!p.lastExport) return null;
@@ -140,18 +141,22 @@ export function normalise(raw) {
   return blank();
 }
 
-export function load(storage = globalThis.localStorage) {
+/**
+ * `key` is STORE_KEY except under the ?fake-sync dev switch, which studies on
+ * a copy of its own so a pretend server never touches the real progress.
+ */
+export function load(storage = globalThis.localStorage, key = STORE_KEY) {
   try {
-    const cur = storage.getItem(STORE_KEY);
+    const cur = storage.getItem(key);
     if (cur) return normalise(JSON.parse(cur));
-    const legacy = storage.getItem(LEGACY_KEY);
+    const legacy = key === STORE_KEY && storage.getItem(LEGACY_KEY);
     if (legacy) return migrateV1(JSON.parse(legacy));
   } catch (e) { /* fall through to blank */ }
   return blank();
 }
 
-export function save(p, storage = globalThis.localStorage) {
-  try { storage.setItem(STORE_KEY, JSON.stringify(p)); } catch (e) {}
+export function save(p, storage = globalThis.localStorage, key = STORE_KEY) {
+  try { storage.setItem(key, JSON.stringify(p)); } catch (e) {}
 }
 
 /**

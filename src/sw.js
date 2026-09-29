@@ -6,8 +6,9 @@
  *
  * iOS note: Safari evicts script-created storage after 7 days without user
  * interaction, but installing to the home screen exempts the app. The app also
- * calls navigator.storage.persist() on boot. Backup codes remain the real
- * safety net — IndexedDB on iOS has a history of loss around OS updates.
+ * calls navigator.storage.persist() on boot. Sync (or, without it, a backup
+ * code) is the real safety net — IndexedDB on iOS has a history of loss
+ * around OS updates.
  */
 const VERSION = '__VERSION__';
 const CACHE = 'mng-' + VERSION;
@@ -27,13 +28,17 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const { request } = e;
-  if (request.method !== 'GET') return;
+  // Only the app's own files. Sync's traffic (the Firebase SDK from Google's
+  // CDN, sign-in, the database) goes straight to the network: the SDK has
+  // its own long browser cache, and a database stream must never be served
+  // from here.
+  if (request.method !== 'GET' || new URL(request.url).origin !== location.origin) return;
   e.respondWith(
     caches.match(request, { ignoreSearch: true }).then(hit => {
       if (hit) return hit;
       return fetch(request)
         .then(res => {
-          if (res && res.ok && new URL(request.url).origin === location.origin) {
+          if (res && res.ok) {
             const copy = res.clone();
             caches.open(CACHE).then(c => c.put(request, copy));
           }

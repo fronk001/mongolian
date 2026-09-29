@@ -111,8 +111,9 @@ export function contextChips(ids, targetIds, byId) {
 }
 
 /**
- * Backup staleness. Real telemetry: days since a code was actually exported
- * on this device, never a nag with an invented urgency score.
+ * Backup staleness. Real telemetry: days since a code was actually exported,
+ * never a nag with an invented urgency score. Only shown while this device
+ * doesn't sync; see todayNotice() in account.js.
  */
 export function backupNotice(age) {
   if (age !== null && age < 14) return '';
@@ -120,7 +121,7 @@ export function backupNotice(age) {
   return `<div class="panel red">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
       <div><div style="font-size:14px;font-weight:600">Export a backup code</div>
-        <div class="gl">progress lives only on this device — there is no sync</div></div>
+        <div class="gl">progress lives only on this device — sign in under settings to sync it</div></div>
       <div class="mono red">${never ? 'NEVER' : age + 'D AGO'}</div>
     </div>
   </div>`;
@@ -241,7 +242,9 @@ export function viewToday(p, st, session, ctx = {}) {
   const worth = lessonWorth(session, history, today);
 
   return header(st, 'Today') +
-    backupNotice(ctx.exportAge === undefined ? null : exportAge) +
+    // Sync's notice when app.js passes one: it stands in for the backup
+    // reminder, which only applies while this device doesn't sync.
+    (ctx.notice !== undefined ? ctx.notice : backupNotice(ctx.exportAge === undefined ? null : exportAge)) +
     purposeBand(p.purpose, editPurpose) +
 
     // ---- the week: the period one lesson can actually move ----------
@@ -306,7 +309,7 @@ export function viewProgress(p, st, ctx = {}) {
       <div class="gl" style="margin-top:9px">each square is a day you finished a session · ${mt.reviews} reviews this month</div>
     </div>
 
-    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
+    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE-FIRST</span></div>`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -353,7 +356,7 @@ export function viewAchievements(p, st, ctx = {}) {
       <div class="mono red" style="margin-top:7px">CORPUS CEILING · ${corpusWords || 0} WORDS WRITTEN</div>
     </div>
 
-    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
+    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE-FIRST</span></div>`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -376,7 +379,7 @@ export function viewGrammarList(topics, p) {
   return pageHead('GRAMMAR') +
     `<div class="gl" style="margin-top:8px">short explanations plus a mixed drill set — practise any time, at your own pace</div>
     <div class="choices" style="margin-top:12px">${rows}</div>
-    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
+    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE-FIRST</span></div>`;
 }
 
 export function viewGrammarIntro(topic) {

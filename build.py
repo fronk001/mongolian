@@ -5,8 +5,8 @@ Port of build.mjs. This machine has no Node toolchain, so this is the build
 that actually runs here; see CLAUDE.md.
 
 No bundler. Browsers load ES modules natively, so the build only needs to
-copy files, fix two import paths, concatenate CSS, generate icons, and inject
-the precache list + version into the service worker.
+copy files, fix app.js's import paths, concatenate CSS, generate icons, and
+inject the precache list + version into the service worker.
 
     py build.py
 """
@@ -57,14 +57,18 @@ css = "\n".join(
 )
 write(DIST / "styles.css", css)
 
-# ---- JS: preserve layout, rewrite app.js's two relative imports -------------
-for f in sorted((SRC / "core").iterdir()):
-    copy(f, DIST / "core" / f.name)
-copy(SRC / "ui/views.js", DIST / "ui/views.js")
+# ---- JS: preserve layout, rewrite app.js's relative imports -----------------
+# app.js moves up a level (src/ui/app.js -> dist/app.js), so its paths into
+# core/, sync/ and ui/ change; every other module keeps its place.
+for sub in ("core", "sync"):
+    for f in sorted((SRC / sub).iterdir()):
+        copy(f, DIST / sub / f.name)
+for name in ("views.js", "account.js"):
+    copy(SRC / "ui" / name, DIST / "ui" / name)
 
 app = (SRC / "ui/app.js").read_text(encoding="utf-8")
-app = re.sub(r"from '\.\./core/", "from './core/", app)
-app = app.replace("from './views.js'", "from './ui/views.js'")
+app = re.sub(r"'\.\./(core|sync)/", r"'./\1/", app)  # static and dynamic imports alike
+app = re.sub(r"from '\./(views|account)\.js'", r"from './ui/\1.js'", app)
 write(DIST / "app.js", app)
 
 # ---- static assets ----------------------------------------------------------

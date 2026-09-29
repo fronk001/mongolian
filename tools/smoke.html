@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!--
+  UI smoke test for sync: the built app in two frames, a "laptop" and a
+  "phone", each with progress of its own, syncing through the pretend server
+  (?fake-sync, which never touches the real progress). Signs in through the
+  real form, studies, and checks both screens. Build first:
+
+      py build.py && py tools/run_tests.py tools/smoke.html
+-->
+<html lang="en">
+<head><meta charset="utf-8"><title>sync smoke test</title></head>
+<body>
+<pre id="out">running…</pre>
+<iframe id="f" title="laptop" style="width:900px;height:900px;border:0"></iframe>
+<iframe id="g" title="phone" style="width:390px;height:844px;border:0"></iframe>
+<script type="module">
+import { FAKE_ACCOUNTS } from '../src/sync/fake-backend.js';
+import { blank, recordDay, addDays } from '../src/core/progress.js';
+import { dayKey } from '../src/core/fsrs.js';
+import { applyGrade } from '../src/core/scheduler.js';
+import { fromDocs } from '../src/core/sync.js';
+
+const [fred] = FAKE_ACCOUNTS;
+const log = [];
+const check = (name, cond) => log.push({ name, ok: !!cond });
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function until(fn, what, ms = 5000) {
+  for (const t = Date.now(); Date.now() - t < ms; await sleep(30)) {
+    const v = fn();
+    if (v) return v;
+  }
+  throw new Error(`timed out waiting for ${what}`);
+}
+// Wait for the new page itself: checking right after setting src can match
+// the page still on screen.
+const go = (fr, url) => new Promise(r => { fr.addEventListener('load', r, { once: true }); fr.src = url; });
+const $ = (fr, sel) => fr.contentDocument && fr.contentDocument.querySelector(sel);
+const text = (fr, sel) => ($(fr, sel) ? $(fr, sel).textContent.replace(/\s+/g, ' ').trim() : '');
+const visible = (fr, sel) => !!$(fr, sel) && $(fr, sel).getClientRects().length > 0;
+const tab = (fr, name) => $(fr, `[data-act=tab][data-tab=${name}]`).click();
+const stored = device => JSON.parse(localStorage.getItem(`mng_study_v2:fake:${device}`));
+const online = () => fromDocs((JSON.parse(localStorage.getItem('mng:fake-server') || '{}'))[fred.uid] || {});
+function signIn(fr, password) {
+  const form = $(fr, '.signin form');
+  form.email.value = fred.email;
+  form.password.value = password;
+  form.requestSubmit();
+}
+
+// Progress studied before sync: words graded "Again" a few days ago, so
+// they are due today; no new words, so a lesson opens on a review card.
+function record(ids, daysAgo) {
+  const p = blank();
+  const day = addDays(dayKey(), -daysAgo);
+  for (const id of ids) p.xp += applyGrade(p, id, 1, { today: day }) ? 6 : 0;
+  recordDay(p, { date: day, tracked: ids.length, due: ids.length, known: 0, reviews: ids.length, newWords: 0, onTime: ids.length, late: 0, xp: p.xp });
+  p.lastDate = day;
+  p.dailyNewCap = 0;
+  return p;
+}
+
+const f = document.getElementById('f');
+const g = document.getElementById('g');
+
+try {
+  for (const k of Object.keys(localStorage)) if (/^mng(_study_v2)?:fake/.test(k)) localStorage.removeItem(k);
+  localStorage.setItem('mng_study_v2:fake:laptop', JSON.stringify(record([90, 91, 92], 3)));
+  localStorage.setItem('mng_study_v2:fake:phone', JSON.stringify(record([93, 150], 2)));
+
+  // ---- the laptop, before sync ---------------------------------------------
+  await go(f, '../dist/index.html?fake-sync=laptop');
+  await until(() => $(f, '.top .sub'), 'the laptop dashboard');
+  check('laptop: its own progress shows at once', text(f, '.top .sub').startsWith('3 words tracked'));
+  await until(() => text(f, '#app').includes('Export a backup code'), 'the backup reminder');
+  check('not synced yet: the backup reminder says sync is the way out',
+    text(f, '#app').includes('sign in under settings to sync it'));
+  tab(f, 'settings');
+  await until(() => $(f, '[data-sync=off]'), 'the sync panel');
+  check('Settings opens on SYNC, off, with a sign-in button',
+    text(f, '[data-sync=off]').includes('OFF') && $(f, '[data-sync=off] [data-act=sync-sign-in]'));
+  $(f, '[data-act=sync-sign-in]').click();
+  check('the button opens the sign-in form', visible(f, '.signin') && visible(f, '[data-f=cancel]'));
+  signIn(f, 'wrong');
+  await until(() => visible(f, '.signin .msg'), 'the error message');
+  check('a wrong password says so', text(f, '.signin .msg') === 'That email and password don’t match.');
+  signIn(f, fred.password);
+  await until(() => !visible(f, '.signin') && $(f, '[data-sync=on]'), 'signed in');
+  check('signed in: SYNC reads ON, with the account', text(f, '[data-sync=on]').includes(`signed in as ${fred.email}`));
+  await until(() => online().items[92], 'the upload');
+  check('the laptop progress went online', Object.keys(online().items).length === 3 && online().history.length === 1);
+  check('with sync on, an old backup code is no longer a red warning',
+    !$(f, '.panel.red') && text(f, '#app').includes('optional while sync is on'));
+  tab(f, 'today');
+  await until(() => $(f, '.top .sub'), 'Today');
+  check('Today: no backup reminder once synced', !text(f, '#app').includes('Export a backup code'));
+
+  // ---- the phone joins -------------------------------------------------------
+  await go(g, '../dist/index.html?fake-sync=phone');
+  await until(() => $(g, '.top .sub'), 'the phone dashboard');
+  check('phone: its own progress first', text(g, '.top .sub').startsWith('2 words tracked'));
+  tab(g, 'settings');
+  await until(() => $(g, '[data-act=sync-sign-in]'), 'the phone sync panel');
+  $(g, '[data-act=sync-sign-in]').click();
+  signIn(g, fred.password);
+  await until(() => $(g, '[data-sync=on]'), 'the phone signed in');
+  tab(g, 'today');
+  await until(() => text(g, '.top .sub').startsWith('5 words tracked'), 'the combined progress on the phone');
+  check('phone: progress from both devices', true);
+  await until(() => text(f, '.top .sub').startsWith('5 words tracked'), 'the combined progress on the laptop');
+  check('laptop: the phone\'s words appear by themselves', true);
+  check('both days are online', online().history.length === 2);
+
+  // ---- a change on one shows on the other --------------------------------------
+  $(g, '[data-act=purpose]').click();
+  $(g, '#purposebox').value = 'Сарнайн гэр бүлтэй ярих';
+  $(g, '[data-act=purpose-save]').click();
+  await until(() => text(f, '.panel.gold').includes('Сарнайн гэр бүлтэй ярих'), 'the reason on the laptop');
+  check('a reason written on the phone shows on the laptop', true);
+
+  // ---- a lesson on the laptop ----------------------------------------------------
+  const xpBefore = stored('phone').xp;
+  $(f, '[data-act=start]').click();
+  await until(() => $(f, '.choice[data-act=pick]'), 'a review card');
+  $(f, '.choice[data-act=pick]').click();
+  await until(() => $(f, '[data-act=card-next]'), 'the verdict');
+  $(f, '[data-act=card-next]').click();
+  await until(() => stored('phone').xp > xpBefore, 'the grade reaching the phone');
+  check('a card graded on the laptop reaches the phone during the lesson', stored('phone').xp === stored('laptop').xp);
+  check('the laptop lesson carries on undisturbed', $(f, '.lessonbar'));
+  $(f, '[data-act=home]').click();
+
+  // ---- signing out ---------------------------------------------------------------
+  tab(g, 'settings');
+  await until(() => $(g, '[data-act=sync-sign-out]'), 'the sign-out button');
+  g.contentWindow.confirm = () => true;
+  $(g, '[data-act=sync-sign-out]').click();
+  await until(() => $(g, '[data-sync=off]'), 'signed out');
+  check('signing out keeps the progress on the phone', Object.keys(stored('phone').items).length === 5);
+  tab(g, 'today');
+  await until(() => $(g, '.top .sub'), 'Today');
+  check('signed out: the backup reminder is back', text(g, '#app').includes('Export a backup code'));
+} catch (e) {
+  log.push({ name: e.message, ok: false });
+}
+
+const failed = log.filter(x => !x.ok);
+document.getElementById('out').textContent = `${failed.length ? 'FAIL' : 'PASS'} ${log.length - failed.length}/${log.length}\n` +
+  failed.map(x => `✗ ${x.name}`).join('\n');
+</script>
+</body>
+</html>

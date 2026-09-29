@@ -37,15 +37,20 @@ jobs:
       - name: Build
         run: python build.py
 
+      # One exception: sync loads Google's Firebase SDK, once online and after
+      # the first paint (dist/sync/firebase.js). Everything else must be in
+      # dist/, so the app still opens and studies with no connection at all.
       - name: Check the build is offline-first
         run: |
-          if grep -rIoE "https?://" dist --include="*.js" --include="*.html" \
-               --include="*.css" --include="*.webmanifest"; then
+          if grep -rIoE "https?://[^\"'\` )]+" dist --include="*.js" --include="*.html" \
+               --include="*.css" --include="*.webmanifest" \
+             | grep -vE '^dist/sync/firebase\.js:https://www\.gstatic\.com/firebasejs/'; then
             echo "::error::dist/ contains an external URL; the app must work offline"
             exit 1
           fi
           test -f dist/index.html
           test -f dist/.nojekyll
+          test -f dist/sync/firebase.js
 
       - uses: actions/configure-pages@v5
 

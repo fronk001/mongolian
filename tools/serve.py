@@ -13,6 +13,7 @@ Also fixes up MIME types Python does not know, which otherwise break the PWA
 locally: a wrong Content-Type on the manifest or the woff2 fonts is enough.
 """
 import sys
+import time
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
@@ -27,6 +28,17 @@ EXTRA_TYPES = {
 
 class Handler(SimpleHTTPRequestHandler):
     extensions_map = {**SimpleHTTPRequestHandler.extensions_map, **EXTRA_TYPES}
+
+    def do_GET(self):
+        # /__wait answers after 0.2 s. Headless Edge fast-forwards its clock
+        # whenever no request is open, so a test page that must wait in real
+        # time (tools/firebase-check.html) keeps one of these open meanwhile.
+        if self.path.startswith("/__wait"):
+            time.sleep(0.2)
+            self.send_response(204)
+            self.end_headers()
+            return
+        super().do_GET()
 
     def end_headers(self):
         self.send_header("Cache-Control", "no-store, must-revalidate")

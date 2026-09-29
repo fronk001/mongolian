@@ -54,8 +54,9 @@ This matters beyond convenience: iOS deletes script-created storage after 7 days
 without interaction, but **home-screen installs are exempt**. The app also calls
 `navigator.storage.persist()` on boot.
 
-Even so, export a backup code occasionally. IndexedDB and localStorage on iOS
-have a history of loss around OS updates, and the code is the only real safety net.
+Even so, turn on sync (`SYNC.md`), or without it export a backup code
+occasionally. IndexedDB and localStorage on iOS have a history of loss around
+OS updates; the online copy (or the code) is the real safety net.
 
 ## Updating
 
@@ -65,7 +66,7 @@ git push
 
 CI rebuilds and republishes on every push to `main`. It also fails the build
 if `dist/` ever gains an external URL, which would break the offline-first
-rule.
+rule — with one allowed address, sync's Firebase SDK in `dist/sync/firebase.js`.
 
 The service worker is versioned by a content hash, so a changed build
 invalidates the old cache automatically. Users get the new version on next launch.
@@ -74,4 +75,7 @@ invalidates the old cache automatically. Users get the new version on next launc
 
 - `.nojekyll` is emitted into `dist/` so GitHub doesn't run Jekyll over it.
 - Everything uses relative paths, so the app works from a subdirectory.
-- Nothing is server-side. Any static host works; the repo is not GitHub-specific.
+- Nothing is server-side except sync's Firebase project, which is reached
+  directly from the browser. Any static host works; the repo is not
+  GitHub-specific (a new host's domain needs adding to Firebase's authorized
+  domains, like `fronk001.github.io` was).

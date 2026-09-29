@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!--
+  Checks the real Firebase SDK against src/sync/firebase.js, without any
+  account and without touching the real database: the CDN modules load, the
+  app initialises under its own name, auth starts signed out, and Firestore
+  accepts the exact writes sync sends (a first upload of a real record,
+  merge-writes with deletions, the running number). Needs internet.
+
+      py tools/run_tests.py tools/firebase-check.html
+-->
+<html lang="en">
+<head><meta charset="utf-8"><title>Firebase check</title></head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+import { firebaseBackend } from '../src/sync/firebase.js';
+import { toDocs, diff, patchesFor } from '../src/core/sync.js';
+import { blank, recordDay, migrateV1 } from '../src/core/progress.js';
+import { applyGrade } from '../src/core/scheduler.js';
+import { applyGrammarGrade } from '../src/core/grammar.js';
+
+const log = [];
+const check = (name, cond) => log.push({ name, ok: !!cond });
+// Keep a request open until done, so headless Edge waits in real time.
+let done = false;
+(async () => { while (!done) await fetch('/__wait').catch(() => {}); })();
+
+try {
+  // A made-up project: nothing here reaches a real database.
+  const b = firebaseBackend({ apiKey: 'check-only', projectId: 'mongolian-check', appId: '1:1:web:1' });
+  const user = await new Promise((r, no) => b.start(r).catch(no));
+  check('the SDK loads from the CDN, under the app\'s own name, and auth starts signed out', user === null);
+
+  // A record with every kind of field: words over several documents,
+  // history over two years, a row without a date, Cyrillic, a grammar count.
+  const p = blank();
+  for (const id of [90, 91, 150, 273]) applyGrade(p, id, 3, { today: '2026-09-28' });
+  recordDay(p, { date: '2026-09-28', tracked: 4, due: 0, known: 0, reviews: 4, xp: 36 });
+  p.history.unshift({ date: '2025-12-30', reviews: 1 }, { tracked: 2 });
+  p.purpose = 'Сарнайн гэр бүлтэй ярих';
+  p.badges = ['first'];
+  applyGrammarGrade(p, 'g_byna', true, '2026-09-28');
+  const upload = patchesFor([...diff({}, toDocs(p)), { path: ['main', 'seq', 'device1'], value: 1 }], b.DEL);
+  const older = migrateV1({ learned: [90], words: { 90: { box: 2, right: 1, wrong: 0 } }, history: [] });
+  const patches = patchesFor(diff(toDocs(p), toDocs(older)), b.DEL);
+  check('the patches include deletions', patches.some(w => Object.values(w.data).includes(b.DEL)));
+  for (const [name, writes] of [['a first upload', upload], ['merge-writes with deletions', patches]]) {
+    let err = null;
+    let pr = null;
+    try { pr = b.write('check-uid', writes); } catch (e) { err = e; }
+    check(`Firestore accepts ${name}${err ? `: ${err.message}` : ''}`, !err && pr && typeof pr.then === 'function');
+    if (pr) pr.catch(() => {}); // it can never reach the made-up project
+  }
+  let listenErr = null;
+  try { b.listen('check-uid', () => {}, () => {})(); } catch (e) { listenErr = e; }
+  check(`listening to a user's documents sets up${listenErr ? `: ${listenErr.message}` : ''}`, !listenErr);
+} catch (e) {
+  log.push({ name: e.message, ok: false });
+}
+
+done = true;
+const failed = log.filter(x => !x.ok);
+document.getElementById('out').textContent = `${failed.length ? 'FAIL' : 'PASS'} ${log.length - failed.length}/${log.length}\n` +
+  failed.map(x => `✗ ${x.name}`).join('\n');
+</script>
+</body>
+</html>

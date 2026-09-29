@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<!--
+  The sync engine end to end, against the pretend server: devices, each with
+  its own storage, sharing one server. Imports the real modules, like
+  test.html; the rules they check are the ones in src/sync/engine.js.
+
+      py tools/run_tests.py tools/engine-test.html
+-->
+<html lang="en">
+<head><meta charset="utf-8"><title>sync engine tests</title></head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+import { blank, recordDay } from '../src/core/progress.js';
+import { applyGrade } from '../src/core/scheduler.js';
+import { xpFor } from '../src/core/goals.js';
+import { toDocs, fromDocs, mergeStates, same } from '../src/core/sync.js';
+import { createSync } from '../src/sync/engine.js';
+import { FAKE_ACCOUNTS, fakeBackend, fakeServer } from '../src/sync/fake-backend.js';
+
+const [FRED] = FAKE_ACCOUNTS;
+const KEY = 'mng_study_v2';
+const clone = x => JSON.parse(JSON.stringify(x));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const results = [];
+
+async function test(name, fn) {
+  try {
+    await fn();
+    results.push({ name, ok: true });
+  } catch (e) {
+    results.push({ name, ok: false, err: e.message });
+  }
+}
+function eq(actual, expected, msg = '') {
+  const a = JSON.stringify(actual), b = JSON.stringify(expected);
+  if (a !== b) throw new Error(`${msg ? msg + ': ' : ''}expected ${b}, got ${a}`);
+}
+function ok(cond, msg = 'expected true') {
+  if (!cond) throw new Error(msg);
+}
+async function until(fn, what, ms = 3000) {
+  for (const t = Date.now(); Date.now() - t < ms; await sleep(10)) if (fn()) return;
+  throw new Error(`timed out waiting until ${what}`);
+}
+
+function memory() {
+  const m = new Map();
+  return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) };
+}
+
+// Progress studied on the given days, the way the app records it.
+function record(days = ['2026-09-20', '2026-09-21', '2026-09-22'], ids = [90, 91, 150]) {
+  const p = blank();
+  for (const today of days) {
+    let xp = 0;
+    for (const id of ids) {
+      const prev = p.items[id];
+      xp += xpFor(prev?.s, applyGrade(p, id, 3, { today }).s);
+    }
+    p.xp += xp;
+    recordDay(p, { date: today, tracked: Object.keys(p.items).length, due: 0, known: 0, reviews: ids.length, newWords: 0, onTime: ids.length, late: 0, xp });
+    p.lastDate = today;
+  }
+  return p;
+}
+
+// One device: its own storage and connection, the engine, and the progress
+// the app holds (P), saved the way the app saves it.
+function device(server, { storage = memory(), P = blank(), name = 'd', offline = false } = {}) {
+  const d = { name, storage, P: clone(P) };
+  const save = () => storage.setItem(KEY, JSON.stringify(d.P));
+  save();
+  d.backend = fakeBackend({ server, storage, device: name });
+  if (offline) d.backend.setOnline(false);
+  d.engine = createSync({ storage, key: KEY, backend: d.backend, state: () => d.P, adopt: next => { d.P = next; save(); } });
+  d.engine.start();
+  d.mode = () => d.engine.status().mode;
+  d.waiting = () => d.engine.status().waiting;
+  // A graded card and a finished lesson, as app.js does them.
+  d.grade = (id, g, today) => {
+    const prev = d.P.items[id];
+    d.P.xp += xpFor(prev?.s, applyGrade(d.P, id, g, { today }).s);
+    save();
+    d.engine.commit(d.P);
+  };
+  d.finish = (today, row = {}) => {
+    recordDay(d.P, { date: today, tracked: Object.keys(d.P.items).length, due: 0, known: 0, reviews: 1, newWords: 0, onTime: 1, late: 0, xp: 9, ...row });
+    d.P.lastDate = today;
+    save();
+    d.engine.commit(d.P);
+  };
+  return d;
+}
+
+// The app closed and opened again: the same storage, the progress as last saved.
+function reopen(server, d, opts = {}) {
+  d.engine.stop();
+  d.backend.close();
+  return device(server, { storage: d.storage, P: JSON.parse(d.storage.getItem(KEY)), name: d.name, ...opts });
+}
+
+const online = (server, uid = FRED.uid) => fromDocs(server.docs(uid));
+const settled = d => d.mode() === 'live' && d.waiting() === 0;
+
+async function signedIn(server, name, P) {
+  const d = device(server, { P, name });
+  await d.engine.signIn(FRED.email, FRED.password);
+  await until(() => settled(d) && server.docs(FRED.uid).main, `${name} is signed in and settled`);
+  return d;
+}
+
+// ---------------------------------------------------------------------------
+
+await test('first sign-in: the progress already on the device goes online, lessons done before signing in included', async () => {
+  const server = fakeServer();
+  const laptop = device(server, { P: record(), name: 'laptop' });
+  await until(() => laptop.mode() === 'signed-out', 'it knows nobody is signed in');
+  eq(laptop.engine.status().claimed, false);
+  laptop.grade(272, 3, '2026-09-23');
+  eq(laptop.waiting(), 0, 'not signed in: nothing queued');
+  await laptop.engine.signIn(FRED.email, FRED.password);
+  await until(() => settled(laptop) && server.docs(FRED.uid).main, 'the upload');
+  ok(same(toDocs(online(server)), toDocs(laptop.P)), 'the online copy is exactly the laptop progress');
+  ok(online(server).items[272], 'the word graded before signing in is there');
+  ok(laptop.engine.status().claimed);
+});
+
+await test('a second device with its own progress: both are combined, on both devices', async () => {
+  const server = fakeServer();
+  const laptop = await signedIn(server, 'laptop', record());
+  // Studied apart before sync existed: another day, one shared word, one of its own.
+  const phoneP = record(['2026-09-23'], [91, 92]);
+  const phone = device(server, { P: phoneP, name: 'phone' });
+  await phone.engine.signIn(FRED.email, FRED.password);
+  await until(() => settled(phone), 'the phone is in step');
+  const want = mergeStates(phoneP, record());
+  ok(same(toDocs(online(server)), toDocs(want)), 'the online copy is the combination');
+  ok(same(toDocs(phone.P), toDocs(want)), 'the phone shows it');
+  await until(() => same(toDocs(laptop.P), toDocs(want)), 'the laptop shows it');
+  ok(phone.P.items[92] && phone.P.items[150], 'words from both');
+  eq(phone.P.history.map(h => h.date), ['2026-09-20', '2026-09-21', '2026-09-22', '2026-09-23'], 'days from both');
+  eq(phone.P.items[91].last, '2026-09-23', 'the shared word keeps its latest review');
+});
+
+await test('a fresh device receives the online progress and changes nothing online', async () => {
+  const server = fakeServer();
+  await signedIn(server, 'laptop', record());
+  const before = server.docs(FRED.uid);
+  const fresh = device(server, { name: 'fresh' });
+  await fresh.engine.signIn(FRED.email, FRED.password);
+  await until(() => settled(fresh), 'the fresh device is in step');
+  ok(same(toDocs(fresh.P), toDocs(record())), 'it shows the laptop progress');
+  const after = server.docs(FRED.uid);
+  delete before.main.seq;
+  delete after.main.seq;
+  ok(same(before, after), 'the online copy is untouched');
+});
+
+await test('a lesson on one device shows up on the other, and is confirmed', async () => {
+  const server = fakeServer();
+  const laptop = await signedIn(server, 'laptop', record());
+  const phone = await signedIn(server, 'phone', blank());
+  phone.grade(93, 3, '2026-09-24');
+  phone.finish('2026-09-24');
+  ok(phone.P.items[93], 'on the phone at once');
+  await until(() => laptop.P.items[93] && laptop.P.history.some(h => h.date === '2026-09-24'), 'the laptop sees it');
+  await until(() => phone.waiting() === 0, 'the phone queue empties');
+  eq(laptop.P.xp, phone.P.xp, 'the same xp on both');
+});
+
+await test('offline: a lesson waits on the device, survives closing the app, and goes up once online', async () => {
+  const server = fakeServer();
+  const laptop = await signedIn(server, 'laptop', record());
+  const phone = await signedIn(server, 'phone', blank());
+  phone.backend.setOnline(false);
+  await until(() => phone.engine.status().offline, 'the phone knows it is offline');
+  phone.grade(93, 3, '2026-09-24');
+  phone.finish('2026-09-24');
+  await sleep(50);
+  eq(phone.waiting(), 2, 'queued');
+  ok(!laptop.P.items[93], 'the laptop has not seen it');
+  // Closed and opened again, still offline: the database code can't even load.
+  const again = reopen(server, phone, { offline: true });
+  ok(again.P.items[93], 'still on the device after reopening');
+  await until(() => again.mode() === 'offline', 'it knows it is offline');
+  eq(again.waiting(), 2, 'still queued');
+  again.backend.setOnline(true);
+  dispatchEvent(new Event('online'));
+  await until(() => laptop.P.items[93] && laptop.P.history.some(h => h.date === '2026-09-24'), 'the laptop gets it');
+  await until(() => again.waiting() === 0, 'the queue empties');
+});
+
+await test('studied on both while apart: both lessons count, the later review wins', async () => {
+  const server = fakeServer();
+  const laptop = await signedIn(server, 'laptop', record());
+  const phone = await signedIn(server, 'phone', blank());
+  const start = online(server);
+  phone.backend.setOnline(false);
+  await until(() => phone.engine.status().offline, 'the phone knows it is offline');
+  phone.grade(90, 1, '2026-09-24');     // on the train: 90 forgotten, 94 new
+  phone.grade(94, 3, '2026-09-24');
+  phone.finish('2026-09-24', { reviews: 2, xp: 20 });
+  laptop.grade(90, 3, '2026-09-25');    // the next evening, before the phone reconnects
+  laptop.grade(95, 3, '2026-09-25');
+  laptop.finish('2026-09-25', { reviews: 2, xp: 30 });
+  await until(() => laptop.waiting() === 0, 'the laptop lesson is online');
+  const gained = { phone: phone.P.xp - start.xp, laptop: laptop.P.xp - start.xp };
+  phone.backend.setOnline(true);
+  await until(() => phone.waiting() === 0 && online(server).items[94], 'the phone catches up');
+  const end = online(server);
+  eq(end.xp, start.xp + gained.phone + gained.laptop, 'xp from both lessons');
+  eq(end.items[90].last, '2026-09-25', 'word 90 keeps the later review');
+  ok(end.items[94] && end.items[95], 'the new words from both');
+  ok(end.introduced.includes(94) && end.introduced.includes(95), 'both introduced');
+  eq(end.history.slice(-2).map(h => h.date), ['2026-09-24', '2026-09-25'], 'both days');
+  await until(() => same(toDocs(phone.P), toDocs(end)) && same(toDocs(laptop.P), toDocs(end)), 'both devices show the same');
+});
+
+await test('a change that landed just before the app closed is not counted twice', async () => {
+  const server = fakeServer();
+  await signedIn(server, 'laptop', record());
+  const phone = await signedIn(server, 'phone', blank());
+  phone.backend.dropAcks = true;
+  phone.grade(96, 3, '2026-09-24');
+  await until(() => online(server).items[96], 'it reached the database');
+  eq(phone.waiting(), 1, 'but the phone never heard back');
+  const xp = online(server).xp;
+  const again = reopen(server, phone);
+  await until(() => settled(again), 'reopened and in step');
+  await sleep(50);
+  eq(online(server).xp, xp, 'xp counted once');
+  eq(online(server).items[96].reps, 1, 'one review');
+});
+
+await test('a first sign-in that never reached the database happens again, nothing doubled', async () => {
+  const server = fakeServer();
+  const laptop = await signedIn(server, 'laptop', record());
+  const phoneP = record(['2026-09-23'], [92]);
+  const phone = device(server, { P: phoneP, name: 'phone' });
+  phone.backend.hold = true; // a stalled connection: nothing gets through
+  await phone.engine.signIn(FRED.email, FRED.password);
+  await until(() => phone.engine.status().claimed && phone.waiting() === 1, 'joined, its batch waiting');
+  const again = reopen(server, phone);
+  await until(() => settled(again), 'joined again');
+  const want = mergeStates(phoneP, record());
+  ok(same(toDocs(online(server)), toDocs(want)), 'the online copy is the combination, once');
+  await until(() => same(toDocs(laptop.P), toDocs(want)), 'and the laptop has it');
+});
+
+await test('an empty offline cache is never mistaken for an empty online copy', async () => {
+  const server = fakeServer();
+  await signedIn(server, 'laptop', record());
+  const other = device(server, { P: record(['2026-09-01'], [273]), name: 'other' });
+  await other.engine.signIn(FRED.email, FRED.password);
+  other.backend.setOnline(false); // drops before the first answer from the server
+  await sleep(100);
+  eq(other.mode(), 'connecting', 'still waiting for the database');
+  ok(same(toDocs(online(server)), toDocs(record())), 'nothing uploaded meanwhile');
+  other.backend.setOnline(true);
+  await until(() => settled(other), 'in step once online');
+  ok(online(server).items[273] && online(server).items[90], 'combined, not overwritten');
+});
+
+await test('a wrong password is refused and nothing changes', async () => {
+  const server = fakeServer();
+  const laptop = device(server, { P: record(), name: 'laptop' });
+  let code = '';
+  await laptop.engine.signIn(FRED.email, 'not-it').catch(e => { code = e.code; });
+  eq(code, 'auth/invalid-credential');
+  await sleep(50);
+  eq(server.docs(FRED.uid), {});
+  eq(laptop.engine.status().claimed, false);
+});
+
+await test('signing out keeps the progress here; signing in again adds what was done meanwhile', async () => {
+  const server = fakeServer();
+  const laptop = await signedIn(server, 'laptop', record());
+  await laptop.engine.signOut();
+  await until(() => laptop.mode() === 'signed-out', 'signed out');
+  ok(laptop.P.items[90] && laptop.P.history.length === 3, 'the progress is still on the device');
+  eq(laptop.engine.status().claimed, false, 'no longer in step');
+  laptop.grade(97, 3, '2026-09-24');
+  await sleep(50);
+  ok(!online(server).items[97], 'nothing sent while signed out');
+  await laptop.engine.signIn(FRED.email, FRED.password);
+  await until(() => settled(laptop) && online(server).items[97], 'it goes up with the next sign-in');
+});
+
+await test('a session that ends by itself keeps collecting, and sends after signing in', async () => {
+  const server = fakeServer();
+  const laptop = await signedIn(server, 'laptop', record());
+  await laptop.backend.signOut(); // e.g. after a password change, not "Sign out"
+  await until(() => laptop.mode() === 'signed-out', 'signed out');
+  eq(laptop.engine.status().claimed, true, 'still this account\'s copy');
+  laptop.grade(97, 3, '2026-09-24');
+  eq(laptop.waiting(), 1, 'queued');
+  await laptop.engine.signIn(FRED.email, FRED.password);
+  await until(() => settled(laptop) && online(server).items[97], 'sent after signing in');
+});
+
+await test('importing a code replaces the online copy too', async () => {
+  const server = fakeServer();
+  const laptop = await signedIn(server, 'laptop', record());
+  const phone = await signedIn(server, 'phone', blank());
+  const older = record(['2026-09-20'], [90]);
+  laptop.P = clone(older);
+  laptop.storage.setItem(KEY, JSON.stringify(laptop.P));
+  laptop.engine.commit(laptop.P, { replace: true });
+  await until(() => same(toDocs(online(server)), toDocs(older)), 'the online copy is the imported one');
+  await until(() => same(toDocs(phone.P), toDocs(older)), 'and the phone shows it');
+});
+
+await test('the pretend accounts never see each other\'s progress', async () => {
+  const server = fakeServer();
+  await signedIn(server, 'laptop', record());
+  eq(server.docs(FAKE_ACCOUNTS[1].uid), {}, 'nothing under the other account');
+});
+
+const failed = results.filter(r => !r.ok);
+document.getElementById('out').textContent =
+  `${failed.length ? 'FAIL' : 'PASS'} ${results.length - failed.length}/${results.length}\n` +
+  failed.map(r => `✗ ${r.name}\n    ${r.err}`).join('\n');
+document.title = failed.length ? 'FAIL' : 'PASS';
+</script>
+</body>
+</html>

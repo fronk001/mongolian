@@ -1,16 +1,64 @@
 /** Controller: session flow, event wiring, persistence. */
 import { makeFSRS, dayKey, daysBetween } from '../core/fsrs.js';
-import { load, save, stats, encodeCode, importCode, exportAge, recordDay } from '../core/progress.js';
+import { load, save as saveLocal, STORE_KEY, stats, encodeCode, importCode, exportAge, recordDay } from '../core/progress.js';
 import { buildSession, applyGrade } from '../core/scheduler.js';
 import { gradeAnswer, diffTokens } from '../core/grade.js';
 import { buildChoices, shuffle, makeRng, hashSeed } from '../core/choices.js';
 import { xpFor, earnedBadges, stepCount, levelFor, xpForGrammar } from '../core/goals.js';
 import { gradeDrill, applyGrammarGrade, topicMastery } from '../core/grammar.js';
+import { createSync } from '../sync/engine.js';
+import { firebaseBackend } from '../sync/firebase.js';
+import { firebaseConfig } from '../sync/firebase-config.js';
 import * as V from './views.js';
+import { syncPanel, todayNotice, openSignIn, signInOpen } from './account.js';
 
 const el = document.getElementById('app');
+// ?fake-sync=<device>: sync against a pretend server kept in this browser
+// (tools/smoke.html), studying on a copy of the progress that is never the
+// real one.
+const params = new URLSearchParams(location.search);
+const fake = params.has('fake-sync') ? params.get('fake-sync') || 'laptop' : null;
+const KEY = fake ? `${STORE_KEY}:fake:${fake}` : STORE_KEY;
 let WORDS = [], SENTENCES = [], GRAMMAR = [], BYID = {}, POOL = [];
-let P = load();
+let P = load(localStorage, KEY);
+let sync = null;      // created in boot(), before the first render
+let updateReady = false;   // a new version has taken over and waits to be shown
+
+/**
+ * Keep a change: on this device at once, and online as soon as it can go.
+ * `replace` is for an imported code, which replaces rather than adds up.
+ */
+function save(p, opts) {
+  saveLocal(p, localStorage, KEY);
+  if (sync) sync.commit(p, opts);
+}
+const syncStatus = () => (sync ? sync.status() : { mode: 'off', claimed: false });
+
+/**
+ * Whether the screen can be redrawn for news from elsewhere (another device,
+ * the connection) without the learner noticing anything but new figures:
+ * not in a lesson or a drill, and nothing half-typed.
+ */
+function quiet() {
+  if (S.screen !== 'home' && S.screen !== 'done') return false;
+  if (S.editPurpose) return false;
+  const inc = document.getElementById('incode');
+  return !(inc && inc.value);
+}
+
+/** Also a safe moment to reload the page: for a new version, or sync's retry after an offline start. */
+const idle = () => S.screen === 'home' && quiet() && !signInOpen();
+
+/**
+ * The online copy had something newer (another device studied): take it.
+ * Shown at once where that disturbs nothing; mid-lesson it waits for the
+ * next screen, and grading carries on against the newer copy.
+ */
+function adopt(next) {
+  P = next;
+  saveLocal(P, localStorage, KEY);
+  if (quiet()) render({ keep: true });
+}
 
 const blankSummary = () => ({ reviews: 0, right: 0, newWords: 0, xp: 0, onTime: 0, late: 0, newBadges: [], levelBefore: 1, leveledTo: null });
 const blankGrammarSummary = () => ({ xp: 0, right: 0, wrong: 0 });
@@ -97,7 +145,8 @@ function renderKey() {
   return `run:${S.i}:${item && item.kind === 'deck' ? S.deckI + ':' + S.flipped : ''}`;
 }
 
-function render() {
+/** `keep`: a redraw for news from elsewhere, which leaves the scroll position and focus alone. */
+function render({ keep = false } = {}) {
   const st = stats(P, { words: WORDS });
   const today = dayKey();
   const key = renderKey();
@@ -107,7 +156,10 @@ function render() {
 
   if (S.screen === 'home') {
     el.className += ' tabbed';
-    const ctx = { today, exportAge: exportAge(P), corpusWords: POOL.length, editPurpose: S.editPurpose };
+    const ctx = {
+      today, exportAge: exportAge(P), corpusWords: POOL.length, editPurpose: S.editPurpose,
+      notice: todayNotice(syncStatus(), V.backupNotice(exportAge(P)))
+    };
     let body;
     if (S.tab === 'progress') body = V.viewProgress(P, st, ctx);
     else if (S.tab === 'grammar') body = V.viewGrammarList(GRAMMAR, P);
@@ -164,18 +216,35 @@ function render() {
     el.innerHTML = V.lessonBar(step, total) + body;
   }
 
-  window.scrollTo(0, 0);
-  const box = document.getElementById('ansbox') || document.getElementById('purposebox');
-  if (box && !('ontouchstart' in window)) box.focus();
+  if (!keep) {
+    window.scrollTo(0, 0);
+    const box = document.getElementById('ansbox') || document.getElementById('purposebox');
+    if (box && !('ontouchstart' in window)) box.focus();
+  }
+  settle();
 }
 
-/** The Settings tab — options plus the backup code, always shown in full now that it is its own page. */
+// A moment with nothing under way: a waiting new version can load now, and
+// sync can make its second try after an offline start.
+function settle() {
+  if (!idle()) return;
+  if (updateReady) location.reload();
+  else if (sync) sync.poke();
+}
+
+/** The Settings tab — sync, options, and the backup code, always shown in full now that it is its own page. */
 function settingsPage() {
   const g = en => `<div class="gl">${V.esc(en)}</div>`;
   const age = exportAge(P);
   const canShare = typeof navigator !== 'undefined' && !!navigator.share;
-  return V.pageHead('SETTINGS') +
-    `<div class="h" style="margin-top:10px"><span class="mono">OPTIONS</span></div>
+  const synced = syncStatus().claimed;
+  // With sync on, the online copy is the backup: an old code is no longer
+  // something to act on, so it stops claiming red.
+  const stale = age === null || age >= 14;
+  const warn = stale && !synced;
+  const panel = syncPanel(syncStatus());
+  return V.pageHead('SETTINGS') + panel +
+    `<div class="h"${panel ? '' : ' style="margin-top:10px"'}><span class="mono">OPTIONS</span></div>
     <div class="panel">
       <div class="wline">
         <div style="flex:1"><div class="mn">Multiple choice</div>${g('on word cards')}</div>
@@ -189,10 +258,11 @@ function settingsPage() {
     </div>
 
     <div class="h"><span class="mono">BACKUP CODE</span></div>
-    <div class="panel ${age === null || age >= 14 ? 'red' : 'blue'}">
+    <div class="panel${warn ? ' red' : stale ? '' : ' blue'}">
       <div class="wline">
-        <div style="flex:1"><div class="mn">Last export</div></div>
-        <div class="mono${age === null || age >= 14 ? ' red' : ''}">${
+        <div style="flex:1"><div class="mn">Last export</div>${
+          synced ? g('optional while sync is on — the online copy is the backup') : ''}</div>
+        <div class="mono${warn ? ' red' : ''}">${
           age === null ? 'NEVER' : age === 0 ? 'TODAY' : age + 'D AGO'}</div>
       </div>
       <div class="mono" style="margin-top:14px">EXPORT</div>
@@ -207,9 +277,10 @@ function settingsPage() {
       <div class="inline" style="margin-top:10px">
         <button class="btn secondary" data-act="import">Import</button>
       </div>
-      <div class="gl" style="margin-top:10px">importing replaces everything on this device — it does not merge</div>
+      <div class="gl" style="margin-top:10px">importing replaces everything ${
+        synced ? 'on this device and online' : 'on this device'} — it does not merge</div>
     </div>
-    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE</span></div>`;
+    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE-FIRST</span></div>`;
 }
 
 /** Record that a code actually left the device. Only called on success. */
@@ -510,13 +581,31 @@ document.addEventListener('click', e => {
   else if (act === 'import') {
     const box = document.getElementById('incode');
     const next = importCode(box ? box.value : '');
-    if (next) { P = next; save(P); S.msg = 'Imported' + (next.migratedFrom ? ' (v1 → v2)' : ''); }
+    if (next) {
+      // Clear the box first: a half-pasted code holds back redraws (quiet()).
+      if (box) box.value = '';
+      P = next; save(P, { replace: true });
+      S.msg = 'Imported' + (next.migratedFrom ? ' (v1 → v2)' : '');
+    }
     else S.msg = '!Invalid code';
     render();
   }
+
+  // ---- sync -------------------------------------------------------------
+  else if (act === 'sync-sign-in') openSignIn(sync);
+  else if (act === 'sync-sign-out') {
+    const { waiting } = sync.status();
+    const unsent = waiting
+      ? `\n\n${waiting} ${waiting === 1 ? 'change hasn’t' : 'changes haven’t'} reached the online copy yet. ` +
+        'They stay on this device and go up when you sign in again.'
+      : '';
+    if (confirm(`Stop syncing on this device? Your progress stays here, and online.${unsent}`)) sync.signOut();
+  }
+  else if (act === 'sync-retry') location.reload();
 });
 
 document.addEventListener('keydown', e => {
+  if (signInOpen()) return;   // the sign-in form handles its own keys
   if (e.target && /^(TEXTAREA|INPUT)$/.test(e.target.tagName) && e.key !== 'Enter') return;
 
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -553,6 +642,15 @@ async function requestPersistence() {
   } catch (e) { /* non-fatal */ }
 }
 
+/** The online database, or the pretend one under ?fake-sync. None without a config. */
+async function makeBackend() {
+  if (fake) {
+    const { fakeBackend, fakeServer } = await import('../sync/fake-backend.js');
+    return fakeBackend({ server: fakeServer({ storage: localStorage }), storage: localStorage, device: fake });
+  }
+  return firebaseConfig ? firebaseBackend(firebaseConfig) : null;
+}
+
 async function boot() {
   const [w, s, g] = await Promise.all([
     fetch('./data/words.json').then(r => r.json()),
@@ -564,9 +662,14 @@ async function boot() {
   // Distractors come from drillable vocabulary only: offering «байна» as an
   // option against a noun gives the answer away by register alone.
   POOL = WORDS.filter(x => x.drill !== false);
+  sync = createSync({ storage: localStorage, key: KEY, backend: await makeBackend(), state: () => P, adopt, idle });
+  sync.subscribe(() => { if (quiet()) render({ keep: true }); });
   requestPersistence();
   registerServiceWorker();
   render();
+  // After the first paint: loads the database code, and picks up the
+  // sign-in if this device has one. Nothing on screen waits for it.
+  sync.start();
 }
 boot();
 
@@ -577,9 +680,15 @@ boot();
  * update on boot and again every time the app returns to the foreground, and
  * reloads once a new version has taken over so the swap is never stuck behind
  * a stale cache.
+ *
+ * The reload waits for a moment with nothing under way (settle(), from
+ * render()), or for the app to be out of sight: never under a question being
+ * answered or a half-typed password. The very first copy taking over is not
+ * an update at all, and reloads nothing: the page is already current.
  */
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
+  let controlled = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.register('./sw.js').then(reg => {
     const check = () => reg.update().catch(() => {});
     document.addEventListener('visibilitychange', () => {
@@ -587,10 +696,12 @@ function registerServiceWorker() {
     });
   }).catch(() => {});
 
-  let reloaded = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloaded) return;
-    reloaded = true;
-    window.location.reload();
+    if (!controlled) { controlled = true; return; }
+    updateReady = true;
+    if (idle()) location.reload();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (updateReady && document.hidden) location.reload();
   });
 }
