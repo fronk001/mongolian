@@ -289,6 +289,11 @@ Rules: `firestore.rules` in the Life Hub repo covers both apps; Fred pastes it.
 - Known, accepted: two devices grading at the same instant while both are
   online, or in the ≤10 s before the SDK notices a dead connection, resolve
   xp last-writer-wins. Real use is one device at a time.
+- Known: a refusal (NOT SYNCING: the rules, a used-up quota) is not retried
+  by itself. The listener is dead and a refused batch stays in `sent`, so
+  only a reload recovers: Try again, or a new version loading. An installed
+  phone app can stay open for days, so after any rules change, tap Try again
+  on each device.
 
 ## Current status
 
@@ -299,9 +304,11 @@ dashboard carrying the goal and achievement layers.
 Deployed target is GitHub Pages (`DEPLOY.md`). Audio, richer content packs and
 morphology drills are not built — see `ROADMAP.md`.
 
-**Sync (28 Sep 2026):** built and tested (core, engine, smoke, real-SDK
-check). Waiting on Fred: publish the rules (SYNC.md step 1), then sign in on
-the laptop and in the installed iPhone app.
+**Sync: live since 29 Sep 2026.** Fred is signed in on the laptop (Chrome,
+the published app) and in the installed iPhone app, and confirmed both show
+the same progress. Until then the laptop had quietly kept its own copy (27
+words from the August import) while the online copy stayed empty: a device
+that was never signed in looks exactly like a synced one on Today.
 
 **Known limit:** 184 lexicon entries (154 drillable, 30 reference) over 164
 sentences. Simulation shows the i+1 selector runs out of new material around
