@@ -6,7 +6,7 @@ correct has to be written down in advance. This script produces `alt.en` and
 `alt.mn` for each sentence from two sources:
 
   RULES  — mechanical alternations verified against "Modern Mongolian: A
-           course book" (Sanders & Bat-Ireedui). Each rule cites its page.
+           course book" (Gaunt & Bayarmandakh, 2004). Each rule cites its page.
   HAND   — phrasings and judgement calls that no rule can produce.
 
     py tools/alternatives.py            # rewrite src/data/sentences.json

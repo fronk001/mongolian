@@ -17,6 +17,9 @@ What it asks her, and what it deliberately does not:
     catches and a script cannot.
   * **Unreviewed lexicon entries** — machine-written glosses awaiting sign-off.
   * **Badge names** — machine-written Mongolian, unchecked.
+  * **New sentences** — drafts in `content/drafts/*.json` written for a unit
+    (docs/CONTENT.md). A draft reaches the sheet only once the copyright gate
+    (`tools/overlap.py`) is clear, and reaches the app only once she says yes.
   * **Not the English alternatives.** She is a Mongolian tutor; the English is
     the part that does not need her, and asking would quadruple the work for
     nothing.
@@ -34,13 +37,49 @@ SRC = Path("src/data")
 OUT = Path("tools/review.html")
 
 BADGE_RE = re.compile(
-    r"\{\s*id:\s*'(?P<id>[^']+)',\s*mn:\s*'(?P<mn>[^']+)',\s*en:\s*'(?P<en>[^']+)'"
+    r"\{\s*id:\s*'(?P<id>[^']+)',\s*mn:\s*'(?P<mn>[^']+)',\s*en:\s*'(?P<en>[^']+)',"
+    r"\s*reviewed:\s*(?P<reviewed>true|false)"
 )
+DRAFTS = Path("content/drafts")
 
 
 def load_badges():
+    """Only names still pending: Luna approved all twelve in August 2026."""
     src = Path("src/core/goals.js").read_text(encoding="utf-8")
-    return [m.groupdict() for m in BADGE_RE.finditer(src)]
+    return [{k: m[k] for k in ("id", "mn", "en")}
+            for m in BADGE_RE.finditer(src) if m["reviewed"] == "false"]
+
+
+def load_drafts():
+    """
+    New sentences waiting for a native speaker, from content/drafts/*.json
+    (gitignored): each file a list of {sid, mn, en, unit?, src?}. Any draft
+    the copyright gate blocks is left off the sheet and reported — it must be
+    rewritten, not reviewed.
+    """
+    items = []
+    for f in sorted(DRAFTS.glob("*.json")) if DRAFTS.exists() else []:
+        for d in json.loads(f.read_text(encoding="utf-8")):
+            items.append({**d, "file": f.name})
+    if not items:
+        return []
+    sys.path.insert(0, "tools")
+    import overlap
+    texts = [q.read_text(encoding="utf-8") for q in sorted(overlap.DEFAULT_BOOKS.glob("*.txt"))
+             if not any(s in q.name for s in overlap.SKIP)]
+    if not texts:
+        sys.exit(f"no book text in {overlap.DEFAULT_BOOKS}: the copyright gate cannot run, "
+                 "so drafts cannot go on a sheet")
+    grams, whole = overlap.index(texts)
+    allow = overlap.load_allow()
+    clear = []
+    for d in items:
+        why = overlap.check(d["mn"], grams, whole, allow)
+        if why:
+            print(f"  BLOCKED by the copyright gate, rewrite: {d['sid']} {d['mn']} — {why}")
+        else:
+            clear.append(d)
+    return clear
 
 
 def load_grammar():
@@ -70,7 +109,8 @@ def collect():
 
     items = [
         {"mn": s["mn"], "en": s["en"], "alts": (s.get("alt") or {}).get("mn") or []}
-        for s in sentences if (s.get("alt") or {}).get("mn")
+        # Ruled on already (altReviewed): asking again wastes her time.
+        for s in sentences if (s.get("alt") or {}).get("mn") and s.get("altReviewed") is not True
     ]
     lexicon = [
         {"id": w["id"], "mn": w["mn"], "en": w["en"],
@@ -78,7 +118,7 @@ def collect():
         for w in words if w.get("reviewed") is False
     ]
     return {"sentences": items, "lexicon": lexicon, "badges": load_badges(),
-            "grammar": load_grammar()}
+            "grammar": load_grammar(), "drafts": load_drafts()}
 
 
 # --------------------------------------------------------------------- sheet
@@ -158,6 +198,11 @@ border-radius:4px;background:var(--panel);color:var(--muted);cursor:pointer}
      bottom and send Fred the file it produces. Nothing is uploaded anywhere.</p>
 </div>
 
+<h2 id="drafts-h">0. Шинэ өгүүлбэр <span class="en">— new sentences</span></h2>
+<div class="en" style="margin-top:8px" id="drafts-note">New sentences for Fred's next lessons. Would a Mongolian
+  say this, and does the English match? If not, mark it Буруу and write it the way you would say it.</div>
+<div id="drafts"></div>
+
 <h2>1. Өгүүлбэрийн хувилбар <span class="en">— sentence alternatives</span></h2>
 <div id="sentences"></div>
 
@@ -191,9 +236,9 @@ const DATA = __DATA__;
 const TOTAL = __TOTAL__;
 const KEY = 'mng_review_v1';
 
-let state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{} };
+let state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{}, drafts:{} };
 try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
-for (const k of ['alts','added','lexicon','badges','grammar']) state[k] = state[k] || {};
+for (const k of ['alts','added','lexicon','badges','grammar','drafts']) state[k] = state[k] || {};
 
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
   .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -206,6 +251,18 @@ function picker(group, key, current) {
 }
 
 function render() {
+  const none = !DATA.drafts.length;
+  for (const id of ['drafts-h', 'drafts-note']) document.getElementById(id).style.display = none ? 'none' : '';
+  document.getElementById('drafts').innerHTML = DATA.drafts.map(d => {
+    const v = state.drafts[d.sid] || {};
+    return `<div class="item ${v.verdict ? 'done' : ''}">
+      <div class="q">${esc(d.mn)}<span class="gloss">${esc(d.en)}</span></div>
+      ${picker('drafts', d.sid, v.verdict)}
+      <input class="free" data-draft="${esc(d.sid)}" placeholder="Зөв хувилбар — how you would say it (if wrong)"
+        value="${esc(v.text || '')}">
+    </div>`;
+  }).join('');
+
   document.getElementById('sentences').innerHTML = DATA.sentences.map((s, i) => {
     const v = state.alts[s.mn] || {};
     const done = s.alts.every(a => v[a]);
@@ -281,6 +338,7 @@ function progress() {
   n += Object.values(state.lexicon).filter(x => x.verdict).length;
   n += Object.values(state.badges).filter(x => x.verdict).length;
   n += Object.values(state.grammar).filter(x => x.verdict).length;
+  n += Object.values(state.drafts).filter(x => x.verdict).length;
   document.getElementById('n').textContent = n;
   document.getElementById('fill').style.width = (100 * n / TOTAL) + '%';
   return n;
@@ -307,7 +365,8 @@ document.addEventListener('click', e => {
     else bucket[key] = v;
   } else {
     const store = group === 'lexicon' ? state.lexicon
-      : group === 'badges' ? state.badges : state.grammar;
+      : group === 'badges' ? state.badges
+      : group === 'drafts' ? state.drafts : state.grammar;
     const cur = store[key] = store[key] || {};
     if (cur.verdict === v) { delete cur.verdict; chosen = undefined; }
     else cur.verdict = v;
@@ -332,6 +391,10 @@ document.addEventListener('input', e => {
     const cur = state.badges[t.dataset.badge] || {};
     cur.text = t.value;
     state.badges[t.dataset.badge] = cur;
+  } else if (t.dataset.draft !== undefined) {
+    const cur = state.drafts[t.dataset.draft] || {};
+    cur.text = t.value;
+    state.drafts[t.dataset.draft] = cur;
   } else if (t.dataset.grammar !== undefined) {
     const cur = state.grammar[t.dataset.grammar] || {};
     cur.text = t.value;
@@ -343,7 +406,7 @@ document.addEventListener('input', e => {
 
 document.getElementById('clear').addEventListener('click', () => {
   if (!confirm('Бүх хариултыг арилгах уу? — clear every answer?')) return;
-  state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{} };
+  state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{}, drafts:{} };
   localStorage.removeItem(KEY);
   render();
 });
@@ -367,7 +430,8 @@ render();
 def build_sheet():
     data = collect()
     total = (sum(len(s["alts"]) for s in data["sentences"])
-             + len(data["lexicon"]) + len(data["badges"]) + len(data["grammar"]))
+             + len(data["lexicon"]) + len(data["badges"]) + len(data["grammar"])
+             + len(data["drafts"]))
     html = (SHEET
             .replace("__DATA__", json.dumps(data, ensure_ascii=False))
             .replace("__TOTAL__", str(total)))
@@ -378,6 +442,7 @@ def build_sheet():
     print(f"  {len(data['lexicon'])} lexicon entries")
     print(f"  {len(data['badges'])} badge names")
     print(f"  {len(data['grammar'])} grammar topics")
+    print(f"  {len(data['drafts'])} new sentences")
     print(f"  {total} decisions in total")
 
 
@@ -491,6 +556,29 @@ def apply(path):
             # to edit in grammar.json by hand, same as a badge name.
             gflagged.append((t["id"], t["title"], text or "(no note left)"))
 
+    # New sentences: yes goes live as written; wrong-and-rewritten goes live
+    # in her wording; wrong without a rewrite is dropped; not sure stays a draft.
+    dv = review.get("drafts") or {}
+    live = dropped = 0
+    known = {s["mn"] for s in sentences}
+    for f in sorted(DRAFTS.glob("*.json")) if DRAFTS.exists() else []:
+        keep = []
+        for d in json.loads(f.read_text(encoding="utf-8")):
+            v = dv.get(d["sid"]) or {}
+            text = tidy(v.get("text") or "")
+            if v.get("verdict") == "yes" or (v.get("verdict") == "no" and text):
+                mn = text if v.get("verdict") == "no" else d["mn"]
+                if mn not in known:
+                    sentences.append({"sid": d["sid"], "mn": mn, "en": d["en"], "ids": [],
+                                      **({"src": d["src"]} if d.get("src") else {})})
+                    known.add(mn)
+                    live += 1
+            elif v.get("verdict") == "no":
+                dropped += 1
+            else:
+                keep.append(d)
+        f.write_text(json.dumps(keep, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
     (SRC / "sentences.json").write_text(
         json.dumps(sentences, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     (SRC / "words.json").write_text(
@@ -502,6 +590,9 @@ def apply(path):
           f"{settled} sentences now altReviewed")
     print(f"lexicon:   {signed} signed off, {corrected} glosses corrected, {noted} notes kept")
     print(f"grammar:   {gsigned} topics signed off")
+    print(f"drafts:    {live} new sentences live, {dropped} dropped")
+    if live:
+        print("  new sentences need their word ids: run `py tools/coverage.py --apply-tags`")
 
     if promoted:
         print("\ncanonical replaced — every variant was rejected and she wrote one:")

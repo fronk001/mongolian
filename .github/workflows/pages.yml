@@ -42,6 +42,11 @@ jobs:
       - name: Matcher self-test
         run: python tools/coverage.py --selftest
 
+      # The copyright gate's own logic (the books are not in the repo, so the
+      # full check runs locally: py tools/overlap.py). docs/CONTENT.md.
+      - name: Copyright gate self-test
+        run: python tools/overlap.py --selftest
+
       # One exception: sync loads Google's Firebase SDK, once online and after
       # the first paint (dist/sync/firebase.js). Everything else must be in
       # dist/, so the app still opens and studies with no connection at all.

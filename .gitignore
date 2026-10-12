@@ -4,3 +4,7 @@ node_modules/
 .DS_Store
 __pycache__/
 *.pyc
+
+# Drafts of new Mongolian content: never committed until Luna or Sarnai has
+# reviewed them and the copyright gate passed (docs/CONTENT.md).
+content/drafts/

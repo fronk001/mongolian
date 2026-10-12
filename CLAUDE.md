@@ -192,6 +192,12 @@ it). She opens it by double-clicking, answers Зөв / Буруу / Мэдэхг
 and presses Дуусгах to download a JSON file. Progress autosaves to her
 browser, so it survives closing the tab. Nothing is uploaded anywhere.
 
+New sentences are drafted in `content/drafts/*.json` (gitignored), go on the
+sheet only once `py tools/overlap.py` (the copyright gate, docs/CONTENT.md)
+is clear, and reach `sentences.json` through `--apply` only when she says yes
+or rewrites them. Items she already ruled on (`altReviewed`, `reviewed`) are
+not asked again.
+
 It asks about the **Mongolian only** — the 444 English alternatives are not
 her job and including them would quadruple the work. The highest-value field
 is the free-text box under each sentence: a phrasing Fred would really hear
