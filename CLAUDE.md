@@ -49,6 +49,7 @@ src/sync/     engine.js (queue, sign-in flow, rules below), firebase.js (the onl
 src/ui/       app.js views.js account.js *.css             ← DOM lives only here
               prefs.js (per-device settings) sound.js (synthesised cues)
 src/data/     words.json sentences.json                    ← large; avoid reading unless changing content
+              readings.json (baby paragraphs; `py tools/readings.py` tags them)
 build.py      copies files (every ui/*.js), rewrites app.js's imports, fails on
               any unresolved relative import, injects SW precache list
 tools/        serve.py (dev server), run_tests.py (headless), test.html (core suite),
@@ -111,6 +112,19 @@ the build only copies, concatenates CSS, generates icons, and stamps sw.js.
   (`core/ladder.js`) never call `awardGrade` — the in-browser check is that a
   word's record and P.xp are identical whether its retries pass or fail.
 - `core/` must stay DOM-free so it can be tested in plain Node.
+
+## Reading
+
+`src/data/readings.json`: `{ id, title, level, reviewed, src, lines: [{ mn,
+en, words }], questions: [{ q, options, answer, line }], ids }`. `words` and
+`ids` are written only by `py tools/readings.py` (`--check` in review). A
+passage closes a lesson when `pickReading()` (`core/readings.js`) finds one
+unread, signed off, at ≥95% expected coverage (mean recall probability of its
+words) with ≤3 new words. Tap a word for its meaning, again for the line's
+English; questions after the text, one per screen, no English during them; a
+wrong answer underlines the evidence line. The first read scores 1 XP per
+question +1 if right, once; rereads score nothing; reading never calls
+`applyGrade`. `?dev` shows unreviewed passages and skips the coverage gate.
 
 ## Content schema
 

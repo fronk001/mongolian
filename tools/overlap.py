@@ -138,9 +138,9 @@ def main() -> int:
     grams, whole = index(texts)
     allow = load_allow()
     files = [Path(a) for a in args] or (
-        [Path("src/data") / f for f in ("sentences.json", "grammar.json")]
+        [Path("src/data") / f for f in ("sentences.json", "grammar.json", "readings.json")]
         + sorted(Path("content/drafts").glob("*.json")) if Path("content/drafts").exists() else
-        [Path("src/data") / f for f in ("sentences.json", "grammar.json")])
+        [Path("src/data") / f for f in ("sentences.json", "grammar.json", "readings.json")])
     blocked = 0
     for f in files:
         if not f.exists():

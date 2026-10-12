@@ -140,7 +140,10 @@ def collect():
         for w in words if w.get("reviewed") is False
     ]
     return {"sentences": items, "lexicon": lexicon, "badges": load_badges(),
-            "grammar": load_grammar(), "drafts": load_drafts(), "appeals": load_appeals()}
+            "grammar": load_grammar(), "drafts": load_drafts(), "appeals": load_appeals(),
+            "passages": [{"id": r["id"], "title": r["title"], "lines": [[l["mn"], l["en"]] for l in r["lines"]]}
+                         for r in json.loads((SRC / "readings.json").read_text(encoding="utf-8"))
+                         if r.get("reviewed") is False]}
 
 
 # --------------------------------------------------------------------- sheet
@@ -225,6 +228,12 @@ border-radius:4px;background:var(--panel);color:var(--muted);cursor:pointer}
   Is his Mongolian also a correct way to say it? Зөв adds it as an accepted answer.</div>
 <div id="appeals"></div>
 
+<h2 id="passages-h">◆ Богино өгүүллэг <span class="en">— short passages</span></h2>
+<div class="en" style="margin-top:8px" id="passages-note">Short texts Fred reads at the end of a lesson. Does every
+  line read naturally, and does the English match? One verdict per passage; if something is off,
+  mark Буруу and write what should change.</div>
+<div id="passages"></div>
+
 <h2 id="drafts-h">0. Шинэ өгүүлбэр <span class="en">— new sentences</span></h2>
 <div class="en" style="margin-top:8px" id="drafts-note">New sentences for Fred's next lessons. Would a Mongolian
   say this, and does the English match? If not, mark it Буруу and write it the way you would say it.</div>
@@ -263,9 +272,9 @@ const DATA = __DATA__;
 const TOTAL = __TOTAL__;
 const KEY = 'mng_review_v1';
 
-let state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{}, drafts:{}, appeals:{} };
+let state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{}, drafts:{}, appeals:{}, passages:{} };
 try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
-for (const k of ['alts','added','lexicon','badges','grammar','drafts','appeals']) state[k] = state[k] || {};
+for (const k of ['alts','added','lexicon','badges','grammar','drafts','appeals','passages']) state[k] = state[k] || {};
 
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
   .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -278,6 +287,18 @@ function picker(group, key, current) {
 }
 
 function render() {
+  for (const id of ['passages-h', 'passages-note']) document.getElementById(id).style.display = DATA.passages.length ? '' : 'none';
+  document.getElementById('passages').innerHTML = DATA.passages.map(r => {
+    const v = state.passages[r.id] || {};
+    return `<div class="item ${v.verdict ? 'done' : ''}">
+      <div class="q">${esc(r.title)}</div>
+      <div style="margin-top:8px;line-height:1.7">${r.lines.map(([mn, en]) =>
+        `<div style="font-size:17px">${esc(mn)}<span class="gloss" style="display:block;font-size:13px;color:var(--muted)">${esc(en)}</span></div>`).join('')}</div>
+      ${picker('passages', r.id, v.verdict)}
+      <input class="free" data-passage="${esc(r.id)}" placeholder="Юу засах вэ — what should change (if wrong)"
+        value="${esc(v.text || '')}">
+    </div>`;
+  }).join('');
   for (const id of ['appeals-h', 'appeals-note']) document.getElementById(id).style.display = DATA.appeals.length ? '' : 'none';
   document.getElementById('appeals').innerHTML = DATA.appeals.map(a => {
     const v = state.appeals[a.key] || {};
@@ -375,6 +396,7 @@ function progress() {
   n += Object.values(state.grammar).filter(x => x.verdict).length;
   n += Object.values(state.drafts).filter(x => x.verdict).length;
   n += Object.values(state.appeals).filter(x => x.verdict).length;
+  n += Object.values(state.passages).filter(x => x.verdict).length;
   document.getElementById('n').textContent = n;
   document.getElementById('fill').style.width = (100 * n / TOTAL) + '%';
   return n;
@@ -403,7 +425,8 @@ document.addEventListener('click', e => {
     const store = group === 'lexicon' ? state.lexicon
       : group === 'badges' ? state.badges
       : group === 'drafts' ? state.drafts
-      : group === 'appeals' ? state.appeals : state.grammar;
+      : group === 'appeals' ? state.appeals
+      : group === 'passages' ? state.passages : state.grammar;
     const cur = store[key] = store[key] || {};
     if (cur.verdict === v) { delete cur.verdict; chosen = undefined; }
     else cur.verdict = v;
@@ -428,6 +451,10 @@ document.addEventListener('input', e => {
     const cur = state.badges[t.dataset.badge] || {};
     cur.text = t.value;
     state.badges[t.dataset.badge] = cur;
+  } else if (t.dataset.passage !== undefined) {
+    const cur = state.passages[t.dataset.passage] || {};
+    cur.text = t.value;
+    state.passages[t.dataset.passage] = cur;
   } else if (t.dataset.draft !== undefined) {
     const cur = state.drafts[t.dataset.draft] || {};
     cur.text = t.value;
@@ -443,7 +470,7 @@ document.addEventListener('input', e => {
 
 document.getElementById('clear').addEventListener('click', () => {
   if (!confirm('Бүх хариултыг арилгах уу? — clear every answer?')) return;
-  state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{}, drafts:{}, appeals:{} };
+  state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{}, drafts:{}, appeals:{}, passages:{} };
   localStorage.removeItem(KEY);
   render();
 });
@@ -469,7 +496,7 @@ def build_sheet():
     data = collect()
     total = (sum(len(s["alts"]) for s in data["sentences"])
              + len(data["lexicon"]) + len(data["badges"]) + len(data["grammar"])
-             + len(data["drafts"]) + len(data["appeals"]))
+             + len(data["drafts"]) + len(data["appeals"]) + len(data["passages"]))
     html = (SHEET
             .replace("__DATA__", json.dumps(data, ensure_ascii=False))
             .replace("__TOTAL__", str(total)))
@@ -482,6 +509,7 @@ def build_sheet():
     print(f"  {len(data['grammar'])} grammar topics")
     print(f"  {len(data['drafts'])} new sentences")
     print(f"  {len(data['appeals'])} of Fred's answers to rule on")
+    print(f"  {len(data['passages'])} short passages")
     print(f"  {total} decisions in total")
 
 
@@ -612,6 +640,21 @@ def apply(path):
         else:
             print(f"  word answer confirmed — add by hand if wanted: {a.get('target')} = {a.get('given')}")
 
+    # Passages: yes signs one off and it goes live; wrong is printed for an
+    # edit by hand (a passage has several lines and its questions hang on them).
+    rpath = SRC / "readings.json"
+    readings = json.loads(rpath.read_text(encoding="utf-8"))
+    pv = review.get("passages") or {}
+    psigned, pflagged = 0, []
+    for r in readings:
+        v = pv.get(r["id"]) or {}
+        if v.get("verdict") == "yes":
+            r["reviewed"] = True
+            psigned += 1
+        elif v.get("verdict") == "no":
+            pflagged.append((r["id"], r["title"], (v.get("text") or "").strip() or "(no note left)"))
+    rpath.write_text(json.dumps(readings, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
     # New sentences: yes goes live as written; wrong-and-rewritten goes live
     # in her wording; wrong without a rewrite is dropped; not sure stays a draft.
     dv = review.get("drafts") or {}
@@ -648,6 +691,9 @@ def apply(path):
     print(f"grammar:   {gsigned} topics signed off")
     print(f"drafts:    {live} new sentences live, {dropped} dropped")
     print(f"appeals:   {accepted_appeals} of Fred's answers now accepted")
+    print(f"passages:  {psigned} signed off and live")
+    for pid, title, note in pflagged:
+        print(f"  passage {pid} ({title}) flagged — edit src/data/readings.json, then py tools/readings.py: {note}")
     if live:
         print("  new sentences need their word ids: run `py tools/coverage.py --apply-tags`")
 

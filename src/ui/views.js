@@ -856,3 +856,60 @@ export function viewDone(summary, st, p, ctx = {}) {
     </div>`;
 }
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   Reading — a baby paragraph at the end of the lesson (core/readings.js).
+   The text first with no English under it: tap a word for its meaning, tap
+   it again for the line's English (taps are never counted against him).
+   Then the questions, one per screen; a wrong answer underlines the line
+   that held the answer. Last, every line with its English.
+   ══════════════════════════════════════════════════════════════════════ */
+
+export function viewReading(reading, rd, byId) {
+  const head = `<div class="qhead"><span class="tag">READ</span><span class="mono">${esc(reading.title)}</span></div>`;
+  const draft = reading.reviewed === false ? `<div class="gl" style="margin-top:6px">draft — pending Luna or Sarnai</div>` : '';
+  const line = (l, k, { taps = true, en = false, mark = false } = {}) => {
+    const words = (l.words || l.mn.split(' ').map(t => [t, null])).map(([t, id], j) => taps
+      ? `<button class="rw${rd.word && rd.word[0] === k && rd.word[1] === j ? ' on' : ''}" data-act="rw" data-l="${k}" data-k="${j}">${esc(t)}</button>`
+      : esc(t)).join(' ');
+    let under = '';
+    // During the questions no English shows; only the reading phase and the end do.
+    if (en || (taps && rd.en.has(k))) under = `<div class="rline-en">${esc(l.en)}</div>`;
+    else if (taps && rd.word && rd.word[0] === k) {
+      const [t, id] = (l.words || [])[rd.word[1]] || [];
+      const w = id != null ? byId[id] : null;
+      under = `<div class="rline-en">${esc(w ? `${w.mn} · ${w.en}` : t)}</div>`;
+    }
+    return `<div class="rline${mark ? ' mark' : ''}">${words}${under}</div>`;
+  };
+
+  if (rd.phase === 'read') {
+    return `<div class="sec">${head}
+      <div class="panel reading">${reading.lines.map((l, k) => line(l, k)).join('')}${draft}</div>
+      <div class="btns"><button class="btn primary" data-act="rd-q">Questions</button></div></div>`;
+  }
+  if (rd.phase === 'q') {
+    const q = reading.questions[rd.qi];
+    const answered = rd.picked !== null;
+    const right = answered && rd.picked === q.answer;
+    const opts = q.options.map((o, i) => {
+      const cls = !answered ? '' : i === q.answer ? ' right' : i === rd.picked ? ' wrong' : ' muted';
+      return `<button class="choice${cls}" data-act="rd-pick" data-i="${i}"${answered ? ' disabled' : ''}>
+        <span class="k">${i + 1}</span><span class="txt">${esc(o)}</span></button>`;
+    }).join('');
+    return `<div class="sec">${head}
+      <div class="panel${answered ? '' : ' red'}"><div class="prompt en sm">${esc(q.q)}</div></div>
+      <div class="choices">${opts}</div>
+      ${answered ? `<div class="panel ${right ? 'green' : 'red'} reveal">
+          <span class="lab ${right ? 'green' : 'red'}">${right ? 'CORRECT' : 'WRONG'}</span>
+          ${right ? '' : `<div class="reading" style="margin-top:8px">${line(reading.lines[q.line], q.line, { taps: false, mark: true })}</div>`}
+        </div>
+        <div class="btns"><button class="btn ${right ? 'correct' : 'secondary'}" data-act="rd-next">Continue</button></div>` : ''}
+    </div>`;
+  }
+  // end: the whole passage with its English, and the score
+  return `<div class="sec">${head}
+    <div class="panel reading">${reading.lines.map((l, k) => line(l, k, { taps: false, en: true })).join('')}</div>
+    <div class="back" style="margin-top:10px">${rd.right} of ${reading.questions.length} right</div>
+    <div class="btns"><button class="btn primary" data-act="rd-done">Continue</button></div></div>`;
+}

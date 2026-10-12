@@ -1,0 +1,726 @@
+[
+ {
+  "id": "r01",
+  "title": "Cleaning day",
+  "level": 1,
+  "reviewed": false,
+  "src": "format: a short text, questions after it — MM p10-11 [PDF 22-23]; Surv reading ladder p17-98 [PDF 19-100]",
+  "lines": [
+   {
+    "mn": "Өнөөдөр шал бохир байна.",
+    "en": "Today the floor is dirty.",
+    "words": [
+     [
+      "Өнөөдөр",
+      227
+     ],
+     [
+      "шал",
+      91
+     ],
+     [
+      "бохир",
+      137
+     ],
+     [
+      "байна.",
+      201
+     ]
+    ]
+   },
+   {
+    "mn": "Би шал арчина.",
+    "en": "I will mop the floor.",
+    "words": [
+     [
+      "Би",
+      203
+     ],
+     [
+      "шал арчина.",
+      124
+     ]
+    ]
+   },
+   {
+    "mn": "Хивс бас бохир.",
+    "en": "The carpet is dirty too.",
+    "words": [
+     [
+      "Хивс",
+      104
+     ],
+     [
+      "бас",
+      1001
+     ],
+     [
+      "бохир.",
+      137
+     ]
+    ]
+   },
+   {
+    "mn": "Би хивсийг тоос сорогчоор цэвэрлэнэ.",
+    "en": "I will clean the carpet with the vacuum cleaner.",
+    "words": [
+     [
+      "Би",
+      203
+     ],
+     [
+      "хивсийг",
+      104
+     ],
+     [
+      "тоос сорогчоор",
+      110
+     ],
+     [
+      "цэвэрлэнэ.",
+      121
+     ]
+    ]
+   },
+   {
+    "mn": "Одоо шал цэвэр, хивс цэвэр.",
+    "en": "Now the floor is clean and the carpet is clean.",
+    "words": [
+     [
+      "Одоо",
+      226
+     ],
+     [
+      "шал",
+      91
+     ],
+     [
+      "цэвэр,",
+      138
+     ],
+     [
+      "хивс",
+      104
+     ],
+     [
+      "цэвэр.",
+      138
+     ]
+    ]
+   }
+  ],
+  "questions": [
+   {
+    "q": "What is dirty today?",
+    "options": [
+     "The floor",
+     "The table",
+     "The window"
+    ],
+    "answer": 0,
+    "line": 0
+   },
+   {
+    "q": "What does he clean the carpet with?",
+    "options": [
+     "The vacuum cleaner",
+     "A key",
+     "A blanket"
+    ],
+    "answer": 0,
+    "line": 3
+   },
+   {
+    "q": "Is the carpet clean at the end?",
+    "options": [
+     "Yes",
+     "No"
+    ],
+    "answer": 0,
+    "line": 4
+   }
+  ],
+  "ids": [
+   91,
+   104,
+   110,
+   121,
+   124,
+   137,
+   138,
+   201,
+   203,
+   226,
+   227,
+   1001
+  ]
+ },
+ {
+  "id": "r02",
+  "title": "Our cat",
+  "level": 1,
+  "reviewed": false,
+  "src": "format: a short text, questions after it — MM p10-11 [PDF 22-23]; Surv reading ladder p17-98 [PDF 19-100]",
+  "lines": [
+   {
+    "mn": "Манай муур буйдан дээр байна.",
+    "en": "Our cat is on the sofa.",
+    "words": [
+     [
+      "Манай",
+      212
+     ],
+     [
+      "муур",
+      161
+     ],
+     [
+      "буйдан",
+      99
+     ],
+     [
+      "дээр",
+      213
+     ],
+     [
+      "байна.",
+      201
+     ]
+    ]
+   },
+   {
+    "mn": "Буйдан дулаан.",
+    "en": "The sofa is warm.",
+    "words": [
+     [
+      "Буйдан",
+      99
+     ],
+     [
+      "дулаан.",
+      113
+     ]
+    ]
+   },
+   {
+    "mn": "Муур тоглоомтой тоглож байна.",
+    "en": "The cat is playing with a toy.",
+    "words": [
+     [
+      "Муур",
+      161
+     ],
+     [
+      "тоглоомтой",
+      164
+     ],
+     [
+      "тоглож",
+      165
+     ],
+     [
+      "байна.",
+      201
+     ]
+    ]
+   },
+   {
+    "mn": "Өглөө бүр би мууранд хоол өгдөг.",
+    "en": "Every morning I feed the cat.",
+    "words": [
+     [
+      "Өглөө",
+      237
+     ],
+     [
+      "бүр",
+      224
+     ],
+     [
+      "би",
+      203
+     ],
+     [
+      "мууранд",
+      161
+     ],
+     [
+      "хоол өгдөг.",
+      169
+     ]
+    ]
+   }
+  ],
+  "questions": [
+   {
+    "q": "Where is the cat?",
+    "options": [
+     "On the sofa",
+     "In the yard",
+     "On the stairs"
+    ],
+    "answer": 0,
+    "line": 0
+   },
+   {
+    "q": "What is the cat doing?",
+    "options": [
+     "Playing with a toy",
+     "Eating",
+     "Washing"
+    ],
+    "answer": 0,
+    "line": 2
+   },
+   {
+    "q": "When does he feed the cat?",
+    "options": [
+     "Every morning",
+     "Every evening",
+     "Only today"
+    ],
+    "answer": 0,
+    "line": 3
+   }
+  ],
+  "ids": [
+   99,
+   113,
+   161,
+   164,
+   165,
+   169,
+   201,
+   203,
+   212,
+   213,
+   224,
+   237
+  ]
+ },
+ {
+  "id": "r03",
+  "title": "Breakfast",
+  "level": 1,
+  "reviewed": false,
+  "src": "format: a short text, questions after it — MM p10-11 [PDF 22-23]; Surv reading ladder p17-98 [PDF 19-100]",
+  "lines": [
+   {
+    "mn": "Өнөөдөр би өглөөний хоол хийнэ.",
+    "en": "Today I will make breakfast.",
+    "words": [
+     [
+      "Өнөөдөр",
+      227
+     ],
+     [
+      "би",
+      203
+     ],
+     [
+      "өглөөний хоол",
+      142
+     ],
+     [
+      "хийнэ.",
+      267
+     ]
+    ]
+   },
+   {
+    "mn": "Сүү, өндөг, мах байна.",
+    "en": "There is milk, eggs and meat.",
+    "words": [
+     [
+      "Сүү,",
+      152
+     ],
+     [
+      "өндөг,",
+      151
+     ],
+     [
+      "мах",
+      145
+     ],
+     [
+      "байна.",
+      201
+     ]
+    ]
+   },
+   {
+    "mn": "Талх байхгүй.",
+    "en": "There is no bread.",
+    "words": [
+     [
+      "Талх",
+      150
+     ],
+     [
+      "байхгүй.",
+      202
+     ]
+    ]
+   },
+   {
+    "mn": "Би өндөг иднэ, кофе ууна.",
+    "en": "I will eat eggs and drink coffee.",
+    "words": [
+     [
+      "Би",
+      203
+     ],
+     [
+      "өндөг",
+      151
+     ],
+     [
+      "иднэ,",
+      258
+     ],
+     [
+      "кофе",
+      154
+     ],
+     [
+      "ууна.",
+      259
+     ]
+    ]
+   }
+  ],
+  "questions": [
+   {
+    "q": "Which meal is he making?",
+    "options": [
+     "Breakfast",
+     "Lunch",
+     "Dinner"
+    ],
+    "answer": 0,
+    "line": 0
+   },
+   {
+    "q": "What is missing?",
+    "options": [
+     "Bread",
+     "Milk",
+     "Eggs"
+    ],
+    "answer": 0,
+    "line": 2
+   },
+   {
+    "q": "What will he drink?",
+    "options": [
+     "Coffee",
+     "Tea",
+     "Milk"
+    ],
+    "answer": 0,
+    "line": 3
+   }
+  ],
+  "ids": [
+   142,
+   145,
+   150,
+   151,
+   152,
+   154,
+   201,
+   202,
+   203,
+   227,
+   258,
+   259,
+   267
+  ]
+ },
+ {
+  "id": "r04",
+  "title": "Laundry",
+  "level": 1,
+  "reviewed": false,
+  "src": "format: a short text, questions after it — MM p10-11 [PDF 22-23]; Surv reading ladder p17-98 [PDF 19-100]",
+  "lines": [
+   {
+    "mn": "Хувцас минь бохир.",
+    "en": "My clothes are dirty.",
+    "words": [
+     [
+      "Хувцас",
+      249
+     ],
+     [
+      "минь",
+      210
+     ],
+     [
+      "бохир.",
+      137
+     ]
+    ]
+   },
+   {
+    "mn": "Би угаалгын машинд хувцас угаана.",
+    "en": "I will wash the clothes in the washing machine.",
+    "words": [
+     [
+      "Би",
+      203
+     ],
+     [
+      "угаалгын машинд",
+      109
+     ],
+     [
+      "хувцас угаана.",
+      127
+     ]
+    ]
+   },
+   {
+    "mn": "Одоо хувцас нойтон байна.",
+    "en": "Now the clothes are wet.",
+    "words": [
+     [
+      "Одоо",
+      226
+     ],
+     [
+      "хувцас",
+      249
+     ],
+     [
+      "нойтон",
+      140
+     ],
+     [
+      "байна.",
+      201
+     ]
+    ]
+   },
+   {
+    "mn": "Орой хувцас хуурай.",
+    "en": "In the evening the clothes are dry.",
+    "words": [
+     [
+      "Орой",
+      238
+     ],
+     [
+      "хувцас",
+      249
+     ],
+     [
+      "хуурай.",
+      139
+     ]
+    ]
+   },
+   {
+    "mn": "Би хувцас индүүднэ.",
+    "en": "I will iron the clothes.",
+    "words": [
+     [
+      "Би",
+      203
+     ],
+     [
+      "хувцас",
+      249
+     ],
+     [
+      "индүүднэ.",
+      128
+     ]
+    ]
+   }
+  ],
+  "questions": [
+   {
+    "q": "Why does he wash the clothes?",
+    "options": [
+     "They are dirty",
+     "They are wet",
+     "They are new"
+    ],
+    "answer": 0,
+    "line": 0
+   },
+   {
+    "q": "How are the clothes after washing?",
+    "options": [
+     "Wet",
+     "Dry",
+     "Clean and dry"
+    ],
+    "answer": 0,
+    "line": 2
+   },
+   {
+    "q": "What does he do last?",
+    "options": [
+     "He irons them",
+     "He washes them again",
+     "He cooks"
+    ],
+    "answer": 0,
+    "line": 4
+   }
+  ],
+  "ids": [
+   109,
+   127,
+   128,
+   137,
+   139,
+   140,
+   201,
+   203,
+   210,
+   226,
+   238,
+   249
+  ]
+ },
+ {
+  "id": "r05",
+  "title": "Where is my key?",
+  "level": 1,
+  "reviewed": false,
+  "src": "format: a short text, questions after it — MM p10-11 [PDF 22-23]; Surv reading ladder p17-98 [PDF 19-100]",
+  "lines": [
+   {
+    "mn": "Түлхүүр минь хаана байна?",
+    "en": "Where is my key?",
+    "words": [
+     [
+      "Түлхүүр",
+      111
+     ],
+     [
+      "минь",
+      210
+     ],
+     [
+      "хаана",
+      218
+     ],
+     [
+      "байна?",
+      201
+     ]
+    ]
+   },
+   {
+    "mn": "Ширээн дээр түлхүүр байхгүй.",
+    "en": "The key is not on the table.",
+    "words": [
+     [
+      "Ширээн",
+      96
+     ],
+     [
+      "дээр",
+      213
+     ],
+     [
+      "түлхүүр",
+      111
+     ],
+     [
+      "байхгүй.",
+      202
+     ]
+    ]
+   },
+   {
+    "mn": "Шүүгээн дээр бас байхгүй.",
+    "en": "It is not on the cabinet either.",
+    "words": [
+     [
+      "Шүүгээн",
+      100
+     ],
+     [
+      "дээр",
+      213
+     ],
+     [
+      "бас",
+      1001
+     ],
+     [
+      "байхгүй.",
+      202
+     ]
+    ]
+   },
+   {
+    "mn": "Түлхүүр уутанд байна!",
+    "en": "The key is in the bag!",
+    "words": [
+     [
+      "Түлхүүр",
+      111
+     ],
+     [
+      "уутанд",
+      117
+     ],
+     [
+      "байна!",
+      201
+     ]
+    ]
+   }
+  ],
+  "questions": [
+   {
+    "q": "What is he looking for?",
+    "options": [
+     "His key",
+     "His bag",
+     "His cat"
+    ],
+    "answer": 0,
+    "line": 0
+   },
+   {
+    "q": "Is the key on the table?",
+    "options": [
+     "No",
+     "Yes"
+    ],
+    "answer": 0,
+    "line": 1
+   },
+   {
+    "q": "Where is the key?",
+    "options": [
+     "In the bag",
+     "On the cabinet",
+     "On the table"
+    ],
+    "answer": 0,
+    "line": 3
+   }
+  ],
+  "ids": [
+   96,
+   100,
+   111,
+   117,
+   201,
+   202,
+   210,
+   213,
+   218,
+   1001
+  ]
+ }
+]

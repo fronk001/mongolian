@@ -47,3 +47,10 @@ font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;color
 .buildline .tile-word.placed{background:var(--panel)}
 .tile-word.refused{border-color:var(--red);color:var(--red)}
 .diff .moved{text-decoration:underline;text-decoration-color:var(--red);text-underline-offset:3px}
+
+/* Reading (views.viewReading): passages at 22px, one tappable word at a time. */
+.reading .rline{font-family:'Geologica',sans-serif;font-size:22px;font-weight:500;line-height:1.6;margin:4px 0 10px}
+.reading .rline.mark{text-decoration:underline;text-decoration-color:var(--red);text-underline-offset:4px}
+.rw{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;border-radius:2px}
+.rw.on{background:var(--blue-wash);box-shadow:0 0 0 2px var(--blue-wash)}
+.rline-en{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:400;color:var(--muted);line-height:1.5;margin-top:2px}

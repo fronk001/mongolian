@@ -41,9 +41,12 @@ the original 164 sentences; it is not one of "the books" below.
    a learner must know verbatim are allowed in `tools/overlap-allow.tsv`, each
    with its reason. `--selftest` runs in CI; the full check needs the books
    and runs locally.
-5. **Drafts stay out of the repo.** New sentences and passages are written in
+5. **Drafts stay out of the repo.** New sentences are written in
    `content/drafts/` (gitignored) and enter `src/data` only after Luna or
-   Sarnai has said yes on a review sheet and the gate is clear.
+   Sarnai has said yes on a review sheet and the gate is clear. Baby
+   paragraphs are the exception: they live in `src/data/readings.json` with
+   `reviewed: false` (the gate already clear), so `?dev` can preview them, and
+   the app never shows one to the learner until it is signed off.
 6. **What may go live before review** (plan decision 17): single words read
    off the books' own lists, and rule tables, flagged `reviewed: false`.
    Personal words (голланд, хадам), sentences, passages, grammar topics,

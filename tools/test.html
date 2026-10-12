@@ -37,6 +37,7 @@ import { blank, migrateV1, encodeCode, importCode, stats, exportAge, recordDay }
 import { buildSession, applyGrade, scheduledDays, buildPractice } from '../src/core/scheduler.js';
 import { backIn } from '../src/ui/views.js';
 import { afterAnswer, retryIndex, retryItem, RETRY_GAP } from '../src/core/ladder.js';
+import { readingCoverage, pickReading, recordReading, READ_COVERAGE } from '../src/core/readings.js';
 import { makeTilePools, bankFor, acceptedFor, minTiles, gradeBuild, orderDiff, tokensOf, DECOYS } from '../src/core/tiles.js';
 import { gradeText, gradeAnswer, acceptedForms } from '../src/core/grade.js';
 import { buildChoices, distractors, makeRng, faceKey } from '../src/core/choices.js';
@@ -66,6 +67,7 @@ const ok = (name, cond, why = '') => {
 const W = await (await fetch('../src/data/words.json')).json();
 const S = await (await fetch('../src/data/sentences.json')).json();
 const G = await (await fetch('../src/data/grammar.json')).json();
+const RD = await (await fetch('../src/data/readings.json')).json();
 
 // ---------------------------------------------------------------- fsrs
 section('fsrs');
@@ -806,6 +808,32 @@ ok('a typed right answer scores 3', xpForAnswer(true, true) === 3);
 ok('a right answer with help scores 2', xpForAnswer(true, false) === 2);
 ok('a wrong answer scores 1, typed or not', xpForAnswer(false, true) === 1 && xpForAnswer(false, false) === 1);
 ok('failing then fixing never beats being right with help', xpForAnswer(false, true) + 0 < xpForAnswer(true, false));
+
+section('reading');
+{
+  const ids = new Set(W.map(w => w.id));
+  ok('every passage word is tagged with a real lexicon id',
+     RD.every(r => r.lines.every(l => (l.words || []).length && l.words.every(([, id]) => ids.has(id)))));
+  ok('every question points at a real answer and line',
+     RD.every(r => r.questions.every(q => q.options[q.answer] !== undefined && r.lines[q.line])));
+  ok('a passage lists every word it contains',
+     RD.every(r => r.lines.flatMap(l => l.words.map(([, id]) => id)).every(id => r.ids.includes(id))));
+  ok('passages are written for Fred, not copied: unreviewed ones carry the flag',
+     RD.every(r => r.reviewed === false || r.reviewed === true));
+  const cold = blank();
+  ok('an unreviewed passage never shows without ?dev', pickReading(cold, RD, W) === null);
+  ok('?dev previews the first unread passage', pickReading(cold, RD, W, { dev: true })?.id === RD[0].id);
+  const rev = RD.map(r => ({ ...r, reviewed: true }));
+  ok('a passage full of unknown words is held back', pickReading(cold, rev, W) === null);
+  const q = blank();
+  for (const id of rev[0].ids) applyGrade(q, id, 4, { today: '2026-10-10' });
+  const cov = readingCoverage(rev[0], q, W, '2026-10-11');
+  ok('knowing every word unlocks the passage', cov.coverage >= READ_COVERAGE && pickReading(q, rev, W, { today: '2026-10-11' })?.id === rev[0].id,
+     `coverage ${cov.coverage.toFixed(2)}`);
+  ok('the first read scores, a reread does not', recordReading(q, 'r01', 3, 0, '2026-10-11') === true && recordReading(q, 'r01', 1, 2, '2026-10-12') === false);
+  ok('a reread keeps the first score and adds the read', q.readings.r01.firstRight === 3 && q.readings.r01.reads === 2);
+  ok('a read passage is not offered again', pickReading(q, rev, W, { today: '2026-10-12' })?.id !== 'r01');
+}
 
 section('practice and badge targets');
 {

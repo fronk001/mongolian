@@ -7,6 +7,7 @@ import { buildChoices, shuffle, makeRng, hashSeed } from '../core/choices.js';
 import { xpForAnswer, earnedBadges, stepCount, levelFor } from '../core/goals.js';
 import { gradeDrill, applyGrammarGrade, topicMastery } from '../core/grammar.js';
 import { afterAnswer, retryIndex, retryItem } from '../core/ladder.js';
+import { pickReading, recordReading } from '../core/readings.js';
 import { makeTilePools, bankFor, acceptedFor, minTiles, gradeBuild, orderDiff, tokensOf } from '../core/tiles.js';
 import { createSync } from '../sync/engine.js';
 import { firebaseBackend } from '../sync/firebase.js';
@@ -23,7 +24,9 @@ const el = document.getElementById('app');
 const params = new URLSearchParams(location.search);
 const fake = params.has('fake-sync') ? params.get('fake-sync') || 'laptop' : null;
 const KEY = fake ? `${STORE_KEY}:fake:${fake}` : STORE_KEY;
-let WORDS = [], SENTENCES = [], GRAMMAR = [], BYID = {}, POOL = [];
+let WORDS = [], SENTENCES = [], GRAMMAR = [], READINGS = [], BYID = {}, POOL = [];
+// ?dev: preview what is waiting for review (reading drafts) before Luna or Sarnai sign off.
+const DEV = params.has('dev');
 let TILEPOOL = () => ({ siblings: [], others: [] });   // decoy candidates per sentence, built at boot
 let P = load(localStorage, KEY);
 let sync = null;      // created in boot(), before the first render
@@ -86,6 +89,7 @@ let S = {
   rung: null,                         // this sentence's surface: 'type' | 'blocks' | 'easy' | 'study'
   tiles: null,                        // { bank: [{t, ans}], placed: [bank index], refused }
   sawBlocks: false,                   // blocks were shown this attempt: it is graded as a blocks attempt
+  rd: null,                           // the reader: { phase, qi, picked, right, wrong, word, en }
   open: new Set(),                    // disclosures opened on the tab pages; survives sync redraws
   gScores: true,                      // this grammar pass earns XP: the first of the day per topic
   editPurpose: false,
@@ -201,7 +205,11 @@ function queueRetry(item, stage) {
     else extra.forceMC = true;
   }
   const r = retryItem(item, stage, extra);
-  S.session.items.splice(retryIndex(S.session.items, S.i, stage), 0, r);
+  // The passage closes the lesson: retries go before it, never after.
+  let at = retryIndex(S.session.items, S.i, stage);
+  const rd = S.session.items.findIndex((it, k) => k > S.i && it.kind === 'reading');
+  if (rd >= 0 && at > rd) at = rd;
+  S.session.items.splice(at, 0, r);
 }
 
 /** After a retry's verdict: queue the next step, or count it fixed or shown. */
@@ -256,9 +264,15 @@ function previewFor(id) {
 
 /** Today's lesson — or, with nothing due and nothing new, a practice lesson, so Start always works. */
 function todaySession() {
-  const s = buildSession(P, WORDS, SENTENCES);
-  return s.items.length ? s : buildPractice(P, WORDS);
+  const built = buildSession(P, WORDS, SENTENCES);
+  const s = built.items.length ? built : buildPractice(P, WORDS);
+  // A baby paragraph closes the lesson when he can read one (core/readings.js).
+  const reading = s.items.length ? pickReading(P, READINGS, WORDS, { dev: DEV }) : null;
+  if (reading) s.items.push({ kind: 'reading', reading });
+  return s;
 }
+
+const blankRd = () => ({ phase: 'read', qi: 0, picked: null, right: 0, wrong: 0, word: null, en: new Set() });
 
 /**
  * Direction for a word card. Decided by the scheduler, which seeds it on the
@@ -299,6 +313,7 @@ function renderKey() {
   if (S.screen === 'grammar') return `grammar:${S.gTopic ? S.gTopic.id : ''}:${S.gStep}`;
   if (S.screen !== 'run') return `${S.screen}`;
   const item = current();
+  if (item && item.kind === 'reading' && S.rd) return `run:${S.i}:${S.rd.phase}:${S.rd.qi}`;
   return `run:${S.i}:${item && item.kind === 'deck' ? S.deckI + ':' + S.flipped : ''}`;
 }
 
@@ -352,6 +367,9 @@ function render({ keep = false } = {}) {
     let body;
     if (item.kind === 'deck') {
       body = V.viewDeck(item, { deckI: S.deckI, flipped: S.flipped });
+    } else if (item.kind === 'reading') {
+      if (!S.rd) S.rd = blankRd();
+      body = V.viewReading(item.reading, S.rd, BYID);
     } else if (item.kind === 'card') {
       const answeredOk = item.retry && (S.picked !== null || S.fb)
         ? (S.fb ? S.fb.ok : !!choicesFor(item).options[S.picked]?.correct) : null;
@@ -482,7 +500,7 @@ async function copyCode() {
 function advance() {
   S.fb = null; S.picked = null; S.deckI = 0; S.flipped = false;
   S.pending = null; S.lastPick = null; S.retryOk = null;
-  S.rung = null; S.tiles = null; S.sawBlocks = false;
+  S.rung = null; S.tiles = null; S.sawBlocks = false; S.rd = null;
   do { S.i++; } while (
     S.i < S.session.items.length &&
     S.session.items[S.i].kind === 'card' &&
@@ -617,6 +635,44 @@ document.addEventListener('click', e => {
   else if (act === 'tab') { S.tab = t.getAttribute('data-tab'); S.msg = ''; render(); }
   else if (act === 'next') advance();
   else if (act === 'retry-next') retryNext();
+
+  // ---- reading ---------------------------------------------------------------
+  else if (act === 'rw') {
+    // First tap: the word's meaning. Second tap on it: the line's English.
+    const l = +t.getAttribute('data-l'), k = +t.getAttribute('data-k');
+    if (S.rd.word && S.rd.word[0] === l && S.rd.word[1] === k) { S.rd.en.add(l); S.rd.word = null; }
+    else S.rd.word = [l, k];
+    render({ keep: true });
+  }
+  else if (act === 'rd-q') { S.rd.phase = 'q'; S.rd.word = null; render(); }
+  else if (act === 'rd-pick') {
+    if (S.rd.picked !== null) return;
+    const q = current().reading.questions[S.rd.qi];
+    S.rd.picked = +t.getAttribute('data-i');
+    const ok = S.rd.picked === q.answer;
+    if (ok) S.rd.right++; else S.rd.wrong++;
+    cue(ok, false);
+    render();
+  }
+  else if (act === 'rd-next') {
+    const r = current().reading;
+    S.rd.picked = null;
+    if (S.rd.qi + 1 < r.questions.length) S.rd.qi++; else S.rd.phase = 'end';
+    render();
+  }
+  else if (act === 'rd-done') {
+    // The first read of a passage scores, once: 1 per question, +1 if right.
+    // Rereads score nothing. Never applyGrade: reading is not a recall test.
+    const r = current().reading;
+    if (recordReading(P, r.id, S.rd.right, S.rd.wrong)) {
+      const xp = r.questions.length + S.rd.right;
+      S.summary.xp += xp;
+      P.xp = (P.xp || 0) + xp;
+      S.summary.read = (S.summary.read || 0) + 1;
+    }
+    save(P);
+    advance();
+  }
 
   // ---- building blocks ----------------------------------------------------
   else if (act === 'use-blocks') { S.rung = 'blocks'; S.tiles = null; render(); }
@@ -871,7 +927,7 @@ document.addEventListener('keydown', e => {
 
   if (e.key === 'Enter' && !e.shiftKey) {
     const order = ['submit', 'submit-tiles', 'check-word', 'grammar-check', 'grammar-build-check',
-      'card-next', 'grade', 'retry-next', 'grammar-continue', 'deck-learn', 'next'];
+      'card-next', 'grade', 'retry-next', 'rd-q', 'rd-next', 'rd-done', 'grammar-continue', 'deck-learn', 'next'];
     for (const act of order) {
       const b = document.querySelector(`[data-act="${act}"]`);
       if (b) { e.preventDefault(); b.click(); return; }
@@ -899,6 +955,7 @@ document.addEventListener('keydown', e => {
   if (/^[1-4]$/.test(e.key)) {
     const n = parseInt(e.key, 10);
     const pick = document.querySelector(`.choice[data-act="pick"][data-i="${n - 1}"]:not(:disabled)`) ||
+      document.querySelector(`.choice[data-act="rd-pick"][data-i="${n - 1}"]:not(:disabled)`) ||
       document.querySelector(`.choice[data-act="grammar-pick"][data-i="${n - 1}"]:not(:disabled)`);
     if (pick) { e.preventDefault(); pick.click(); return; }
     const g = document.querySelector(`[data-act="grade"][data-g="${n}"]`);
@@ -937,12 +994,13 @@ async function makeBackend() {
 }
 
 async function boot() {
-  const [w, s, g] = await Promise.all([
+  const [w, s, g, rd] = await Promise.all([
     fetch('./data/words.json').then(r => r.json()),
     fetch('./data/sentences.json').then(r => r.json()),
-    fetch('./data/grammar.json').then(r => r.json())
+    fetch('./data/grammar.json').then(r => r.json()),
+    fetch('./data/readings.json').then(r => r.json()).catch(() => [])
   ]);
-  WORDS = w; SENTENCES = s; GRAMMAR = g;
+  WORDS = w; SENTENCES = s; GRAMMAR = g; READINGS = rd;
   BYID = Object.fromEntries(WORDS.map(x => [x.id, x]));
   // Distractors come from drillable vocabulary only: offering «байна» as an
   // option against a noun gives the answer away by register alone.
