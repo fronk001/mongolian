@@ -118,9 +118,13 @@ reference layer harder to read than the content layer, that change is wrong.
 - **Month grid** — Monday-first, capped at 266px so it stays evidence rather
   than headline.
 - **Gold band** — the goal and lesson-worth readouts. Ink on gold.
-- **SRS grade bar** — four cells; the interval is *always* printed under the
-  label, and it is what the scheduler will actually do. It appears where only
-  the learner knows how hard the recall was: typed word cards and sentences.
+- **SRS grade bar** — retired as a question on the verdict (Oct 2026). After a
+  typed answer the app gives the verdict and commits the grade at once. A match
+  offers Continue (Good) and two quiet cells, *Was hard* and *Was easy*, each
+  printing when the word comes back; a one-letter slip offers Continue (Hard); a
+  mismatch offers Continue (Again) and *I was right* (Hard). Intervals are whole
+  days, exactly as `applyGrade` schedules them (`scheduledDays()`): the screen
+  once promised "NEXT 4h" for a word the scheduler brought back tomorrow.
 - **Multiple choice** — four options, keyboard 1–4. After answering: the truth
   turns green, the wrong pick turns red and strikes through, the rest mute. No
   two options may ever read the same.
@@ -132,7 +136,7 @@ reference layer harder to read than the content layer, that change is wrong.
   "easy" is the one thing the pick cannot reveal. Asking for a grade here made
   the learner answer the same question twice, the second time as a row of
   future dates — and the interval, which INSTRUMENT still requires on screen,
-  now prints as a `NEXT` readout beside the verdict rather than as a question.
+  now prints as "Back in N days" beside the verdict rather than as a question.
 - **Flashcard deck** — Mongolian faces up, tap or Space to flip, then a
   decision that routes the word. Never shows both sides at once.
 - **Badge** — gold pill, English label. The lexicon still names each badge in
@@ -210,6 +214,19 @@ Two mechanics worth knowing before editing this:
 - `mark` has no `to` keyframe on purpose: an implicit one resolves to the
   element's own computed style, which is how an answered option colours in
   without a transition — the node it would have transitioned from was replaced.
+
+## Sound
+
+Added October 2026 at Fred's request; synthesised in the browser
+(`src/ui/sound.js`), so there are no files and no network requests.
+
+One short cue when a question is answered — a two-note rise when right, a
+soft low fall when wrong (never a buzzer), with a third note on every fifth
+first-try right answer in a row — and one when the lesson closes, a held chord
+only when a badge or level was crossed. Nothing sounds on navigation, sync, the
+reading text, a refused tap or over a recording; no music, loops or vibration.
+The level (On / Soft / Off) is per device and never synced; the iPhone's silent
+switch mutes the effects.
 
 ## Copy
 

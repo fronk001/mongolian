@@ -63,13 +63,28 @@ write(DIST / "styles.css", css)
 for sub in ("core", "sync"):
     for f in sorted((SRC / sub).iterdir()):
         copy(f, DIST / sub / f.name)
-for name in ("views.js", "account.js"):
+# Every ui module but app.js. A list of names here once meant a new module was
+# silently missing from dist/, and the built app opened blank.
+UI_MODULES = sorted(f.name for f in (SRC / "ui").glob("*.js") if f.name != "app.js")
+for name in UI_MODULES:
     copy(SRC / "ui" / name, DIST / "ui" / name)
 
 app = (SRC / "ui/app.js").read_text(encoding="utf-8")
 app = re.sub(r"'\.\./(core|sync)/", r"'./\1/", app)  # static and dynamic imports alike
-app = re.sub(r"from '\./(views|account)\.js'", r"from './ui/\1.js'", app)
+app = re.sub(r"from '\./([\w-]+)\.js'", r"from './ui/\1.js'", app)
 write(DIST / "app.js", app)
+
+# ---- every relative import must resolve --------------------------------------
+# A module that is imported but not copied loads nowhere and paints nothing, with
+# no error until a phone opens the app. Fail the build instead.
+IMPORT = re.compile(r"""(?:from\s+|import\s*\(\s*)['"](\.{1,2}/[^'"]+)['"]""")
+missing = []
+for js in DIST.rglob("*.js"):
+    for target in IMPORT.findall(js.read_text(encoding="utf-8")):
+        if not (js.parent / target).resolve().is_file():
+            missing.append(f"{js.relative_to(DIST).as_posix()} -> {target}")
+if missing:
+    raise SystemExit("unresolved imports in dist/:\n  " + "\n  ".join(missing))
 
 # ---- static assets ----------------------------------------------------------
 for sub in ("data", "fonts"):

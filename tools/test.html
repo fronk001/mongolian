@@ -34,7 +34,8 @@
 <script type="module">
 import { makeFSRS, dayKey, daysBetween } from '../src/core/fsrs.js';
 import { blank, migrateV1, encodeCode, importCode, stats, exportAge, recordDay } from '../src/core/progress.js';
-import { buildSession, applyGrade } from '../src/core/scheduler.js';
+import { buildSession, applyGrade, scheduledDays } from '../src/core/scheduler.js';
+import { backIn } from '../src/ui/views.js';
 import { gradeText, gradeAnswer, acceptedForms } from '../src/core/grade.js';
 import { buildChoices, distractors, makeRng, faceKey } from '../src/core/choices.js';
 import {
@@ -183,6 +184,32 @@ ok('no duplicate introductions', p.introduced.length === new Set(p.introduced).s
 const s2 = buildSession(p, W, S, { today: '2026-08-07' });
 ok('day 2 introduces different words', !s2.fresh.some(id => s1.fresh.includes(id)));
 ok('stats compute', stats(p).tracked > 0);
+
+// ------------------------------------------------------------ honest intervals
+// The screen used to print FSRS's raw interval ("NEXT 4h") for a word
+// applyGrade() then scheduled for tomorrow. Whatever the screen says must be
+// what the scheduler does: backIn() and applyGrade() share scheduledDays().
+section('honest intervals');
+{
+  const fs = makeFSRS();
+  const q = blank();
+  const day = '2026-08-06';
+  for (const g of [1, 2, 3, 4]) {
+    const r = blank();
+    const pv = fs.preview(undefined, 0);
+    const it = applyGrade(r, 90, g, { today: day });
+    ok(`grade ${g} on a new word: due date matches scheduledDays()`,
+       daysBetween(day, it.due) === scheduledDays(pv[g - 1]),
+       `due ${it.due}, preview ${pv[g - 1]}`);
+  }
+  ok('a lapse shown as under a day is scheduled for tomorrow', scheduledDays(0.2172) === 1);
+  ok('backIn never prints hours', backIn([fs.preview(undefined, 0)], 1) === 'Back tomorrow');
+  applyGrade(q, 90, 3, { today: day });
+  applyGrade(q, 91, 3, { today: day });
+  applyGrade(q, 91, 3, { today: '2026-08-10' });
+  const range = backIn([fs.preview(q.items[90], 4), fs.preview(q.items[91], 0)], 3);
+  ok('a sentence grading several words prints the real range', /^Back in \d+–\d+ days$/.test(range), range);
+}
 
 // ------------------------------------------------------------ word drills
 // Vocabulary drilled on its own — the only screen multiple choice appears on.

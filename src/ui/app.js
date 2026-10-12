@@ -11,6 +11,8 @@ import { firebaseBackend } from '../sync/firebase.js';
 import { firebaseConfig } from '../sync/firebase-config.js';
 import * as V from './views.js';
 import { syncPanel, syncDot, todayNotice, openSignIn, signInOpen } from './account.js';
+import { makePrefs } from './prefs.js';
+import { makeSound } from './sound.js';
 
 const el = document.getElementById('app');
 // ?fake-sync=<device>: sync against a pretend server kept in this browser
@@ -22,6 +24,9 @@ const KEY = fake ? `${STORE_KEY}:fake:${fake}` : STORE_KEY;
 let WORDS = [], SENTENCES = [], GRAMMAR = [], BYID = {}, POOL = [];
 let P = load(localStorage, KEY);
 let sync = null;      // created in boot(), before the first render
+const PREFS = makePrefs(localStorage, KEY);   // this device only: never synced or exported
+const SND = makeSound(() => PREFS.get('sound'));
+let BUILD = '';       // the service worker's cache version, shown in Settings
 let updateReady = false;   // a new version has taken over and waits to be shown
 
 /**
@@ -70,6 +75,7 @@ let S = {
   picked: null,                       // chosen multiple-choice index
   skip: new Set(),                    // words dismissed with "I know this"
   graded: new Set(),                  // words already graded this session
+  run: 0,                             // first-try right answers in a row, for the combo cue
   editPurpose: false,
   summary: blankSummary(),
   // ---- grammar topic practice (separate from the daily FSRS session) -----
@@ -92,6 +98,17 @@ const DRILL_STEPS = [0, 4, 8, 14];
 const drillCount = () => P.wordDrills ?? 8;
 
 function current() { return S.session?.items[S.i]; }
+
+/**
+ * The sound for an answer the app has just judged. Every fifth right answer
+ * in a row adds a third note — a real run, counted here, reset by any miss.
+ * Called only from inside the tap that answered (INSTRUMENT, "Sound").
+ */
+function cue(ok) {
+  if (!ok) { S.run = 0; SND.play('wrong'); return; }
+  S.run++;
+  SND.play(S.run % 5 === 0 ? 'combo' : 'right');
+}
 
 function elapsedFor(id) {
   const it = P.items[id];
@@ -208,7 +225,7 @@ function render({ keep = false } = {}) {
     } else {
       body = V.viewSentence(item, {
         fb: S.fb,
-        previewIvls: previewFor(item.targetIds[0]),
+        previews: item.targetIds.map(previewFor),
         byId: BYID
       });
     }
@@ -256,6 +273,10 @@ function settingsPage() {
         <button class="btn ghost slim" data-act="drills">${drillCount() || 'Off'}${
           g(drillCount() ? 'per lesson, when there is that much due' : 'off — only words no sentence covers')}</button>
       </div>
+      <div class="wline">
+        <div style="flex:1"><div class="mn">Sound effects</div>${g('this device · the silent switch mutes them')}</div>
+        <button class="btn ghost slim" data-act="sound">${{ on: 'On', soft: 'Soft', off: 'Off' }[PREFS.get('sound')] || 'On'}</button>
+      </div>
     </div>
 
     <div class="h"><span class="mono">BACKUP CODE</span></div>
@@ -281,7 +302,7 @@ function settingsPage() {
       <div class="gl" style="margin-top:10px">importing replaces everything ${
         synced ? 'on this device and online' : 'on this device'} — it does not merge</div>
     </div>
-    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE-FIRST</span></div>`;
+    <div class="foot"><span class="mono">APP BUILD</span><span class="mono">${BUILD ? V.esc(BUILD) : 'NOT INSTALLED'}</span></div>`;
 }
 
 /** Record that a code actually left the device. Only called on success. */
@@ -350,6 +371,7 @@ function finish() {
 
   save(P);
   S.screen = 'done';
+  SND.play(S.summary.newBadges.length || S.summary.leveledTo ? 'milestone' : 'finish');
   render();
 }
 
@@ -426,7 +448,7 @@ document.addEventListener('click', e => {
   if (act === 'start') {
     S.session = todaySession(); S.i = 0; S.screen = 'run';
     S.fb = null; S.picked = null;
-    S.deckI = 0; S.flipped = false; S.skip = new Set(); S.graded = new Set();
+    S.deckI = 0; S.flipped = false; S.skip = new Set(); S.graded = new Set(); S.run = 0;
     S.summary = blankSummary();
     // The level going in, so finish() can tell a level gained during this
     // session from a level the learner was already sitting at.
@@ -457,7 +479,12 @@ document.addEventListener('click', e => {
   }
 
   // ---- multiple choice ------------------------------------------------
-  else if (act === 'pick') { S.picked = parseInt(t.getAttribute('data-i'), 10); render(); }
+  else if (act === 'pick') {
+    S.picked = parseInt(t.getAttribute('data-i'), 10);
+    const opt = choicesFor(current()).options[S.picked];
+    cue(!!(opt && opt.correct));
+    render();
+  }
   // A closed set of four: the app scored the answer, so it grades it too —
   // "Good" for a right pick, "Again" for a wrong one. "That was easy" is the
   // one judgement the learner still holds, and it is optional.
@@ -465,6 +492,12 @@ document.addEventListener('click', e => {
   else if (act === 'mc-off') { P.mcMode = false; save(P); S.picked = null; render(); }
   else if (act === 'mc-on') { P.mcMode = true; save(P); S.fb = null; render(); }
   else if (act === 'mc') { P.mcMode = !mcOn(); save(P); render(); }
+  else if (act === 'sound') {
+    const order = ['on', 'soft', 'off'];
+    PREFS.set('sound', order[(order.indexOf(PREFS.get('sound')) + 1) % order.length]);
+    SND.play('right');      // let the new level be heard (silent when Off)
+    render();
+  }
   else if (act === 'drills') {
     const i = DRILL_STEPS.indexOf(drillCount());
     P.wordDrills = DRILL_STEPS[(i + 1) % DRILL_STEPS.length];
@@ -481,6 +514,7 @@ document.addEventListener('click', e => {
     const given = box ? box.value : '';
     const g = gradeAnswer(given, [target], Math.max(0, P.strictness - 0.15));
     S.fb = { ...g, given };
+    cue(g.ok);
     render();
   }
   else if (act === 'submit') {
@@ -502,6 +536,7 @@ document.addEventListener('click', e => {
     S.fb = { ...g, given, diff, alternative: g.matched !== accepted[0] };
     // A sentence reproduced with nothing missing — a real, checkable event.
     if (g.ok && !g.typo && diff.every(d => d.state === 'hit')) S.summary.perfect = true;
+    cue(g.ok);
     render();
   }
 
@@ -519,7 +554,7 @@ document.addEventListener('click', e => {
     const topic = GRAMMAR.find(g => g.id === t.getAttribute('data-id'));
     if (!topic) return;
     S.gTopic = topic; S.gStep = -1; S.gPicked = null; S.gFb = null;
-    S.gBank = []; S.gBuild = []; S.gSummary = blankGrammarSummary();
+    S.gBank = []; S.gBuild = []; S.gSummary = blankGrammarSummary(); S.run = 0;
     S.screen = 'grammar';
     render();
   }
@@ -529,7 +564,9 @@ document.addEventListener('click', e => {
     const drill = S.gTopic.drills[S.gStep];
     const i = parseInt(t.getAttribute('data-i'), 10);
     S.gPicked = i;
-    awardGrammarGrade(gradeDrill(drill, drill.options[i]).ok);
+    const ok = gradeDrill(drill, drill.options[i]).ok;
+    awardGrammarGrade(ok);
+    cue(ok);
     render();
   }
   else if (act === 'grammar-check') {
@@ -539,6 +576,7 @@ document.addEventListener('click', e => {
     const g = gradeDrill(drill, given, Math.max(0, P.strictness - 0.15));
     S.gFb = { ...g, given };
     awardGrammarGrade(g.ok);
+    cue(g.ok);
     render();
   }
   else if (act === 'grammar-build-tap') {
@@ -552,6 +590,7 @@ document.addEventListener('click', e => {
     const g = gradeDrill(drill, S.gBuild.map(i => S.gBank[i]));
     S.gFb = g;
     awardGrammarGrade(g.ok);
+    cue(g.ok);
     render();
   }
   else if (act === 'grammar-continue') {
@@ -611,7 +650,7 @@ document.addEventListener('keydown', e => {
 
   if (e.key === 'Enter' && !e.shiftKey) {
     const order = ['submit', 'check-word', 'grammar-check', 'grammar-build-check',
-      'card-next', 'grammar-continue', 'deck-learn', 'next'];
+      'card-next', 'grade', 'grammar-continue', 'deck-learn', 'next'];
     for (const act of order) {
       const b = document.querySelector(`[data-act="${act}"]`);
       if (b) { e.preventDefault(); b.click(); return; }
@@ -633,6 +672,18 @@ document.addEventListener('keydown', e => {
     if (g) { e.preventDefault(); g.click(); }
   }
 });
+
+/**
+ * Which build is running, from the service worker's cache name (mng-<hash>).
+ * Shown in Settings so Fred can see when the iPhone has picked up a release.
+ */
+async function readBuild() {
+  try {
+    const keys = await caches.keys();
+    const k = keys.find(x => x.startsWith('mng-'));
+    if (k) { BUILD = k.slice(4); if (S.screen === 'home' && S.tab === 'settings' && quiet()) render({ keep: true }); }
+  } catch (e) { /* no Cache Storage: not installed */ }
+}
 
 /** Ask the browser to exempt our storage from eviction. */
 async function requestPersistence() {
@@ -667,6 +718,7 @@ async function boot() {
   sync.subscribe(() => { if (quiet()) render({ keep: true }); });
   requestPersistence();
   registerServiceWorker();
+  readBuild();
   render();
   // After the first paint: loads the database code, and picks up the
   // sign-in if this device has one. Nothing on screen waits for it.

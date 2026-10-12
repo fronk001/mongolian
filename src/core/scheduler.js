@@ -190,6 +190,16 @@ export function buildSession(p, words, sentences, opts = {}) {
   };
 }
 
+/**
+ * The whole days applyGrade() really schedules for an FSRS interval. FSRS can
+ * propose a few hours after a lapse, but the app schedules by calendar day, so
+ * anything under a day comes back tomorrow. Every interval shown to the
+ * learner goes through this, so the screen says what the scheduler will do.
+ */
+export function scheduledDays(ivl) {
+  return Math.max(1, Math.round(ivl));
+}
+
 /** Apply a grade to one word and reschedule it. */
 export function applyGrade(p, wordId, g, opts = {}) {
   const today = opts.today || dayKey();
@@ -197,7 +207,7 @@ export function applyGrade(p, wordId, g, opts = {}) {
   const prev = p.items[wordId];
   const elapsed = prev ? Math.max(0, daysBetween(prev.last || today, today)) : 0;
   const next = fsrs.review(prev, g, elapsed);
-  const ivlDays = Math.max(1, Math.round(next.ivl));
+  const ivlDays = scheduledDays(next.ivl);
   p.items[wordId] = {
     s: next.s,
     d: next.d,

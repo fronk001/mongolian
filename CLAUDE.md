@@ -46,8 +46,10 @@ src/core/     fsrs.js scheduler.js progress.js grade.js    ← pure logic, no DO
 src/sync/     engine.js (queue, sign-in flow, rules below), firebase.js (the only file
               that knows Firebase), firebase-config.js, fake-backend.js (tests, ?fake-sync)
 src/ui/       app.js views.js account.js *.css             ← DOM lives only here
+              prefs.js (per-device settings) sound.js (synthesised cues)
 src/data/     words.json sentences.json                    ← large; avoid reading unless changing content
-build.py      copies files, rewrites app.js's imports, injects SW precache list
+build.py      copies files (every ui/*.js), rewrites app.js's imports, fails on
+              any unresolved relative import, injects SW precache list
 tools/        serve.py (dev server), run_tests.py (headless), test.html (core suite),
               engine-test.html, smoke.html, firebase-check.html
               mockups*.html — design references for the v3 redesign, not shipped
@@ -102,7 +104,6 @@ the build only copies, concatenates CSS, generates icons, and stamps sw.js.
   same-day term twice — about 1.29× stability each time — and counts one memory
   as two reviews and two XP awards. `tools/test.html` asserts drills and
   sentence targets never intersect.
-- Interface chrome is Mongolian; telemetry labels are uppercase Latin mono.
 - `core/` must stay DOM-free so it can be tested in plain Node.
 
 ## Content schema
@@ -204,11 +205,12 @@ merging — while synced, the online copy too (`commit(P, { replace: true })`).
   additive-only and old codes still carry it.
 - `mcMode` — word cards as multiple choice. Off gives a text field graded by
   the same `gradeText()` the sentences use. Switchable mid-question, both ways.
-  A multiple-choice answer **grades itself** — right is «Сайн», wrong is
-  «Дахин» — because the pick already settles whether it was recalled. Only the
-  typed card and the sentences show the grade bar. See INSTRUMENT.
+  A multiple-choice answer **grades itself** — right is Good, wrong is
+  Again — because the pick already settles whether it was recalled. Typed
+  answers grade themselves too (match Good, slip Hard, mismatch Again), with
+  *Was hard* / *Was easy* / *I was right* one quiet tap away. See INSTRUMENT.
 - `wordDrills` — how many of the day's due/new words are drilled as isolated
-  word cards, default **8**, cycled from Тохиргоо (0 / 4 / 8 / 14). Reserved by
+  word cards, default **8**, cycled from Settings (0 / 4 / 8 / 14). Reserved by
   `buildSession()` *before* sentences are scored, never overlaid on them: a
   word is presented once per session, so it is graded once per session.
   Word cards used to be residue — a card appeared only where no chosen sentence

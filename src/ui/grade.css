@@ -37,3 +37,7 @@ margin-top:4px;letter-spacing:.04em}
 .ctx span{border:1px solid var(--rule);border-radius:3px;padding:4px 8px;
 font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;color:var(--muted)}
 .ctx span.target{border-color:var(--blue);color:var(--blue);background:var(--blue-wash)}
+
+/* When the answered word comes back, in the whole days the scheduler sets.
+   Plain sentence case, not mono: it is a sentence, not telemetry. */
+.back{font-size:13px;font-weight:500;color:var(--ink2);margin-top:8px;flex:none}

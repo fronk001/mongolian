@@ -1,5 +1,5 @@
 /** Pure render functions — HTML strings. No state mutation here. */
-import { fmtInterval } from '../core/fsrs.js';
+import { scheduledDays } from '../core/scheduler.js';
 import {
   weekCells, monthCells, weekTotals, monthTotals, punctuality, streak, bestStreak,
   intakeRate, projectDate, levelFor, lessonWorth, byBadgeId, BADGES
@@ -93,13 +93,57 @@ export function retrievabilityMeter(r) {
     <span class="mono">${pct(r)}%</span></div>`;
 }
 
+/**
+ * When the word comes back, in the whole days applyGrade() will schedule —
+ * never FSRS's raw sub-day figure, which promised "4h" for a word that
+ * returns tomorrow. `previews` is one preview per word the answer grades; a
+ * sentence grading several words prints the honest range.
+ */
+export function backIn(previews, g) {
+  const days = previews.filter(Boolean).map(p => scheduledDays(p[g - 1]));
+  if (!days.length) return '';
+  const lo = Math.min(...days), hi = Math.max(...days);
+  if (hi === 1) return 'Back tomorrow';
+  return lo === hi ? `Back in ${lo} days` : `Back in ${lo}–${hi} days`;
+}
+
+/**
+ * The buttons under a typed answer. The app has already judged it, so it
+ * grades it: a match is Good, a one-letter slip Hard, a mismatch Again. What
+ * only the learner knows stays one quiet tap away — that a right answer was
+ * hard or easy, or that a "wrong" one was a phrasing the app does not list.
+ * INSTRUMENT, "SRS grade bar".
+ */
+export function verdictButtons(fb, previews) {
+  const short = g => { const t = backIn(previews, g); return t.replace(/^Back (in )?/, ''); };
+  if (!fb.ok) {
+    return `<div class="btns">
+      <button class="btn secondary" data-act="grade" data-g="1">Continue</button>
+      <button class="btn ghost slim" data-act="grade" data-g="2">I was right${gli(short(2))}</button>
+    </div>`;
+  }
+  if (fb.typo) {
+    return `<div class="btns"><button class="btn correct" data-act="grade" data-g="2">Continue</button></div>`;
+  }
+  return `<div class="btns">
+    <button class="btn correct" data-act="grade" data-g="3">Continue</button>
+    <div class="inline">
+      <button class="btn ghost slim" data-act="grade" data-g="2">Was hard${gli(short(2))}</button>
+      <button class="btn ghost slim" data-act="grade" data-g="4">Was easy${gli(short(4))}</button>
+    </div>
+  </div>`;
+}
+
+/** The grade a verdict's Continue commits — shown as "Back in N days" above it. */
+const continueGrade = fb => (!fb.ok ? 1 : fb.typo ? 2 : 3);
+
 const GRADE_LABELS = ['Again', 'Hard', 'Good', 'Easy'];
 
 export function gradeBar(previewIvls, selected) {
   return `<div class="gradebar">${GRADE_LABELS.map((l, i) => `
     <button class="grade${selected === i + 1 ? ' sel' : ''}" data-act="grade" data-g="${i + 1}">
       <div class="lbl">${l}</div>
-      <div class="ivl">${fmtInterval(previewIvls[i])}</div>
+      <div class="ivl">${scheduledDays(previewIvls[i])}d</div>
     </button>`).join('')}</div>`;
 }
 
@@ -550,6 +594,7 @@ export function viewDeck(item, ctx) {
 export function viewCard(item, ctx) {
   const { word } = item;
   const { fb, previewIvls, r, dir, choices, picked, mcMode } = ctx;
+  const previews = [previewIvls];
   const front = dir === 'mge' ? word.mn : word.en;
   const back  = dir === 'mge' ? word.en : word.mn;
   const answered = picked !== null && picked !== undefined;
@@ -597,7 +642,7 @@ export function viewCard(item, ctx) {
        scheduler is about to do is on screen; it is now a readout rather than a
        question. See viewCard's typed branch, where nothing but the learner
        knows how hard it was, and the grade bar stays. */
-    const ivl = answered ? fmtInterval(previewIvls[correct ? 2 : 0]) : '';
+    const back = answered ? backIn(previews, correct ? 3 : 1) : '';
     return `<div class="sec">${head}${prompt}
       <div class="choices">${rows}</div>
       ${answered ? `<div class="panel ${correct ? 'green' : 'red'} reveal">
@@ -606,10 +651,7 @@ export function viewCard(item, ctx) {
             <span class="lab ${correct ? 'green' : 'red'}">${correct ? 'CORRECT' : 'WRONG'}</span>
             <div style="font-size:15px;font-weight:500;margin-top:7px">${esc(word.mn)} — ${esc(word.en)}</div>
           </div>
-          <div style="text-align:right;flex:none">
-            <div class="mono">NEXT</div>
-            <div class="mono n" style="font-size:13px;color:var(--ink);margin-top:3px">${ivl}</div>
-          </div>
+          <div class="back">${back}</div>
         </div>
         ${recall}
       </div>` : ''}
@@ -621,7 +663,7 @@ export function viewCard(item, ctx) {
            claiming red for a second, different reason. */
         ? `<div class="btns">
              <button class="btn ${correct ? 'correct' : 'secondary'}" data-act="card-next" data-g="${correct ? 3 : 1}">Continue</button>
-             ${correct ? `<button class="btn ghost slim" data-act="card-next" data-g="4">That was easy${gli('wait longer before asking again')}</button>` : ''}
+             ${correct ? `<button class="btn ghost slim" data-act="card-next" data-g="4">Was easy${gli(backIn(previews, 4).replace(/^Back (in )?/, ''))}</button>` : ''}
            </div>`
         : `<div class="btns"><button class="btn ghost" data-act="mc-off">Type the answer instead</button></div>`}
     </div>`;
@@ -643,9 +685,10 @@ export function viewCard(item, ctx) {
              ${fb.close && !fb.ok ? `<div class="gl">close — check the spelling</div>` : ''}
            </div>
            ${typoNote(fb)}
+           <div class="back">${backIn(previews, continueGrade(fb))}</div>
            ${recall}
          </div>
-         ${gradeBar(previewIvls, fb.ok ? (fb.typo ? 2 : undefined) : 1)}`
+         ${verdictButtons(fb, previews)}`
       /* The placeholder already says which language is being asked for, and
          the tag above says which way round the card is. */
       : `<textarea class="text" id="ansbox" rows="1" autocapitalize="off" autocorrect="off"
@@ -664,7 +707,7 @@ export function viewCard(item, ctx) {
    ══════════════════════════════════════════════════════════════════════ */
 
 export function viewSentence(item, ctx) {
-  const { fb, previewIvls, byId } = ctx;
+  const { fb, previews, byId } = ctx;
   const s = item.sentence;
   const toMn = item.dir === 'egm';
   const prompt = toMn ? s.en : s.mn;
@@ -689,8 +732,9 @@ export function viewSentence(item, ctx) {
           ${contextChips(item.targetIds, item.targetIds, byId)}
         </div>
         ${typoNote(fb)}
+        <div class="back">${backIn(previews, continueGrade(fb))}</div>
       </div>
-      ${gradeBar(previewIvls, fb.ok ? (fb.typo ? 2 : undefined) : 1)}`
+      ${verdictButtons(fb, previews)}`
       : `<div class="btns"><button class="btn primary" data-act="submit">Check</button></div>`}
   </div>`;
 }
