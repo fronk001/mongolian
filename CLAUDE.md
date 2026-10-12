@@ -121,6 +121,14 @@ the build only copies, concatenates CSS, generates icons, and stamps sw.js.
 - `reviewed: false` — machine-written, not yet confirmed by Luna or Sarnai.
   Export the outstanding ones with `py tools/extend-lexicon.py --sheet`.
 
+Textbook words (ids from 1000, issued from `content/ids.json`, never reused)
+also carry `unit` (`"U01"`), `src` (the printed page, e.g. `"MM p182 [PDF
+194]"`), and where needed `forms` (irregular forms matched exactly: хүн →
+хүмүүс, хүний) and `infl: "none"` (particles and interjections never
+stem-match). Glosses are read off the books' glossaries, never recalled. They
+go live flagged `reviewed: false` (single words from the books' own lists;
+plan decision 17); personal words wait for Luna.
+
 Entries may be multi-word (`тоос сорогч`, `оройн хоол`). `tools/coverage.py`
 matches those as phrases before falling back to single tokens — otherwise the
 parts get reported as missing and someone adds a duplicate `машин`.
@@ -157,7 +165,16 @@ Re-check coverage after any content edit:
 ```
 py tools/coverage.py               # 93% of tokens, 160/164 sentences covered
 py tools/coverage.py --unmatched   # what is still missing
+py tools/coverage.py --selftest    # the matcher against tools/matcher-gold.tsv (also CI)
 ```
+
+The matcher is part-of-speech aware (verb lemmas take verb endings, nouns
+nominal ones), an exact headword or listed form beats any inflection, the
+longest stem wins, a fleeting vowel never drops from a long vowel (дээр is not
+дэр), and lemmas of two letters match only exactly. Every collision found so
+far is pinned in `tools/matcher-gold.tsv`; add one there whenever a mis-tag is
+found. `heldTags: true` on a sentence keeps hand-set tags while a question to
+Luna is open — `--apply-tags` skips it.
 
 ## Native-speaker review
 

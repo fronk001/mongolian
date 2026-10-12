@@ -1,0 +1,4 @@
+{
+ "next": 1062,
+ "note": "Highest word id ever issued + 1. Ids are never reused: a rejected word is deleted, its id stays spent."
+}

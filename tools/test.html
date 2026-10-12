@@ -391,6 +391,33 @@ ok('sentences with unknown vocabulary are marked partial',
    S.filter(s => s.partial).length < S.length * 0.05,
    `${S.filter(s => s.partial).length} partial of ${S.length}`);
 
+// Lexicon hygiene for textbook words (docs/design/F-content-engine.md §3.4).
+ok('every headword is lowercase Cyrillic', W.every(w => /^[а-яёөү ]+$/.test(w.mn)),
+   W.filter(w => !/^[а-яёөү ]+$/.test(w.mn)).map(w => w.mn).join(', '));
+ok('every textbook word names its unit and page', W.filter(w => w.id >= 1000).every(w => w.unit && w.src));
+ok('textbook words ship flagged for review', W.filter(w => w.id >= 1000).every(w => w.reviewed === false || w.reviewedBy));
+{
+  // Words with ids of 1000 and up land in their own sync bucket and survive
+  // the round trip — the lexicon used to stop at 273.
+  const q = blank();
+  applyGrade(q, 1003, 3, { today: '2026-10-12' });
+  const back = fromDocs(toDocs(q));
+  ok('a word id of 1000+ survives sync layout', back.items[1003] && back.items[1003].reps === 1);
+  ok('ids of 1000+ use their own bucket', itemsDoc(1003) === 'items-10');
+}
+{
+  // The new-word cap is per calendar day, not per lesson.
+  const q = blank();
+  const day = '2026-08-06';
+  const a = buildSession(q, W, S, { today: day });
+  a.fresh.forEach(id => applyGrade(q, id, 3, { today: day }));
+  const b = buildSession(q, W, S, { today: day });
+  ok('a second lesson the same day brings no more new words', b.fresh.length === 0,
+     `first ${a.fresh.length}, second ${b.fresh.length}`);
+  const c = buildSession(q, W, S, { today: '2026-08-07' });
+  ok('the next day brings new words again', c.fresh.length > 0);
+}
+
 // ------------------------------------------------------------ trajectory
 // The selector's real job: once vocabulary exists, find sentences where
 // exactly one element is weak. Replay a month of perfect reviews and check

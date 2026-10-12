@@ -9,6 +9,7 @@ needed to fix it.
     py tools/coverage.py                 # summary
     py tools/coverage.py --unmatched     # tokens with no word entry, by frequency
     py tools/coverage.py --propose       # proposed tags per sentence, as TSV
+    py tools/coverage.py --selftest      # the matcher against tools/matcher-gold.tsv (CI)
 
 --propose writes a review file. Nothing is applied to words.json or
 sentences.json: the stem matcher below is a heuristic on an agglutinative
@@ -29,9 +30,11 @@ def tokens(mn: str) -> list[str]:
     return [t for t in (re.sub(rf"[^{CYR}]", "", w).lower() for w in mn.split()) if t]
 
 
-# Case, plural and verb endings, longest first. Not a complete grammar — just
-# enough to tell an inflection from a coincidence. Seeds ROADMAP item 4.
-SUFFIXES = [
+# Endings, split by part of speech: a verb lemma takes only verb endings and a
+# nominal lemma only nominal ones. One shared list once read хэлний ("of the
+# language") as a form of хэлэх ("to say"). Not a complete grammar — enough to
+# tell an inflection from a coincidence. Additions carry their source page.
+NOUN_SUFFIXES = [
     # case
     "ийнх", "ыгаа", "ийгээ", "аасаа", "ээсээ", "оосоо", "өөсөө",
     "аар", "ээр", "оор", "өөр", "аас", "ээс", "оос", "өөс",
@@ -41,7 +44,10 @@ SUFFIXES = [
     "анд", "энд", "онд", "өнд", "ганд", "гэнд", "руу", "рүү",
     # plural
     "ууд", "үүд", "нууд", "нүүд", "нар", "нэр",
-    # verb
+    # possessive / reflexive
+    "маа", "мээ", "аа", "ээ", "оо", "өө",
+]
+VERB_SUFFIXES = [
     "дагаа", "дэгээ", "даг", "дэг", "дог", "дөг",
     "аач", "ээч", "ооч", "өөч", "ач", "эч", "оч", "өч",
     "лаа", "лээ", "лоо", "лөө",
@@ -49,70 +55,91 @@ SUFFIXES = [
     "аад", "ээд", "оод", "өөд", "гаач", "гээч", "гооч", "гөөч",
     "аарай", "ээрэй", "оорой", "өөрэй", "аарэй", "уулаа", "үүлээ",
     "ж", "ч", "х", "я", "ё", "е", "ъя", "ъё",
-    # possessive / reflexive
-    "маа", "мээ", "аа", "ээ", "оо", "өө",
+    # imperfective participle -гаа4 (байгаа), MM index of inflexions p178 [190]
+    "гаа", "гээ", "гоо", "гөө",
+    "аа", "ээ", "оо", "өө",
 ]
+SUFFIXES = sorted(set(NOUN_SUFFIXES) | set(VERB_SUFFIXES), key=len, reverse=True)
+VOWELS = "аэиоөуүы"
 
 
-def stem_match(tok: str, mn: str) -> bool:
+def is_verb(w) -> bool:
+    """Verbs are stored as infinitives in -х with an English gloss "to ..."."""
+    return w["mn"].endswith("х") and w.get("en", "").startswith("to ")
+
+
+def match_score(tok: str, w):
     """
-    Mongolian is agglutinative: suffixes attach to a mostly-stable stem, so an
-    inflected token usually starts with its dictionary form (хаалга ->
-    хаалгыг, өрөө -> өрөөнд).
+    How well `tok` reads as a form of lexicon entry `w`, or None.
 
-    A bare prefix test is not enough. It pairs өндөр (tall) with өндөг (egg),
-    будаа (rice) with будах (to paint) and сүү (milk) with сүүл (tail) — all
-    of which would teach the wrong gloss. So the leftover after the shared
-    stem must actually look like an ending, and the token may not be shorter
-    than the dictionary form.
+    Mongolian is agglutinative: suffixes attach to a mostly stable stem
+    (хаалга -> хаалгыг, өрөө -> өрөөнд). A bare prefix test is not enough — it
+    pairs өндөр (tall) with өндөг (egg), будаа (rice) with будах (to paint) —
+    so the leftover after the stem must be a listed ending for that part of
+    speech, and the token may not be shorter than the stem.
+
+    Scores rank candidates: an exact headword (or a listed irregular form)
+    beats any inflection; then the longer matched stem; then a plain stem over
+    a fleeting-vowel or dropped-vowel one.
     """
-    mn = mn.lower()
-    if tok == mn:
-        return True
+    mn = w["mn"].lower()
+    if tok == mn or tok in (w.get("forms") or []):
+        return (1000, 3, len(mn))
+    # Particles, interjections and lemmas of two letters or fewer match only
+    # exactly or through `forms`: за is no stem of зах (market), ер (ninety)
+    # none of ердөө, ач (grandchild) none of ачаа (load).
+    if w.get("infl") == "none" or len(mn) <= 2:
+        return None
+    endings = VERB_SUFFIXES if is_verb(w) else NOUN_SUFFIXES
 
-    VOWELS = "аэиоөуүы"
-    # Verbs are listed in the -х infinitive; the stem is what precedes it.
-    # (stem, dropped vowel or None, why it dropped)
-    stems = {(mn, None, None)}
+    # (stem, dropped vowel or None, why it dropped, kind rank)
+    stems = {(mn, None, None, 2)}
     if mn.endswith("х"):
-        stems.add((mn[:-1], None, None))
-    for s, _, _ in list(stems):
+        stems.add((mn[:-1], None, None, 2))
+    for s, _, _, _ in list(stems):
         if len(s) < 3:
             continue
         # A trailing vowel drops before a suffix: хаалга -> хаалгыг.
         if s[-1] in VOWELS:
-            stems.add((s[:-1], s[-1], "final"))
+            stems.add((s[:-1], s[-1], "final", 0))
             # -и becomes -ь in the imperative: тавих -> тавь, ярих -> ярь.
             if s[-1] == "и":
-                stems.add((s[:-1] + "ь", None, None))
+                stems.add((s[:-1] + "ь", None, None, 1))
         # Fleeting vowel: the vowel of a final -VC syllable drops before a
-        # suffix. буйдан -> буйдныг, хуудас -> хувцсаа, ургамал -> ургамлыг.
-        elif s[-2] in VOWELS:
-            stems.add((s[:-2] + s[-1], s[-2], "fleeting"))
+        # suffix (буйдан -> буйдныг, ургамал -> ургамлыг) — but never a long
+        # vowel or diphthong: дээр is not a form of дэр, тоос not of тос.
+        elif s[-2] in VOWELS and s[-3] not in VOWELS:
+            stems.add((s[:-2] + s[-1], s[-2], "fleeting", 1))
 
-    for stem, dropped, why in stems:
-        # 2 is the floor, not 3: үг (word) is a real entry and үг + ийг must
-        # still resolve. Short stems are safe because the leftover must be a
-        # listed ending.
+    best = None
+    for stem, dropped, why, rank in stems:
         if len(stem) < 2 or len(tok) < len(stem) or not tok.startswith(stem):
             continue
         rest = tok[len(stem):]
-        # If a dropped *final* vowel is simply put back, this is not an
-        # inflection but a different word: будах/буда -> буд + аа = будаа
-        # (rice), which is no form of "to paint". A fleeting vowel is exempt —
-        # хувцас -> хувцс + аа = хувцсаа really is "my clothes".
+        # A dropped *final* vowel simply put back is a different word:
+        # будах/буда -> буд + аа = будаа (rice), no form of "to paint". A
+        # fleeting vowel is exempt — хувцас -> хувцсаа really is "my clothes".
         if why == "final" and dropped and rest[:1] == dropped:
             continue
-        if rest == "" or rest in SUFFIXES:
-            return True
-        # A stem-final vowel merges with a suffix that opens on the same
-        # vowel: цэвэрлэ + ээч -> цэвэрлээч, so only "эч" is left over.
-        # Only for multi-character leftovers: allowing a single one turns
-        # буда + "а" into a form of будах, when будаа is rice. A missed tag
-        # just lands on the review worklist; a wrong tag teaches a wrong word.
-        if len(rest) >= 2 and stem[-1] in VOWELS and (stem[-1] + rest) in SUFFIXES:
-            return True
-    return False
+        # The whole infinitive takes case endings as a verbal noun:
+        # будахыг, тарихыг ("to paint", "to plant" as an object).
+        allowed = NOUN_SUFFIXES if (is_verb(w) and stem == mn) else endings
+        ok = rest == "" or rest in allowed
+        # A stem-final vowel merges with a suffix opening on the same vowel:
+        # цэвэрлэ + ээч -> цэвэрлээч, leaving only "эч". Never for a single
+        # leftover letter: буда + "а" is not будах, будаа is rice.
+        if not ok and len(rest) >= 2 and stem[-1] in VOWELS and (stem[-1] + rest) in endings:
+            ok = True
+        if ok:
+            score = (len(stem), rank, len(mn))
+            if best is None or score > best:
+                best = score
+    return best
+
+
+def stem_match(tok: str, mn: str) -> bool:
+    """Whether `tok` is a form of the headword `mn` (a bare word, no entry fields)."""
+    return match_score(tok, {"mn": mn}) is not None
 
 
 def load():
@@ -147,7 +174,7 @@ def analyse(words, sents):
             for w, parts in phrases:
                 n = len(parts)
                 if i + n <= len(toks) and all(
-                    stem_match(toks[i + k], parts[k]) for k in range(n)
+                    match_score(toks[i + k], {**w, "mn": parts[k]}) is not None for k in range(n)
                 ):
                     hit = (w, n)
                     break
@@ -156,11 +183,11 @@ def analyse(words, sents):
                 matched.append((" ".join(toks[i:i + n]), w))
                 i += n
                 continue
-            hits = [w for w in singles if stem_match(toks[i], w["mn"])]
-            if hits:
-                # longest dictionary form wins, so 'хаалга' beats a short word
-                # that happens to share a prefix
-                matched.append((toks[i], max(hits, key=lambda w: len(w["mn"]))))
+            scored = [(match_score(toks[i], w), w) for w in singles]
+            scored = [(s, w) for s, w in scored if s is not None]
+            if scored:
+                # exact headword first, then the longest matched stem
+                matched.append((toks[i], max(scored, key=lambda x: x[0])[1]))
             else:
                 unmatched.append(toks[i])
             i += 1
@@ -168,8 +195,32 @@ def analyse(words, sents):
     return rows
 
 
+def best_entry(tok: str, words):
+    scored = [(match_score(tok, w), w) for w in words if " " not in w["mn"]]
+    scored = [(s, w) for s, w in scored if s is not None]
+    return max(scored, key=lambda x: x[0])[1] if scored else None
+
+
+def selftest(words) -> int:
+    """Every known collision, pinned: a mis-tag teaches the wrong word."""
+    fails = 0
+    for line in Path("tools/matcher-gold.tsv").read_text(encoding="utf-8").splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        tok, want = line.split("	")[:2]
+        got = best_entry(tok, words)
+        got = got["mn"] if got else "-"
+        if got != want:
+            fails += 1
+            print(f"FAIL {tok}: expected {want}, got {got}")
+    print("matcher self-test: " + ("pass" if not fails else f"{fails} failed"))
+    return 1 if fails else 0
+
+
 def main() -> int:
     words, sents = load()
+    if "--selftest" in sys.argv:
+        return selftest(words)
     rows = analyse(words, sents)
 
     if "--unmatched" in sys.argv:
@@ -193,6 +244,11 @@ def main() -> int:
         for r in rows:
             ids = sorted({w["id"] for _, w in r["matched"]})
             s = dict(r["s"])
+            # Tags set by hand while a question to Luna is open (ROADMAP 2c):
+            # the matcher must not overwrite them until she has answered.
+            if s.get("heldTags"):
+                out.append(s)
+                continue
             if ids != s["ids"]:
                 changed += 1
             s["ids"] = ids

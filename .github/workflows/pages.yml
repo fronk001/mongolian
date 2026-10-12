@@ -37,6 +37,11 @@ jobs:
       - name: Build
         run: python build.py
 
+      # The word matcher decides which words every sentence teaches; each
+      # known collision (дээр/дэр, тоос/тос, хэлний/хэлэх) is pinned here.
+      - name: Matcher self-test
+        run: python tools/coverage.py --selftest
+
       # One exception: sync loads Google's Firebase SDK, once online and after
       # the first paint (dist/sync/firebase.js). Everything else must be in
       # dist/, so the app still opens and studies with no connection at all.

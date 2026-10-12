@@ -182,9 +182,10 @@
   "ids": [
    98,
    113,
-   210
+   1007
   ],
-  "partial": true
+  "partial": true,
+  "heldTags": true
  },
  {
   "en": "The cat is sleeping on the sofa.",
@@ -247,9 +248,9 @@
   "en": "Where is my pillow?",
   "mn": "Дэр минь хаана байна?",
   "ids": [
+   102,
    201,
    210,
-   213,
    218
   ],
   "alt": {
@@ -541,8 +542,8 @@
   "en": "This pillow is soft.",
   "mn": "Энэ дэр зөөлөн.",
   "ids": [
+   102,
    206,
-   213,
    251
   ],
   "note": "*зөөлөн = soft",
@@ -1725,6 +1726,7 @@
   "ids": [
    153,
    205,
+   223,
    259
   ],
   "alt": {
@@ -1790,8 +1792,8 @@
   "en": "There is no butter.",
   "mn": "Тос байхгүй.",
   "ids": [
-   202,
-   248
+   157,
+   202
   ],
   "alt": {
    "en": [
@@ -1880,7 +1882,7 @@
   "en": "Please give me oil.",
   "mn": "Тос өгөөч.",
   "ids": [
-   248,
+   157,
    262
   ],
   "alt": {
@@ -1940,9 +1942,11 @@
   "mn": "Зулзаган муур жижиг байна.",
   "ids": [
    162,
-   196
+   196,
+   201
   ],
-  "partial": true
+  "partial": true,
+  "heldTags": true
  },
  {
   "en": "Do you have a pet?",
@@ -1997,7 +2001,6 @@
   "ids": [
    99,
    161,
-   166,
    201
   ],
   "partial": true
@@ -2098,9 +2101,9 @@
   "ids": [
    161,
    170,
-   263
-  ],
-  "partial": true
+   263,
+   268
+  ]
  },
  {
   "en": "This book is good.",
@@ -2309,7 +2312,7 @@
   "ids": [
    177,
    201,
-   206
+   217
   ],
   "alt": {
    "en": [

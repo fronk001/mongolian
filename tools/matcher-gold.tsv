@@ -1,0 +1,47 @@
+# token	expected headword (- = no match)	why
+дээр	дээр	long vowel: on, not дэр (pillow)
+дэр	дэр
+тоос	тоос	long vowel: dust, not тос (oil)
+тос	тос
+хоол	хоол
+энд	энд	here, not энэ (this)
+энэ	энэ
+хаалгыг	хаалга	final vowel drops before a case ending
+буйдныг	буйдан	fleeting vowel
+хувцсаа	хувцас	fleeting vowel, reflexive
+ургамлыг	ургамал	fleeting vowel
+будаа	будаа	rice, not a form of будах
+зах	-	market: за (OK) is exact-only
+ердөө	-	merely: no stem of ер
+ачаа	-	load: no stem of ач
+ихэр	-	twin: их is exact-only
+хүмүүс	хүн	irregular plural, listed form
+хүний	хүн	irregular genitive, listed form
+хэлний	хэл	of the language, not хэлэх (to say)
+цэвэрлээч	цэвэрлэх	stem vowel merges with -ээч
+тавь	тавих	-и becomes -ь in the imperative
+будахыг	будах	infinitive takes a case ending
+яв	явах	bare imperative
+уу	уу	particle, exact
+үгийг	үг	two-letter lemma, listed form
+үрийг	үр	two-letter lemma, listed form
+байна	байна	exact headword beats байх
+байгаа	байх	-гаа participle
+миний	миний	my, not минь
+минь	минь
+баярлалаа	баярлалаа
+өндөг	өндөг	egg, not өндөр
+өндөр	өндөр
+сүүл	сүүл	tail, not сүү
+сүү	сүү
+хотод	хот
+багшийн	багш
+найзтай	найз
+сурна	сурах
+сурсан	сурах
+ирсэн	ирэх
+мэднэ	мэдэх
+ойлгохгүй	ойлгох
+ажиллаж	ажиллах
+гэрт	гэр
+нэрээ	нэр

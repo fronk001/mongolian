@@ -66,7 +66,10 @@ export function buildSession(p, words, sentences, opts = {}) {
   const backlog = due.length;
   // Back off on new material when reviews are piling up — otherwise the
   // schedule compounds and the day becomes unmanageable.
-  const room = Math.max(0, p.dailyNewCap - Math.floor(backlog / 6));
+  // The cap is per calendar day: words already met today (first review today)
+  // count against it, or a second lesson would bring six more.
+  const metToday = Object.values(p.items).filter(it => it.reps === 1 && it.last === today).length;
+  const room = Math.max(0, p.dailyNewCap - Math.floor(backlog / 6) - metToday);
   const fresh = words
     .filter(w => w.drill !== false && !introduced.has(w.id))
     .slice(0, opts.newCount ?? room)

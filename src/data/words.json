@@ -380,6 +380,366 @@
   "en": "to play"
  },
  {
+  "id": 1000,
+  "mn": "хоёр",
+  "en": "two",
+  "unit": "U01",
+  "src": "Beg p11 [PDF 12]",
+  "reviewed": false
+ },
+ {
+  "id": 1001,
+  "mn": "бас",
+  "en": "also, too",
+  "unit": "U01",
+  "src": "MM p182 [PDF 194]",
+  "reviewed": false
+ },
+ {
+  "id": 1002,
+  "mn": "харин",
+  "en": "but, whereas",
+  "unit": "U01",
+  "src": "MM p192 [PDF 204]",
+  "reviewed": false
+ },
+ {
+  "id": 1003,
+  "mn": "дараа нь",
+  "en": "then, after that",
+  "unit": "U01",
+  "src": "Top300 p6",
+  "reviewed": false
+ },
+ {
+  "id": 1004,
+  "mn": "их",
+  "en": "very; much, big",
+  "unit": "U01",
+  "src": "MM p185 [PDF 197]",
+  "reviewed": false
+ },
+ {
+  "id": 1005,
+  "mn": "хүйтэн",
+  "en": "cold",
+  "unit": "U01",
+  "src": "MM p192 [PDF 204]",
+  "reviewed": false
+ },
+ {
+  "id": 1006,
+  "mn": "гэр",
+  "en": "home; ger",
+  "unit": "U01",
+  "src": "Beg p8 [PDF 9]",
+  "reviewed": false
+ },
+ {
+  "id": 1007,
+  "mn": "миний",
+  "en": "my",
+  "unit": "U01",
+  "src": "MM p186 [PDF 198]",
+  "reviewed": false
+ },
+ {
+  "id": 1008,
+  "mn": "монгол",
+  "en": "Mongolian",
+  "unit": "U01",
+  "src": "Beg p1 [PDF 2]",
+  "reviewed": false
+ },
+ {
+  "id": 1009,
+  "mn": "хэл",
+  "en": "language",
+  "unit": "U01",
+  "src": "MM p192 [PDF 204]",
+  "reviewed": false
+ },
+ {
+  "id": 1010,
+  "mn": "сурах",
+  "en": "to learn",
+  "unit": "U01",
+  "src": "MM p207 [PDF 219]",
+  "reviewed": false
+ },
+ {
+  "id": 1011,
+  "mn": "нэр",
+  "en": "name",
+  "unit": "U01",
+  "src": "Beg p2 [PDF 3]",
+  "reviewed": false
+ },
+ {
+  "id": 1012,
+  "mn": "хүн",
+  "en": "person",
+  "unit": "U01",
+  "src": "MM p1 [PDF 13]",
+  "reviewed": false,
+  "forms": [
+   "хүмүүс",
+   "хүний"
+  ]
+ },
+ {
+  "id": 1013,
+  "mn": "багш",
+  "en": "teacher",
+  "unit": "U01",
+  "src": "MM p181 [PDF 193]",
+  "reviewed": false
+ },
+ {
+  "id": 1014,
+  "mn": "оюутан",
+  "en": "student",
+  "unit": "U01",
+  "src": "MM p187 [PDF 199]",
+  "reviewed": false
+ },
+ {
+  "id": 1015,
+  "mn": "найз",
+  "en": "friend",
+  "unit": "U01",
+  "src": "MM p187 [PDF 199]",
+  "reviewed": false
+ },
+ {
+  "id": 1016,
+  "mn": "тэд",
+  "en": "they",
+  "unit": "U01",
+  "src": "MM p190 [PDF 202]",
+  "reviewed": false
+ },
+ {
+  "id": 1017,
+  "mn": "таны",
+  "en": "your (polite)",
+  "unit": "U01",
+  "src": "Beg p2 [PDF 3]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1018,
+  "mn": "чиний",
+  "en": "your",
+  "unit": "U01",
+  "src": "MM p220 [PDF 232]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1019,
+  "mn": "түүний",
+  "en": "his, her, its",
+  "unit": "U01",
+  "src": "Surv p14 [PDF 16]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1020,
+  "mn": "танай",
+  "en": "your (home, family)",
+  "unit": "U01",
+  "src": "Beg p6 [PDF 7]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1021,
+  "mn": "хэний",
+  "en": "whose",
+  "unit": "U01",
+  "src": "Beg p3 [PDF 4]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1022,
+  "mn": "ямар",
+  "en": "what kind of",
+  "unit": "U01",
+  "src": "MM p194 [PDF 206]",
+  "reviewed": false
+ },
+ {
+  "id": 1023,
+  "mn": "тийм",
+  "en": "yes",
+  "unit": "U01",
+  "src": "MM p189 [PDF 201]",
+  "reviewed": false
+ },
+ {
+  "id": 1024,
+  "mn": "үгүй",
+  "en": "no",
+  "unit": "U01",
+  "src": "MM p190 [PDF 202]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1025,
+  "mn": "биш",
+  "en": "not",
+  "unit": "U01",
+  "src": "Beg p4 [PDF 5]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1026,
+  "mn": "анги",
+  "en": "class, classroom",
+  "unit": "U01",
+  "src": "MM p181 [PDF 193]",
+  "reviewed": false
+ },
+ {
+  "id": 1027,
+  "mn": "харандаа",
+  "en": "pencil",
+  "unit": "U01",
+  "src": "MM p191 [PDF 203]",
+  "reviewed": false
+ },
+ {
+  "id": 1028,
+  "mn": "бал",
+  "en": "pen",
+  "unit": "U01",
+  "src": "Beg p3 [PDF 4]",
+  "reviewed": false
+ },
+ {
+  "id": 1029,
+  "mn": "дэвтэр",
+  "en": "notebook",
+  "unit": "U01",
+  "src": "Beg p3 [PDF 4]",
+  "reviewed": false
+ },
+ {
+  "id": 1030,
+  "mn": "цүнх",
+  "en": "bag",
+  "unit": "U01",
+  "src": "MM p193 [PDF 205]",
+  "reviewed": false
+ },
+ {
+  "id": 1031,
+  "mn": "утас",
+  "en": "phone",
+  "unit": "U01",
+  "src": "MM p189 [PDF 201]",
+  "reviewed": false
+ },
+ {
+  "id": 1032,
+  "mn": "цаас",
+  "en": "paper",
+  "unit": "U01",
+  "src": "MM p192 [PDF 204]",
+  "reviewed": false
+ },
+ {
+  "id": 1033,
+  "mn": "баярлалаа",
+  "en": "thank you",
+  "unit": "U01",
+  "src": "MM p182 [PDF 194]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1034,
+  "mn": "баяртай",
+  "en": "goodbye",
+  "unit": "U01",
+  "src": "MM p182 [PDF 194]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1035,
+  "mn": "уучлаарай",
+  "en": "sorry, excuse me",
+  "unit": "U01",
+  "src": "Surv p9 [PDF 11]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1036,
+  "mn": "за",
+  "en": "OK, well",
+  "unit": "U01",
+  "src": "MM p185 [PDF 197]",
+  "reviewed": false,
+  "infl": "none"
+ },
+ {
+  "id": 1037,
+  "mn": "үү",
+  "en": "(yes/no question particle)",
+  "unit": "U01",
+  "src": "Beg p1 [PDF 2]",
+  "reviewed": false,
+  "drill": false,
+  "infl": "none"
+ },
+ {
+  "id": 1038,
+  "mn": "юү",
+  "en": "(yes/no question particle)",
+  "unit": "U01",
+  "src": "Beg p1 [PDF 2]",
+  "reviewed": false,
+  "drill": false,
+  "infl": "none"
+ },
+ {
+  "id": 1039,
+  "mn": "байх",
+  "en": "to be",
+  "unit": "U01",
+  "src": "MM p182 [PDF 194]",
+  "reviewed": false,
+  "drill": false
+ },
+ {
+  "id": 1040,
+  "mn": "нь",
+  "en": "(his, her, its; topic marker)",
+  "unit": "U01",
+  "src": "MM p43 [PDF 55]",
+  "reviewed": false,
+  "drill": false,
+  "infl": "none"
+ },
+ {
+  "id": 1041,
+  "mn": "нар",
+  "en": "(plural for people)",
+  "unit": "U01",
+  "src": "Beg p1 [PDF 2]",
+  "reviewed": false,
+  "drill": false,
+  "infl": "none"
+ },
+ {
   "id": 166,
   "mn": "хумхих",
   "en": "to scratch"
@@ -447,7 +807,10 @@
  {
   "id": 179,
   "mn": "үг",
-  "en": "word"
+  "en": "word",
+  "forms": [
+   "үгийг"
+  ]
  },
  {
   "id": 180,
@@ -482,7 +845,10 @@
  {
   "id": 186,
   "mn": "үр",
-  "en": "seed"
+  "en": "seed",
+  "forms": [
+   "үрийг"
+  ]
  },
  {
   "id": 187,
@@ -1023,5 +1389,165 @@
   "mn": "өнгөрүүлэх",
   "en": "to spend (time)",
   "reviewed": true
+ },
+ {
+  "id": 1042,
+  "mn": "ирэх",
+  "en": "to come",
+  "unit": "U02",
+  "src": "MM p185 [PDF 197]",
+  "reviewed": false
+ },
+ {
+  "id": 1043,
+  "mn": "очих",
+  "en": "to go to, to visit",
+  "unit": "U02",
+  "src": "MM p187 [PDF 199]",
+  "reviewed": false
+ },
+ {
+  "id": 1044,
+  "mn": "хаашаа",
+  "en": "where to",
+  "unit": "U02",
+  "src": "MM p191 [PDF 203]",
+  "reviewed": false
+ },
+ {
+  "id": 1045,
+  "mn": "улс",
+  "en": "country",
+  "unit": "U02",
+  "src": "MM p190 [PDF 202]",
+  "reviewed": false
+ },
+ {
+  "id": 1046,
+  "mn": "англи",
+  "en": "English",
+  "unit": "U02",
+  "src": "MM p1 [PDF 13]",
+  "reviewed": false
+ },
+ {
+  "id": 1047,
+  "mn": "америк",
+  "en": "American",
+  "unit": "U02",
+  "src": "Beg p4 [PDF 5]",
+  "reviewed": false
+ },
+ {
+  "id": 1048,
+  "mn": "орос",
+  "en": "Russian",
+  "unit": "U02",
+  "src": "Surv p18 [PDF 20]",
+  "reviewed": false
+ },
+ {
+  "id": 1049,
+  "mn": "хятад",
+  "en": "Chinese",
+  "unit": "U02",
+  "src": "Surv p5 [PDF 7]",
+  "reviewed": false
+ },
+ {
+  "id": 1050,
+  "mn": "гадаад",
+  "en": "foreign",
+  "unit": "U02",
+  "src": "MM p182 [PDF 194]",
+  "reviewed": false
+ },
+ {
+  "id": 1051,
+  "mn": "мэдэх",
+  "en": "to know",
+  "unit": "U02",
+  "src": "MM p186 [PDF 198]",
+  "reviewed": false
+ },
+ {
+  "id": 1052,
+  "mn": "ойлгох",
+  "en": "to understand",
+  "unit": "U02",
+  "src": "MM p187 [PDF 199]",
+  "reviewed": false
+ },
+ {
+  "id": 1053,
+  "mn": "жаахан",
+  "en": "a little",
+  "unit": "U02",
+  "src": "MM p184 [PDF 196]",
+  "reviewed": false
+ },
+ {
+  "id": 1054,
+  "mn": "гэх",
+  "en": "to say; to be called",
+  "unit": "U02",
+  "src": "MM p184 [PDF 196]",
+  "reviewed": false
+ },
+ {
+  "id": 1055,
+  "mn": "ажил",
+  "en": "work",
+  "unit": "U02",
+  "src": "MM p181 [PDF 193]",
+  "reviewed": false
+ },
+ {
+  "id": 1056,
+  "mn": "ажиллах",
+  "en": "to work",
+  "unit": "U02",
+  "src": "MM p181 [PDF 193]",
+  "reviewed": false
+ },
+ {
+  "id": 1057,
+  "mn": "эмч",
+  "en": "doctor",
+  "unit": "U02",
+  "src": "MM p193 [PDF 205]",
+  "reviewed": false
+ },
+ {
+  "id": 1058,
+  "mn": "жолооч",
+  "en": "driver",
+  "unit": "U02",
+  "src": "MM p184 [PDF 196]",
+  "reviewed": false
+ },
+ {
+  "id": 1059,
+  "mn": "сургууль",
+  "en": "school",
+  "unit": "U02",
+  "src": "Beg p53 [PDF 54]",
+  "reviewed": false
+ },
+ {
+  "id": 1060,
+  "mn": "их сургууль",
+  "en": "university",
+  "unit": "U02",
+  "src": "MM p185 [PDF 197]",
+  "reviewed": false
+ },
+ {
+  "id": 1061,
+  "mn": "хот",
+  "en": "city",
+  "unit": "U02",
+  "src": "MM p191 [PDF 203]",
+  "reviewed": false
  }
 ]
