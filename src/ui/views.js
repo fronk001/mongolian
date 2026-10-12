@@ -75,9 +75,11 @@ export function header(st, sub, dot = '') {
  * and a way out. The telemetry is not deleted — it is on the dashboard, which
  * is where you go to read it rather than to study.
  */
-export function lessonBar(done, total) {
+export function lessonBar(done, total, fixes = []) {
+  // A retry is its own segment, so the bar grows by one when a mistake is
+  // made and says so: the total changes only because something went wrong.
   const segs = Array.from({ length: total }, (_, i) =>
-    `<i class="${i < done ? 'done' : i === done ? 'now' : ''}"></i>`).join('');
+    `<i class="${i < done ? 'done' : i === done ? 'now' : ''}${fixes[i] ? ' fix' : ''}"></i>`).join('');
   return `<div class="lessonbar">
     <div class="rail">${segs}</div>
     <div class="barfoot">
@@ -593,16 +595,38 @@ export function viewDeck(item, ctx) {
 
 export function viewCard(item, ctx) {
   const { word } = item;
-  const { fb, previewIvls, r, dir, choices, picked, mcMode } = ctx;
+  const { fb, previewIvls, r, dir, choices, picked, mcMode, retryNote } = ctx;
   const previews = [previewIvls];
+  const retry = item.retry;
   const front = dir === 'mge' ? word.mn : word.en;
   const back  = dir === 'mge' ? word.en : word.mn;
   const answered = picked !== null && picked !== undefined;
-  const useMC = mcMode && choices && choices.usable;
+  const useMC = (mcMode || item.forceMC || item.pair) && choices && choices.usable;
 
   const head = `<div class="qhead">
-      <span class="tag">${dir === 'mge' ? 'MGL → ENG' : 'ENG → MGL'}</span>
-      <span class="mono">CARD · ${item.isNew ? 'NEW' : 'REVIEW'}</span></div>`;
+      <span class="tag${retry ? ' red' : ''}">${retry === 'study' ? 'STUDY' : retry ? 'FIX' : dir === 'mge' ? 'MGL → ENG' : 'ENG → MGL'}</span>
+      <span class="mono">${retry ? (dir === 'mge' ? 'MGL → ENG' : 'ENG → MGL') : item.check ? 'CHECK' : `CARD · ${item.isNew ? 'NEW' : 'REVIEW'}`}</span></div>`;
+
+  /* Study: the last step of a mistake that was missed twice. Nothing is
+     asked — the pair is shown, and it comes back tomorrow as FSRS set it. */
+  if (retry === 'study') {
+    return `<div class="sec">${head}
+      <div class="panel">
+        <div class="prompt${dir === 'mge' ? '' : ' en'}">${esc(front)}</div>
+        <div class="fb" style="border-top:1px solid var(--rule2)"><div class="ans">${esc(back)}</div></div>
+      </div>
+      <div class="btns"><button class="btn secondary" data-act="retry-next">Got it</button></div>
+    </div>`;
+  }
+
+  /* A retry's verdict: right or not, and what happens next. Never graded, so
+     no interval and no grade cells — the first attempt already set those. */
+  const retryVerdict = ok => `<div class="panel ${ok ? 'green' : 'red'} reveal">
+      <span class="lab ${ok ? 'green' : 'red'}">${ok ? 'CORRECT' : 'WRONG'}</span>
+      <div style="font-size:15px;font-weight:500;margin-top:7px">${esc(word.mn)} — ${esc(word.en)}</div>
+      <div class="back">${esc(retryNote || '')}</div>
+    </div>
+    <div class="btns"><button class="btn ${ok ? 'correct' : 'secondary'}" data-act="retry-next">Continue</button></div>`;
 
   /* No boxed "prompt" label: the tag above already says which way round the
      card is, and a boxed label naming a 44px word as "the prompt" is a line of
@@ -642,7 +666,15 @@ export function viewCard(item, ctx) {
        scheduler is about to do is on screen; it is now a readout rather than a
        question. See viewCard's typed branch, where nothing but the learner
        knows how hard it was, and the grade bar stays. */
-    const back = answered ? backIn(previews, correct ? 3 : 1) : '';
+    if (retry) {
+      return `<div class="sec">${head}${prompt}
+        <div class="choices">${rows}</div>
+        ${answered ? retryVerdict(correct) : ''}
+      </div>`;
+    }
+    // A first-try miss comes back in this lesson (core/ladder.js) as well as
+    // tomorrow; the verdict says the sooner of the two.
+    const back = answered ? (correct ? backIn(previews, 3) : 'Again later this lesson') : '';
     return `<div class="sec">${head}${prompt}
       <div class="choices">${rows}</div>
       ${answered ? `<div class="panel ${correct ? 'green' : 'red'} reveal">
@@ -674,6 +706,7 @@ export function viewCard(item, ctx) {
      recognise — the same production demand the sentences make. Graded by the
      same lenient-on-spelling comparison, so a Cyrillic typo is not a lapse. */
   const toMn = dir === 'egm';
+  if (retry && fb) return `<div class="sec">${head}${prompt}${retryVerdict(fb.ok)}</div>`;
   return `<div class="sec">${head}${prompt}
     ${fb
       ? `<div class="panel ${fb.ok ? 'green' : 'red'} reveal">
@@ -685,7 +718,7 @@ export function viewCard(item, ctx) {
              ${fb.close && !fb.ok ? `<div class="gl">close — check the spelling</div>` : ''}
            </div>
            ${typoNote(fb)}
-           <div class="back">${backIn(previews, continueGrade(fb))}</div>
+           <div class="back">${fb.ok ? backIn(previews, continueGrade(fb)) : 'Again later this lesson'}</div>
            ${recall}
          </div>
          ${verdictButtons(fb, previews)}`
@@ -695,7 +728,7 @@ export function viewCard(item, ctx) {
            spellcheck="false" placeholder="${toMn ? 'type in Mongolian' : 'type in English'}"></textarea>
          <div class="btns">
            <button class="btn primary" data-act="check-word">Check</button>
-           ${choices && choices.usable
+           ${choices && choices.usable && !retry
              ? `<button class="btn ghost" data-act="mc-on">Use multiple choice instead</button>` : ''}
          </div>`}
   </div>`;
@@ -761,6 +794,7 @@ export function viewDone(summary, st, p, ctx = {}) {
           <div class="mono" style="margin-top:2px">THIS WEEK</div></div>
       </div>
       <div class="gl">${summary.reviews} reviews graded · ${summary.newWords} new words met · ${run}-day streak</div>
+      ${summary.missed ? `<div class="gl">${summary.fixed} of ${summary.missed} mistakes fixed${summary.shown ? ` · ${summary.shown} shown again` : ''}</div>` : ''}
     </div>
 
     <div class="h"><span class="mono">WEEK</span></div>

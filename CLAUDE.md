@@ -104,6 +104,11 @@ the build only copies, concatenates CSS, generates icons, and stamps sw.js.
   same-day term twice — about 1.29× stability each time — and counts one memory
   as two reviews and two XP awards. `tools/test.html` asserts drills and
   sentence targets never intersect.
+  The grade is committed at the verdict (`commit()`), so leaving a lesson
+  cannot undo a miss; *Was hard* / *Was easy* / *I was right* amend it (undo,
+  then grade) rather than grading twice. Retries of a mistake
+  (`core/ladder.js`) never call `awardGrade` — the in-browser check is that a
+  word's record and P.xp are identical whether its retries pass or fail.
 - `core/` must stay DOM-free so it can be tested in plain Node.
 
 ## Content schema

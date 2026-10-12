@@ -6,6 +6,7 @@ import { gradeAnswer, diffTokens } from '../core/grade.js';
 import { buildChoices, shuffle, makeRng, hashSeed } from '../core/choices.js';
 import { xpFor, earnedBadges, stepCount, levelFor, xpForGrammar } from '../core/goals.js';
 import { gradeDrill, applyGrammarGrade, topicMastery } from '../core/grammar.js';
+import { afterAnswer, retryIndex, retryItem } from '../core/ladder.js';
 import { createSync } from '../sync/engine.js';
 import { firebaseBackend } from '../sync/firebase.js';
 import { firebaseConfig } from '../sync/firebase-config.js';
@@ -65,7 +66,7 @@ function adopt(next) {
   if (quiet()) render({ keep: true });
 }
 
-const blankSummary = () => ({ reviews: 0, right: 0, newWords: 0, xp: 0, onTime: 0, late: 0, newBadges: [], levelBefore: 1, leveledTo: null });
+const blankSummary = () => ({ reviews: 0, right: 0, newWords: 0, xp: 0, onTime: 0, late: 0, newBadges: [], levelBefore: 1, leveledTo: null, missed: 0, fixed: 0, shown: 0 });
 const blankGrammarSummary = () => ({ xp: 0, right: 0, wrong: 0 });
 
 let S = {
@@ -76,6 +77,10 @@ let S = {
   skip: new Set(),                    // words dismissed with "I know this"
   graded: new Set(),                  // words already graded this session
   run: 0,                             // first-try right answers in a row, for the combo cue
+  pending: null,                      // the grade committed at this verdict, until Continue
+  lastPick: null,                     // the option picked on this card, for a two-option fix
+  retryOk: null,                      // a retry's answer: right or not (never graded)
+  claimed: [],                        // deck words claimed as known, checked after the deck
   editPurpose: false,
   summary: blankSummary(),
   // ---- grammar topic practice (separate from the daily FSRS session) -----
@@ -104,11 +109,86 @@ function current() { return S.session?.items[S.i]; }
  * in a row adds a third note — a real run, counted here, reset by any miss.
  * Called only from inside the tap that answered (INSTRUMENT, "Sound").
  */
-function cue(ok) {
+function cue(ok, first = true) {
+  if (!first) { SND.play(ok ? 'right' : 'wrong'); return; }
   if (!ok) { S.run = 0; SND.play('wrong'); return; }
   S.run++;
   SND.play(S.run % 5 === 0 ? 'combo' : 'right');
 }
+
+/** The grade a judged answer commits before any amendment: match Good, slip Hard, miss Again. */
+const verdictGrade = g => (!g.ok ? 1 : g.typo ? 2 : 3);
+
+/**
+ * Commit the first attempt's grade at the verdict, not at Continue: leaving the
+ * lesson from a verdict screen used to drop the grade, so the same card came
+ * back fresh. Was hard / Was easy / I was right amend it — undo, then grade
+ * again — so one answer is still one grade.
+ */
+function commit(item, g) {
+  const ids = item.kind === 'sentence' ? item.targetIds : [item.word.id];
+  const snaps = ids.filter(id => !S.graded.has(id)).map(id => ({
+    id, prev: P.items[id] ? { ...P.items[id] } : null, intro: P.introduced.includes(id)
+  }));
+  S.pending = { item, g, snaps, xp: P.xp || 0, summary: { ...S.summary } };
+  ids.forEach(id => awardGrade(id, g));
+  if (g === 1 && item.kind === 'card') {
+    S.summary.missed++;
+    queueRetry(item, 'fix');
+  }
+  save(P);
+}
+
+function amend(g) {
+  const pd = S.pending;
+  if (!pd || pd.g === g) return;
+  for (const s of pd.snaps) {
+    if (s.prev) P.items[s.id] = s.prev; else delete P.items[s.id];
+    if (!s.intro) P.introduced = P.introduced.filter(x => x !== s.id);
+    S.graded.delete(s.id);
+  }
+  P.xp = pd.xp;
+  S.summary = pd.summary;
+  // "I was right": the miss is withdrawn, and so is its retry.
+  if (pd.g === 1) S.session.items = S.session.items.filter((it, i) => i <= S.i || it.first !== pd.item);
+  commit(pd.item, g);
+}
+
+/** Put a retry of `item` into the lesson: a fix a few screens on, the rest at the end. */
+function queueRetry(item, stage) {
+  const extra = {};
+  if (stage === 'fix') {
+    const opts = item.kind === 'card' && S.lastPick && !S.lastPick.correct
+      ? choicesFor(item).options : null;
+    // Picked wrong from four: the fix offers that pick against the right one.
+    // Typed wrong: the fix offers four fresh options.
+    if (opts) extra.pair = [opts.find(o => o.correct), S.lastPick];
+    else extra.forceMC = true;
+  }
+  const r = retryItem(item, stage, extra);
+  S.session.items.splice(retryIndex(S.session.items, S.i, stage), 0, r);
+}
+
+/** After a retry's verdict: queue the next step, or count it fixed or shown. */
+function retryNext() {
+  const item = current();
+  const next = afterAnswer(item, item.retry === 'study' ? true : !!S.retryOk);
+  if (next.queue) queueRetry(item, next.queue);
+  if (next.outcome === 'fixed') S.summary.fixed++;
+  if (next.outcome === 'shown') S.summary.shown++;
+  S.retryOk = null;
+  advance();
+}
+
+/** The line a retry's verdict carries. */
+function retryNote(item, ok) {
+  const next = afterAnswer(item, ok);
+  if (next.outcome === 'fixed') return 'Fixed';
+  if (next.queue === 'again') return 'Once more at the end';
+  if (next.queue === 'study') return 'Shown again at the end';
+  return '';
+}
+
 
 function elapsedFor(id) {
   const it = P.items[id];
@@ -138,10 +218,16 @@ const dirFor = item => item.dir || 'mge';
  */
 function choicesFor(item) {
   const dir = dirFor(item);
+  // A fix after a wrong pick: the right option and the one that was picked.
+  if (item.pair) {
+    return { usable: true, options: shuffle(item.pair, makeRng(hashSeed(`${item.word.id}:pair`))) };
+  }
+  // A retry gets a fresh arrangement: the same four in the same slots would be
+  // a tap from memory, not a recall.
   return buildChoices(item.word, POOL, {
     dir, count: 4,
     introduced: new Set(P.introduced),
-    seed: `${item.word.id}:${dir}:${dayKey()}`
+    seed: `${item.word.id}:${dir}:${dayKey()}${item.retry ? ':' + item.retry : ''}`
   });
 }
 
@@ -213,7 +299,10 @@ function render({ keep = false } = {}) {
     if (item.kind === 'deck') {
       body = V.viewDeck(item, { deckI: S.deckI, flipped: S.flipped });
     } else if (item.kind === 'card') {
+      const answeredOk = item.retry && (S.picked !== null || S.fb)
+        ? (S.fb ? S.fb.ok : !!choicesFor(item).options[S.picked]?.correct) : null;
       body = V.viewCard(item, {
+        retryNote: answeredOk === null ? '' : retryNote(item, answeredOk),
         fb: S.fb,
         previewIvls: previewFor(item.word.id),
         r: retrievabilityFor(item.word.id),
@@ -231,7 +320,8 @@ function render({ keep = false } = {}) {
     }
     // No dashboard header during a lesson: see lessonBar() on why the
     // telemetry belongs on the screen you read, not the screen you study on.
-    el.innerHTML = V.lessonBar(step, total) + body;
+    const fixes = S.session.items.flatMap(it => it.kind === 'deck' ? it.words.map(() => false) : [!!it.retry]);
+    el.innerHTML = V.lessonBar(step, total, fixes) + body;
   }
 
   if (!keep) {
@@ -332,9 +422,11 @@ async function copyCode() {
 /** Advance past any card whose word was dismissed with "I know this". */
 function advance() {
   S.fb = null; S.picked = null; S.deckI = 0; S.flipped = false;
+  S.pending = null; S.lastPick = null; S.retryOk = null;
   do { S.i++; } while (
     S.i < S.session.items.length &&
     S.session.items[S.i].kind === 'card' &&
+    !S.session.items[S.i].retry && !S.session.items[S.i].check &&
     S.skip.has(S.session.items[S.i].word.id)
   );
   if (S.i >= S.session.items.length) finish(); else render();
@@ -405,10 +497,10 @@ function awardGrade(id, g) {
   if (!prev) S.summary.newWords++;
 }
 
+/** Continue from a verdict: the committed grade, amended if a quiet cell said otherwise. */
 function grade(g) {
-  const item = current();
-  const ids = item.kind === 'sentence' ? item.targetIds : [item.word.id];
-  ids.forEach(id => awardGrade(id, g));
+  if (S.pending) amend(g);
+  else commit(current(), g);      // nothing committed yet (should not happen): grade now
   save(P);
   advance();
 }
@@ -449,6 +541,7 @@ document.addEventListener('click', e => {
     S.session = todaySession(); S.i = 0; S.screen = 'run';
     S.fb = null; S.picked = null;
     S.deckI = 0; S.flipped = false; S.skip = new Set(); S.graded = new Set(); S.run = 0;
+    S.pending = null; S.lastPick = null; S.retryOk = null; S.claimed = [];
     S.summary = blankSummary();
     // The level going in, so finish() can tell a level gained during this
     // session from a level the learner was already sitting at.
@@ -458,6 +551,7 @@ document.addEventListener('click', e => {
   else if (act === 'home') { S.screen = 'home'; S.session = null; render(); }
   else if (act === 'tab') { S.tab = t.getAttribute('data-tab'); S.msg = ''; render(); }
   else if (act === 'next') advance();
+  else if (act === 'retry-next') retryNext();
 
   // ---- flashcard deck ------------------------------------------------
   else if (act === 'flip') { S.flipped = !S.flipped; render(); }
@@ -466,23 +560,31 @@ document.addEventListener('click', e => {
     const item = current();
     const w = item.words[S.deckI];
     if (act === 'deck-known') {
-      // Claimed as already known: introduce it at a long interval and drop
-      // its card from the rest of this session. It still comes back on
-      // schedule — nothing here removes a word from the rotation for good.
-      awardGrade(w.id, 4);
+      // Claimed as already known: checked straight after the deck by one
+      // question in the harder direction, and graded on that answer. A claim
+      // alone used to set a 16-day interval and pay full XP with no recall.
+      S.claimed.push(w);
       S.skip.add(w.id);
-      save(P);
     }
     S.flipped = false;
     if (S.deckI + 1 < item.words.length) { S.deckI++; render(); }
-    else advance();
+    else {
+      const checks = S.claimed.map(word => ({ kind: 'card', word, isNew: true, dir: 'egm', check: true }));
+      S.session.items.splice(S.i + 1, 0, ...checks);
+      S.claimed = [];
+      advance();
+    }
   }
 
   // ---- multiple choice ------------------------------------------------
   else if (act === 'pick') {
+    const item = current();
     S.picked = parseInt(t.getAttribute('data-i'), 10);
-    const opt = choicesFor(current()).options[S.picked];
-    cue(!!(opt && opt.correct));
+    const opt = choicesFor(item).options[S.picked];
+    const right = !!(opt && opt.correct);
+    if (item.retry) S.retryOk = right;
+    else { S.lastPick = opt; commit(item, right ? 3 : 1); }
+    cue(right, !item.retry);
     render();
   }
   // A closed set of four: the app scored the answer, so it grades it too —
@@ -514,7 +616,9 @@ document.addEventListener('click', e => {
     const given = box ? box.value : '';
     const g = gradeAnswer(given, [target], Math.max(0, P.strictness - 0.15));
     S.fb = { ...g, given };
-    cue(g.ok);
+    if (item.retry) S.retryOk = g.ok;
+    else commit(item, verdictGrade(g));
+    cue(g.ok, !item.retry);
     render();
   }
   else if (act === 'submit') {
@@ -535,7 +639,8 @@ document.addEventListener('click', e => {
     const diff = diffTokens(given, g.matched || accepted[0]);
     S.fb = { ...g, given, diff, alternative: g.matched !== accepted[0] };
     // A sentence reproduced with nothing missing — a real, checkable event.
-    if (g.ok && !g.typo && diff.every(d => d.state === 'hit')) S.summary.perfect = true;
+    if (g.ok && !g.typo && !item.retry && diff.every(d => d.state === 'hit')) S.summary.perfect = true;
+    commit(item, verdictGrade(g));
     cue(g.ok);
     render();
   }
@@ -650,7 +755,7 @@ document.addEventListener('keydown', e => {
 
   if (e.key === 'Enter' && !e.shiftKey) {
     const order = ['submit', 'check-word', 'grammar-check', 'grammar-build-check',
-      'card-next', 'grade', 'grammar-continue', 'deck-learn', 'next'];
+      'card-next', 'grade', 'retry-next', 'grammar-continue', 'deck-learn', 'next'];
     for (const act of order) {
       const b = document.querySelector(`[data-act="${act}"]`);
       if (b) { e.preventDefault(); b.click(); return; }

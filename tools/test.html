@@ -36,6 +36,7 @@ import { makeFSRS, dayKey, daysBetween } from '../src/core/fsrs.js';
 import { blank, migrateV1, encodeCode, importCode, stats, exportAge, recordDay } from '../src/core/progress.js';
 import { buildSession, applyGrade, scheduledDays } from '../src/core/scheduler.js';
 import { backIn } from '../src/ui/views.js';
+import { afterAnswer, retryIndex, retryItem, RETRY_GAP } from '../src/core/ladder.js';
 import { gradeText, gradeAnswer, acceptedForms } from '../src/core/grade.js';
 import { buildChoices, distractors, makeRng, faceKey } from '../src/core/choices.js';
 import {
@@ -209,6 +210,34 @@ section('honest intervals');
   applyGrade(q, 91, 3, { today: '2026-08-10' });
   const range = backIn([fs.preview(q.items[90], 4), fs.preview(q.items[91], 0)], 3);
   ok('a sentence grading several words prints the real range', /^Back in \d+–\d+ days$/.test(range), range);
+}
+
+// ------------------------------------------------------------ mistake loop
+// A miss comes back until it is right: a fix a few screens on, then once more
+// at the end, then — missed twice — shown. Only the first attempt is graded:
+// retries never reach applyGrade (core/ladder.js, app.js commit()).
+section('mistake loop');
+{
+  const first = { kind: 'card', word: { id: 90 } };
+  ok('a right first answer queues nothing', !afterAnswer(first, true).queue);
+  ok('a miss queues a fix', afterAnswer(first, false).queue === 'fix');
+  const fix = retryItem(first, 'fix');
+  ok('a retry remembers its first attempt', fix.first === first && fix.retry === 'fix');
+  ok('a retry of a retry still points at the first attempt', retryItem(fix, 'again').first === first);
+  ok('fix right → once more at the end', afterAnswer(fix, true).queue === 'again');
+  ok('fix wrong → study', afterAnswer(fix, false).queue === 'study');
+  const again = retryItem(fix, 'again');
+  ok('again right → fixed', afterAnswer(again, true).outcome === 'fixed');
+  ok('again wrong → study', afterAnswer(again, false).queue === 'study');
+  ok('study cannot be failed', afterAnswer(retryItem(again, 'study'), false).outcome === 'shown');
+  // The loop is finite: from any stage, at most three more screens.
+  let steps = 0, it = first;
+  for (let st = afterAnswer(it, false); st.queue && steps < 10; st = afterAnswer(it, false)) { it = retryItem(it, st.queue); steps++; }
+  ok('missing every time ends after fix, study', steps === 2, `steps=${steps}`);
+  const items = Array.from({ length: 10 }, (_, i) => i);
+  ok('the fix waits a few items', retryIndex(items, 2, 'fix') === 2 + RETRY_GAP);
+  ok('the fix near the end goes at the end', retryIndex(items, 9, 'fix') === 10);
+  ok('again and study go at the end', retryIndex(items, 2, 'again') === 10 && retryIndex(items, 2, 'study') === 10);
 }
 
 // ------------------------------------------------------------ word drills

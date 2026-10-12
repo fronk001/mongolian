@@ -137,6 +137,14 @@ reference layer harder to read than the content layer, that change is wrong.
   the learner answer the same question twice, the second time as a row of
   future dates — and the interval, which INSTRUMENT still requires on screen,
   now prints as "Back in N days" beside the verdict rather than as a question.
+- **Mistakes come back** (October 2026) — only an item's first attempt is
+  graded, at the verdict. A missed card returns a few screens later as **Fix**,
+  one step easier (the right option against the one picked, or four options
+  after a typed miss), then once more at the end at its own step; missed again,
+  it is **Study**: the pair shown, nothing asked. Retries are never graded,
+  scored or counted, and each is its own segment in the lesson bar, so the bar
+  grows only when a mistake is made. "I know this" on the deck is a claim, and
+  is checked by one question in the harder direction straight after the deck.
 - **Flashcard deck** — Mongolian faces up, tap or Space to flip, then a
   decision that routes the word. Never shows both sides at once.
 - **Badge** — gold pill, English label. The lexicon still names each badge in
