@@ -145,6 +145,18 @@ reference layer harder to read than the content layer, that change is wrong.
   scored or counted, and each is its own segment in the lesson bar, so the bar
   grows only when a mistake is made. "I know this" on the deck is a claim, and
   is checked by one question in the harder direction straight after the deck.
+- **Building blocks** (October 2026) — every sentence offers **Use blocks**
+  under Check: the answer's words as lowercase tiles plus three decoys drawn
+  only from existing sentences, other forms of the same word first
+  (хаалга / хаалгыг / хаалгаа). A decoy is never part of any accepted form,
+  and an order counts only if it is listed — the app never permutes Mongolian.
+  Blocks are a closed set: a right build grades Hard when the blocks supplied
+  the Mongolian, Good when they supplied only the English, never Easy; once
+  blocks are seen the attempt is a blocks attempt, even if typed after all. A
+  missed sentence comes back on blocks (fewer decoys if it was already on
+  blocks), at the end on its own surface, and lastly as Study, where a block
+  that is not next is refused. The verdict marks a word in the wrong place
+  with an underline (`orderDiff`).
 - **Flashcard deck** — Mongolian faces up, tap or Space to flip, then a
   decision that routes the word. Never shows both sides at once.
 - **Badge** — gold pill, English label. Locked badges are shown as targets:

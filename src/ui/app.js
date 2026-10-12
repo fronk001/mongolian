@@ -2,11 +2,12 @@
 import { makeFSRS, dayKey, daysBetween } from '../core/fsrs.js';
 import { load, save as saveLocal, STORE_KEY, stats, encodeCode, importCode, exportAge, recordDay } from '../core/progress.js';
 import { buildSession, applyGrade, buildPractice } from '../core/scheduler.js';
-import { gradeAnswer, diffTokens } from '../core/grade.js';
+import { gradeAnswer } from '../core/grade.js';
 import { buildChoices, shuffle, makeRng, hashSeed } from '../core/choices.js';
 import { xpFor, earnedBadges, stepCount, levelFor, xpForGrammar } from '../core/goals.js';
 import { gradeDrill, applyGrammarGrade, topicMastery } from '../core/grammar.js';
 import { afterAnswer, retryIndex, retryItem } from '../core/ladder.js';
+import { makeTilePools, bankFor, acceptedFor, minTiles, gradeBuild, orderDiff, tokensOf } from '../core/tiles.js';
 import { createSync } from '../sync/engine.js';
 import { firebaseBackend } from '../sync/firebase.js';
 import { firebaseConfig } from '../sync/firebase-config.js';
@@ -23,6 +24,7 @@ const params = new URLSearchParams(location.search);
 const fake = params.has('fake-sync') ? params.get('fake-sync') || 'laptop' : null;
 const KEY = fake ? `${STORE_KEY}:fake:${fake}` : STORE_KEY;
 let WORDS = [], SENTENCES = [], GRAMMAR = [], BYID = {}, POOL = [];
+let TILEPOOL = () => ({ siblings: [], others: [] });   // decoy candidates per sentence, built at boot
 let P = load(localStorage, KEY);
 let sync = null;      // created in boot(), before the first render
 const PREFS = makePrefs(localStorage, KEY);   // this device only: never synced or exported
@@ -81,6 +83,9 @@ let S = {
   lastPick: null,                     // the option picked on this card, for a two-option fix
   retryOk: null,                      // a retry's answer: right or not (never graded)
   claimed: [],                        // deck words claimed as known, checked after the deck
+  rung: null,                         // this sentence's surface: 'type' | 'blocks' | 'easy' | 'study'
+  tiles: null,                        // { bank: [{t, ans}], placed: [bank index], refused }
+  sawBlocks: false,                   // blocks were shown this attempt: it is graded as a blocks attempt
   open: new Set(),                    // disclosures opened on the tab pages; survives sync redraws
   gScores: true,                      // this grammar pass earns XP: the first of the day per topic
   editPurpose: false,
@@ -134,9 +139,10 @@ function commit(item, g) {
   }));
   S.pending = { item, g, snaps, xp: P.xp || 0, summary: { ...S.summary } };
   ids.forEach(id => awardGrade(id, g));
-  if (g === 1 && item.kind === 'card') {
+  if (item.kind === 'sentence') item.attempt = S.sawBlocks ? 'blocks' : 'type';
+  if (g === 1 && (item.kind === 'card' || item.kind === 'sentence')) {
     S.summary.missed++;
-    S.summary.missedWords.push(item.word);
+    if (item.kind === 'card') S.summary.missedWords.push(item.word);
     queueRetry(item, 'fix');
   }
   save(P);
@@ -160,7 +166,12 @@ function amend(g) {
 /** Put a retry of `item` into the lesson: a fix a few screens on, the rest at the end. */
 function queueRetry(item, stage) {
   const extra = {};
-  if (stage === 'fix') {
+  if (item.kind === 'sentence') {
+    // typed → blocks → fewer blocks; at the end its own surface; study builds it.
+    const first = item.first || item;
+    extra.rung = stage === 'fix' ? (first.attempt === 'blocks' ? 'easy' : 'blocks')
+      : stage === 'again' ? (first.attempt || 'type') : 'study';
+  } else if (stage === 'fix') {
     const opts = item.kind === 'card' && S.lastPick && !S.lastPick.correct
       ? choicesFor(item).options : null;
     // Picked wrong from four: the fix offers that pick against the right one.
@@ -181,6 +192,23 @@ function retryNext() {
   if (next.outcome === 'shown') S.summary.shown++;
   S.retryOk = null;
   advance();
+}
+
+/** The surface the current sentence is on: a tapped switch, else the item's own rung. */
+const rungOf = item => S.rung || item.rung || 'type';
+
+function setupTiles(item, rung) {
+  const s = item.sentence, toMn = item.dir === 'egm';
+  S.tiles = {
+    bank: bankFor(s, toMn, rung, TILEPOOL(s, toMn), `${s.mn}:${item.dir}:${dayKey()}:${item.retry || 0}`),
+    placed: [], refused: null
+  };
+}
+
+/** The grade a sentence's first attempt commits: blocks cap at Hard where they supplied the Mongolian. */
+function sentenceGrade(g, item) {
+  if (!S.sawBlocks) return verdictGrade(g);
+  return g.ok ? (item.dir === 'egm' ? 2 : 3) : 1;
 }
 
 /** The line a retry's verdict carries. */
@@ -317,10 +345,15 @@ function render({ keep = false } = {}) {
         mcMode: mcOn()
       });
     } else {
+      const rung = rungOf(item);
+      if (rung !== 'type' && !S.tiles) { setupTiles(item, rung); if (!item.retry) S.sawBlocks = true; }
       body = V.viewSentence(item, {
         fb: S.fb,
         previews: item.targetIds.map(previewFor),
-        byId: BYID
+        byId: BYID,
+        rung, tiles: S.tiles,
+        minLen: minTiles(item.sentence, item.dir === 'egm'),
+        retryNote: item.retry && S.fb ? retryNote(item, S.fb.ok) : ''
       });
     }
     // No dashboard header during a lesson: see lessonBar() on why the
@@ -428,6 +461,7 @@ async function copyCode() {
 function advance() {
   S.fb = null; S.picked = null; S.deckI = 0; S.flipped = false;
   S.pending = null; S.lastPick = null; S.retryOk = null;
+  S.rung = null; S.tiles = null; S.sawBlocks = false;
   do { S.i++; } while (
     S.i < S.session.items.length &&
     S.session.items[S.i].kind === 'card' &&
@@ -562,6 +596,40 @@ document.addEventListener('click', e => {
   else if (act === 'tab') { S.tab = t.getAttribute('data-tab'); S.msg = ''; render(); }
   else if (act === 'next') advance();
   else if (act === 'retry-next') retryNext();
+
+  // ---- building blocks ----------------------------------------------------
+  else if (act === 'use-blocks') { S.rung = 'blocks'; S.tiles = null; render(); }
+  else if (act === 'use-typing') { S.rung = 'type'; render(); }   // still a blocks attempt: S.sawBlocks stays
+  else if (act === 'tile-place') {
+    const i = parseInt(t.getAttribute('data-i'), 10);
+    const item = current();
+    if (rungOf(item) === 'study') {
+      // Study refuses a block that is not next, so the build always ends right.
+      const want = tokensOf(item.dir === 'egm' ? item.sentence.mn : item.sentence.en)[S.tiles.placed.length];
+      if (S.tiles.bank[i].t !== want) { S.tiles.refused = i; SND.play('wrong'); render(); return; }
+    }
+    S.tiles.refused = null;
+    if (!S.tiles.placed.includes(i)) S.tiles.placed.push(i);
+    render();
+  }
+  else if (act === 'tile-return') {
+    S.tiles.placed.splice(parseInt(t.getAttribute('data-k'), 10), 1);
+    S.tiles.refused = null;
+    render();
+  }
+  else if (act === 'submit-tiles') {
+    const item = current();
+    const s = item.sentence, toMn = item.dir === 'egm';
+    const placed = S.tiles.placed.map(i => S.tiles.bank[i].t);
+    const accepted = acceptedFor(s, toMn);
+    const g = gradeBuild(placed, accepted);
+    const given = placed.join(' ');
+    S.fb = { ...g, given, diff: orderDiff(given, g.matched || accepted[0]), blocks: true,
+      alternative: g.matched !== accepted[0], grade: g.ok ? (toMn ? 2 : 3) : 1 };
+    if (item.retry) S.retryOk = g.ok; else commit(item, S.fb.grade);
+    cue(g.ok, !item.retry);
+    render();
+  }
   else if (act === 'toggle') {
     const id = t.getAttribute('data-id');
     if (S.open.has(id)) S.open.delete(id); else S.open.add(id);
@@ -661,12 +729,13 @@ document.addEventListener('click', e => {
     // Diff against the form the answer actually scored best on: showing a
     // learner who wrote a legitimate alternative a diff against a sentence
     // they never attempted would read as a fault they did not commit.
-    const diff = diffTokens(given, g.matched || accepted[0]);
-    S.fb = { ...g, given, diff, alternative: g.matched !== accepted[0] };
+    const diff = orderDiff(given, g.matched || accepted[0]);
+    const grade = sentenceGrade(g, item);
+    S.fb = { ...g, given, diff, alternative: g.matched !== accepted[0], grade, blocks: S.sawBlocks };
     // A sentence reproduced with nothing missing — a real, checkable event.
-    if (g.ok && !g.typo && !item.retry && diff.every(d => d.state === 'hit')) S.summary.perfect = true;
-    commit(item, verdictGrade(g));
-    cue(g.ok);
+    if (g.ok && !g.typo && !item.retry && !S.sawBlocks && diff.every(d => d.state === 'hit')) S.summary.perfect = true;
+    if (item.retry) S.retryOk = g.ok; else commit(item, grade);
+    cue(g.ok, !item.retry);
     render();
   }
 
@@ -780,11 +849,23 @@ document.addEventListener('keydown', e => {
   if (e.target && /^(TEXTAREA|INPUT)$/.test(e.target.tagName) && e.key !== 'Enter') return;
 
   if (e.key === 'Enter' && !e.shiftKey) {
-    const order = ['submit', 'check-word', 'grammar-check', 'grammar-build-check',
+    const order = ['submit', 'submit-tiles', 'check-word', 'grammar-check', 'grammar-build-check',
       'card-next', 'grade', 'retry-next', 'grammar-continue', 'deck-learn', 'next'];
     for (const act of order) {
       const b = document.querySelector(`[data-act="${act}"]`);
       if (b) { e.preventDefault(); b.click(); return; }
+    }
+  }
+  // Blocks on the laptop: 1–9 place the bank's blocks in order, Backspace
+  // sends the last placed one back.
+  if (S.tiles && !(e.target && /^(TEXTAREA|INPUT)$/.test(e.target.tagName))) {
+    if (/^[1-9]$/.test(e.key)) {
+      const b = document.querySelector(`[data-act="tile-place"][data-i="${parseInt(e.key, 10) - 1}"]:not(:disabled)`);
+      if (b) { e.preventDefault(); b.click(); return; }
+    }
+    if (e.key === 'Backspace') {
+      const placed = document.querySelectorAll('[data-act="tile-return"]');
+      if (placed.length) { e.preventDefault(); placed[placed.length - 1].click(); return; }
     }
   }
   if (e.key === ' ' && document.querySelector('[data-act="flip"]')) {
@@ -845,6 +926,7 @@ async function boot() {
   // Distractors come from drillable vocabulary only: offering «байна» as an
   // option against a noun gives the answer away by register alone.
   POOL = WORDS.filter(x => x.drill !== false);
+  TILEPOOL = makeTilePools(WORDS, SENTENCES);
   sync = createSync({ storage: localStorage, key: KEY, backend: await makeBackend(), state: () => P, adopt, idle });
   sync.subscribe(() => { if (quiet()) render({ keep: true }); });
   requestPersistence();

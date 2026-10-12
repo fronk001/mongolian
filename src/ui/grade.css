@@ -41,3 +41,9 @@ font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;color
 /* When the answered word comes back, in the whole days the scheduler sets.
    Plain sentence case, not mono: it is a sentence, not telemetry. */
 .back{font-size:13px;font-weight:500;color:var(--ink2);margin-top:8px;flex:none}
+
+/* Building blocks on a sentence (core/tiles.js). The build line holds the
+   placed blocks as buttons — tap one to send it back. */
+.buildline .tile-word.placed{background:var(--panel)}
+.tile-word.refused{border-color:var(--red);color:var(--red)}
+.diff .moved{text-decoration:underline;text-decoration-color:var(--red);text-underline-offset:3px}

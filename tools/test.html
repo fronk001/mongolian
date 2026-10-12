@@ -37,6 +37,7 @@ import { blank, migrateV1, encodeCode, importCode, stats, exportAge, recordDay }
 import { buildSession, applyGrade, scheduledDays, buildPractice } from '../src/core/scheduler.js';
 import { backIn } from '../src/ui/views.js';
 import { afterAnswer, retryIndex, retryItem, RETRY_GAP } from '../src/core/ladder.js';
+import { makeTilePools, bankFor, acceptedFor, minTiles, gradeBuild, orderDiff, tokensOf, DECOYS } from '../src/core/tiles.js';
 import { gradeText, gradeAnswer, acceptedForms } from '../src/core/grade.js';
 import { buildChoices, distractors, makeRng, faceKey } from '../src/core/choices.js';
 import {
@@ -238,6 +239,47 @@ section('mistake loop');
   ok('the fix waits a few items', retryIndex(items, 2, 'fix') === 2 + RETRY_GAP);
   ok('the fix near the end goes at the end', retryIndex(items, 9, 'fix') === 10);
   ok('again and study go at the end', retryIndex(items, 2, 'again') === 10 && retryIndex(items, 2, 'study') === 10);
+}
+
+// ------------------------------------------------------------ building blocks
+// Every sentence, both directions: the bank holds the whole answer, no decoy
+// is part of ANY accepted form (so a decoy can never complete another listed
+// answer), the canonical order grades right, and an unlisted order is wrong —
+// the app never permutes Mongolian word order (CLAUDE.md).
+section('building blocks');
+{
+  const poolFor = makeTilePools(W, S);
+  let bankOk = true, decoyOk = true, canonOk = true, decoyCount = true, bad = '';
+  for (const s of S) for (const toMn of [true, false]) {
+    const acc = acceptedFor(s, toMn);
+    const accTok = new Set(acc.flatMap(f => tokensOf(f).map(x => x.toLowerCase())));
+    const bank = bankFor(s, toMn, 'blocks', poolFor(s, toMn), `${s.mn}:t`);
+    const answer = tokensOf(toMn ? s.mn : s.en);
+    const ans = bank.filter(b => b.ans).map(b => b.t);
+    if (ans.slice().sort().join(' ') !== answer.slice().sort().join(' ')) { bankOk = false; bad = s.mn; }
+    const dec = bank.filter(b => !b.ans);
+    if (dec.some(b => accTok.has(b.t.toLowerCase()))) { decoyOk = false; bad = s.mn; }
+    if (toMn && dec.length !== DECOYS.blocks) { decoyCount = false; bad = s.mn; }
+    if (!gradeBuild(answer, acc).ok) { canonOk = false; bad = s.mn; }
+  }
+  ok('every bank holds the whole answer', bankOk, bad);
+  ok('no decoy is part of any accepted form', decoyOk, bad);
+  ok('every Mongolian bank has 3 decoys', decoyCount, bad);
+  ok('the canonical order always grades right', canonOk, bad);
+  const door = S.find(s => s.mn === 'Хаалга нээлттэй байна.');
+  ok('an unlisted word order is wrong', !gradeBuild(['нээлттэй', 'хаалга', 'байна'], acceptedFor(door, true)).ok);
+  ok('a listed alternative is right', gradeBuild(['хаалга', 'нээлттэй'], acceptedFor(door, true)).ok);
+  ok('Check lights at the shortest accepted form', minTiles(door, true) === 2);
+  // (For «Хаалгыг хаагаач» every other form of хаалга is an accepted answer, so none may be a decoy.)
+  const sib = poolFor(door, true).siblings;
+  ok('other forms of the same word come first as decoys', sib[0].startsWith('хаалг'), sib.join(','));
+  ok('blocks never offer a capital that gives the first word away',
+     bankFor(door, true, 'blocks', poolFor(door, true), 'x').every(b => b.t === b.t.toLowerCase()));
+  const d = orderDiff('нээлттэй хаалга байна', 'Хаалга нээлттэй байна.');
+  ok('a swapped order is marked, not shown green', d.some(x => x.state === 'moved'), JSON.stringify(d));
+  ok('a right order is all hits', orderDiff('хаалга нээлттэй байна', 'Хаалга нээлттэй байна.').every(x => x.state === 'hit'));
+  ok('easy retries carry one decoy', bankFor(door, true, 'easy', poolFor(door, true), 'y').filter(b => !b.ans).length === DECOYS.easy);
+  ok('study carries none', bankFor(door, true, 'study', poolFor(door, true), 'z').every(b => b.ans));
 }
 
 // ------------------------------------------------------------ word drills

@@ -41,6 +41,7 @@ authoritative.
 
 ```
 src/core/     fsrs.js scheduler.js progress.js grade.js    ← pure logic, no DOM
+              ladder.js (mistake loop) tiles.js (building blocks)
               goals.js choices.js                          ← goal/streak/XP telemetry, MC distractors
               sync.js                                      ← online layout, diff, merge, rebase
 src/sync/     engine.js (queue, sign-in flow, rules below), firebase.js (the only file

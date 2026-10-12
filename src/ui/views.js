@@ -1,5 +1,6 @@
 /** Pure render functions — HTML strings. No state mutation here. */
 import { scheduledDays } from '../core/scheduler.js';
+import { norm } from '../core/grade.js';
 import {
   weekCells, monthCells, weekTotals, monthTotals, punctuality, streak, bestStreak,
   intakeRate, projectDate, levelFor, lessonWorth, byBadgeId, BADGES, badgeProgress
@@ -734,36 +735,88 @@ export function viewCard(item, ctx) {
    ══════════════════════════════════════════════════════════════════════ */
 
 export function viewSentence(item, ctx) {
-  const { fb, previews, byId } = ctx;
+  const { fb, previews, byId, rung = 'type', tiles, minLen = 1, retryNote = '' } = ctx;
   const s = item.sentence;
   const toMn = item.dir === 'egm';
   const prompt = toMn ? s.en : s.mn;
-  return `<div class="sec">
-    <div class="qhead"><span class="tag">${toMn ? 'ENG → MGL' : 'MGL → ENG'}</span>
-      <span class="mono">i+${item.weak} · ${pct(item.comprehensible)}% KNOWN</span></div>
-    <div class="panel${fb ? '' : ' red'}">
-      <span class="lab">TRANSLATE</span>
-      <div class="prompt ${toMn ? 'en' : 'sm'}" style="margin-top:9px">${esc(prompt)}</div>
+  const retry = item.retry;
+  const onTiles = rung !== 'type';
+
+  const head = `<div class="qhead">
+    <span class="tag${retry ? ' red' : ''}">${retry === 'study' ? 'STUDY' : retry ? 'FIX' : toMn ? 'ENG → MGL' : 'MGL → ENG'}</span>
+    <span class="mono">${retry ? (toMn ? 'ENG → MGL' : 'MGL → ENG') : ''}</span></div>`;
+  const promptPanel = inner => `<div class="panel${fb ? '' : ' red'}">
+      <div class="prompt ${toMn ? 'en' : 'sm'}">${esc(prompt)}</div>
       ${s.note ? `<div class="subnote">${esc(s.note)}</div>` : ''}
-      ${fb ? '' : `<textarea class="text" id="ansbox" rows="2" autocapitalize="off"
-        autocorrect="off" spellcheck="false"
-        placeholder="${toMn ? 'type in Mongolian' : 'type in English'}"></textarea>`}
-    </div>
-    ${fb ? `<div class="panel ${fb.ok ? 'green' : 'red'} reveal">
-        <span class="lab ${fb.ok ? 'green' : 'red'}">${fb.ok ? 'CORRECT' : 'MISMATCH'}</span>
-        <div class="fb" style="margin-top:0;border-top:0;padding-top:8px">
-          <div class="ans diff">${fb.diff.map(t =>
-            `<span class="${t.state === 'miss' ? 'miss' : t.state === 'near' ? 'near' : 'hit'}">${esc(t.tok)}</span>`).join(' ')}</div>
-          ${altNote(fb)}
-          ${fb.given ? `<div class="yours">Your answer — ${esc(fb.given)}</div>` : ''}
-          ${contextChips(item.targetIds, item.targetIds, byId)}
-        </div>
-        ${typoNote(fb)}
-        <div class="back">${backIn(previews, continueGrade(fb))}</div>
+      ${inner}
+    </div>`;
+
+  /* Building blocks: the build line, then the bank. Tap a block to place it,
+     tap a placed one to send it back. Study shows the answer first and
+     refuses a block that is not next, so it always ends built. */
+  const tileArea = () => {
+    const placed = tiles.placed;
+    const line = placed.length
+      ? placed.map((i, k) => `<button class="tile-word placed" data-act="tile-return" data-k="${k}">${esc(tiles.bank[i].t)}</button>`).join('')
+      : `<span class="empty">tap blocks to build</span>`;
+    const bank = tiles.bank.map((b, i) => `<button class="tile-word${tiles.refused === i ? ' refused' : ''}" data-act="tile-place" data-i="${i}"${
+      placed.includes(i) ? ' disabled' : ''}>${esc(b.t)}</button>`).join('');
+    return `<div class="buildline">${line}</div><div class="wordbank">${bank}</div>`;
+  };
+
+  if (!fb) {
+    if (!onTiles) {
+      return `<div class="sec">${head}${promptPanel(`<textarea class="text" id="ansbox" rows="2" autocapitalize="off"
+          autocorrect="off" spellcheck="false" placeholder="${toMn ? 'type in Mongolian' : 'type in English'}"></textarea>`)}
+        <div class="btns">
+          <button class="btn primary" data-act="submit">Check</button>
+          ${retry ? '' : `<button class="btn ghost" data-act="use-blocks">Use blocks</button>`}
+        </div></div>`;
+    }
+    if (rung === 'study') {
+      const done = tiles.placed.length === tiles.bank.length;
+      return `<div class="sec">${head}${promptPanel(`<div class="fb"><div class="ans">${esc(toMn ? s.mn : s.en)}</div></div>`)}
+        ${tileArea()}
+        ${done ? `<div class="btns"><button class="btn correct" data-act="retry-next">Continue</button></div>` : ''}</div>`;
+    }
+    return `<div class="sec">${head}${promptPanel('')}
+      ${tileArea()}
+      <div class="btns">
+        <button class="btn primary" data-act="submit-tiles"${tiles.placed.length >= minLen ? '' : ' disabled'}>Check</button>
+        ${retry ? '' : `<button class="btn ghost" data-act="use-typing">Type instead</button>`}
+      </div></div>`;
+  }
+
+  const diff = `<div class="ans diff">${fb.diff.map(d =>
+    `<span class="${d.state}">${esc(d.tok)}</span>`).join(' ')}</div>`;
+  const verdict = `<div class="panel ${fb.ok ? 'green' : 'red'} reveal">
+      <span class="lab ${fb.ok ? 'green' : 'red'}">${fb.ok ? 'CORRECT' : 'MISMATCH'}</span>
+      <div class="fb" style="margin-top:0;border-top:0;padding-top:8px">
+        ${diff}
+        ${altNote(fb)}
+        ${fb.given && norm(fb.given) !== norm(fb.matched) ? `<div class="yours">You — ${esc(fb.given)}</div>` : ''}
+        ${contextChips(item.targetIds, item.targetIds, byId)}
       </div>
-      ${verdictButtons(fb, previews)}`
-      : `<div class="btns"><button class="btn primary" data-act="submit">Check</button></div>`}
-  </div>`;
+      ${typoNote(fb)}
+      <div class="back">${retry ? esc(retryNote) : fb.ok ? backIn(previews, fb.grade) : 'Again later this lesson'}</div>
+    </div>`;
+  let buttons;
+  if (retry) {
+    buttons = `<div class="btns"><button class="btn ${fb.ok ? 'correct' : 'secondary'}" data-act="retry-next">Continue</button></div>`;
+  } else if (fb.blocks) {
+    // Blocks are a closed set: the app grades the build itself. Right is Hard
+    // when the blocks supplied the Mongolian, Good when they supplied only the
+    // English; never Easy (INSTRUMENT, closed-set rule).
+    buttons = fb.ok
+      ? `<div class="btns"><button class="btn correct" data-act="grade" data-g="${fb.grade}">Continue</button></div>`
+      : `<div class="btns">
+          <button class="btn secondary" data-act="grade" data-g="1">Continue</button>
+          <button class="btn ghost slim" data-act="grade" data-g="2">I was right</button>
+        </div>`;
+  } else {
+    buttons = verdictButtons(fb, previews);
+  }
+  return `<div class="sec">${head}${promptPanel('')}${verdict}${buttons}</div>`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
