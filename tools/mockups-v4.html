@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mockups v4 — the plan, clickable</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Design reference for docs/PLAN.md (12 Oct 2026). Not shipped.
+     Served from tools/: `py tools/serve.py` then http://localhost:8000/tools/mockups-v4.html
+     The real tokens and components come from src/ui; only the v4 additions are defined here. -->
+<link rel="stylesheet" href="../src/ui/base.css">
+<link rel="stylesheet" href="../src/ui/grade.css">
+<style>
+/* Real project fonts, reached from tools/ (same approach as mockups.html) */
+@font-face{font-family:'Geologica';font-style:normal;font-weight:300 700;font-display:block;src:url('../src/fonts/geologica-cyrillic-ext.woff2') format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:'Geologica';font-style:normal;font-weight:300 700;font-display:block;src:url('../src/fonts/geologica-cyrillic.woff2') format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Geologica';font-style:normal;font-weight:300 700;font-display:block;src:url('../src/fonts/geologica-latin-ext.woff2') format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Geologica';font-style:normal;font-weight:300 700;font-display:block;src:url('../src/fonts/geologica-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:block;src:url('../src/fonts/jetbrains-mono-cyrillic-ext.woff2') format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:block;src:url('../src/fonts/jetbrains-mono-cyrillic.woff2') format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:block;src:url('../src/fonts/jetbrains-mono-latin-ext.woff2') format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:block;src:url('../src/fonts/jetbrains-mono-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+/* ═══ the page around the phones (not app chrome) ═════════════════════ */
+body.mock{background:#E4E1DA;padding:28px 20px 72px;min-height:0}
+.pagehead{max-width:1180px;margin:0 auto 18px}
+.pagehead h1{font-size:19px;font-weight:600;letter-spacing:-.02em}
+.pagehead p{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6;max-width:92ch}
+.pagehead p b{color:var(--ink);font-weight:600}
+.rels{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:12px;color:var(--ink2);align-items:center}
+.rel{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.08em;
+  background:var(--ink);color:var(--paper);padding:2px 6px;border-radius:3px;margin-right:4px}
+
+.soundbar{max-width:1180px;margin:0 auto 30px;background:var(--panel);border:1px solid var(--rule);
+  border-left:3px solid var(--ink);border-radius:3px;padding:12px 14px 14px}
+.sbh{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.sbh h2{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.sbh p{font-size:12.5px;color:var(--muted);flex:1;min-width:260px;line-height:1.5}
+.cues{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.cue{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:9px 12px;border:1px solid var(--rule);
+  border-left:3px solid var(--rule);border-radius:3px;background:var(--panel2);font:inherit;cursor:pointer;color:var(--ink);
+  text-align:left;transition:transform 90ms var(--ease)}
+.cue:active{transform:scale(.97)}
+.cue b{font-size:13.5px;font-weight:600}
+.cue span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.02em}
+.cue.ok{border-left-color:var(--green)} .cue.no{border-left-color:var(--red)} .cue.gd{border-left-color:var(--gold)}
+.sbfoot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;margin-top:11px;font-size:12.5px;color:var(--ink2)}
+.sbfoot label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.sbfoot .m{color:var(--muted)}
+#run{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2)}
+
+.frames{display:flex;flex-wrap:wrap;gap:40px 30px;justify-content:center;max-width:1720px;margin:0 auto}
+.fig{width:377px;max-width:100%;flex:none;margin:0}
+.fhead{display:flex;flex-wrap:wrap;align-items:center;gap:5px 6px;margin-bottom:9px;min-height:54px;align-content:flex-end}
+.fhead .nm{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.amend{flex-basis:100%;font-size:11.5px;line-height:1.45;color:var(--ink2)}
+.amend b{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);
+  border:1px dashed rgba(20,22,26,.4);border-radius:3px;padding:1px 5px;margin-right:4px;font-weight:700}
+.phone{position:relative;width:377px;max-width:100%;height:780px;background:var(--paper);border:1px solid rgba(20,22,26,.3);
+  border-radius:20px;overflow:hidden}
+.fig.flash .phone{outline:2px solid var(--ink);outline-offset:5px}
+.fnote{font-size:12.5px;color:var(--ink2);line-height:1.55;margin-top:10px}
+.fnote .src{display:block;color:var(--muted);font-size:11.5px;margin-top:5px}
+.wc{display:block;margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;color:var(--muted)}
+.wc b{color:var(--ink)}
+.ctl{display:flex;align-items:flex-start;gap:7px;margin-top:7px;font-size:12px;color:var(--ink2);cursor:pointer;line-height:1.45}
+.ctl input{margin-top:2px}
+.mini{font:inherit;font-size:12px;border:1px solid var(--rule);background:var(--panel);border-radius:3px;padding:4px 9px;
+  cursor:pointer;color:var(--ink);margin-top:7px;margin-right:6px}
+.mini:active{transform:scale(.97)}
+
+/* ═══ phone screen: a scroll area plus, on tab pages, the tab bar ═══════ */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column}
+.scr{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 16px 26px}
+.phone .tabbar{position:static;flex:none;max-width:none;margin:0;padding:6px 6px 12px}
+.tab .tl{font-family:'Geologica',system-ui,sans-serif;font-size:12px;font-weight:500;color:var(--muted)}
+.tab.on .tl{color:var(--ink);font-weight:600}
+.screen.enter>.scr{animation:fade 140ms var(--ease) backwards}
+.screen.still *{animation:none!important}
+/* base.css's ≤420px sizes, applied inside the 375px frames on any screen */
+.phone .prompt{font-size:35px}
+.phone .prompt.sm,.phone .prompt.en{font-size:22px}
+.phone .big{font-size:26px}
+.phone .choice .k{display:none}            /* touch phone: no 1–4 numerals */
+
+/* ═══ v4 components (plan amendments: sentence-case Geologica labels) ══ */
+.lbl2{font-size:13px;font-weight:600;color:var(--ink)}
+.ttl{font-size:23px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
+.barfoot .count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.04em}
+.barfoot .xpread{margin-left:auto;margin-right:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink);font-weight:700}
+/* retry segments: hatched until answered (Layout amendment: "hatched retry segments") */
+.rail i.fix{background:repeating-linear-gradient(90deg,var(--red) 0 2px,transparent 2px 4px)}
+.rail i.fix.now{background:repeating-linear-gradient(90deg,var(--red) 0 3px,var(--red-soft) 3px 5px)}
+.rail i.fix.done{background:var(--muted)}
+
+.dateline{display:flex;justify-content:flex-end;align-items:center;gap:6px;font-size:13px;color:var(--ink2)}
+.purpose{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:15px;font-weight:500;
+  line-height:1.45;color:var(--ink);margin-top:10px;cursor:pointer;padding:0}
+.rowbtn{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;border:0;background:none;font:inherit;
+  text-align:left;cursor:pointer;color:var(--ink);padding:0}
+.rowbtn .unit{font-size:14.5px;font-weight:600}
+.chev{color:var(--muted);font-size:17px;line-height:1;flex:none}
+.streak{display:flex;align-items:center;gap:7px;margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)}
+.streak b,.drow b{font-size:23px;font-weight:600;letter-spacing:-.02em;line-height:1}
+.streak .t,.drow .t{font-size:13.5px;color:var(--ink2)}
+.streak .info{margin-left:auto}
+.week .dl{font-size:11px;color:var(--muted);margin-top:5px}
+.week .d.now .dl{color:var(--red);font-weight:600}
+/* a rest day: gold hatch, a fill and never type, never drawn as done (Colour amendment) */
+.week .bar.rest{background:repeating-linear-gradient(135deg,var(--gold) 0 3px,rgba(249,207,2,.22) 3px 7px)}
+.week.sm .bar{height:24px}
+@keyframes fillsq{from{background:var(--red-wash);box-shadow:inset 0 0 0 1px var(--red)}}
+.week .bar.fill{animation:fillsq 200ms var(--ease) backwards}
+.panel.gold .btns{margin-top:14px}
+
+/* ⓘ — details on tap; drawn by CSS so it carries no word */
+.info{flex:none;width:26px;height:26px;margin:-6px -7px -6px 0;border:0;background:none;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center}
+.info::before{content:'i';width:15px;height:15px;border:1px solid var(--muted);border-radius:50%;box-sizing:border-box;
+  font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;line-height:13px;text-align:center;color:var(--muted)}
+.info.on::before{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.infotext{font-size:12.5px;line-height:1.45;color:var(--ink2);margin:4px 0 6px}
+/* one-time tip: ≤12 words, once per device */
+.tip{display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding:8px 4px 8px 10px;border:1px dashed var(--rule);
+  border-radius:3px;background:var(--panel2);font-size:12.5px;line-height:1.45;color:var(--ink2)}
+.tip span{flex:1}
+.tipx{flex:none;border:0;background:none;cursor:pointer;color:var(--muted);font-size:16px;line-height:1;padding:0 6px}
+
+/* verdicts */
+.vrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;min-height:20px}
+.vl{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.vl.ok{color:var(--green)} .vl.no{color:var(--red)}
+.nx{margin-left:auto;font-size:12.5px;color:var(--ink2);text-align:right}
+.pair{font-size:17px;font-weight:500;margin-top:8px}
+.ans{font-size:19px;font-weight:500;margin-top:8px;letter-spacing:-.01em;line-height:1.45}
+.diff .mv{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+.yours{font-size:13px;color:var(--muted);margin-top:6px}
+.yours .c{font-size:14px;color:var(--ink2)}
+.struck{color:var(--red);text-decoration:line-through}
+.alsoacc{display:inline-block;font-size:11.5px;font-weight:500;color:var(--green);border:1px solid var(--green-soft);
+  border-radius:3px;padding:2px 7px;margin-top:8px}
+.ctx2{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+.ctx2 span{border:1px solid var(--blue-soft);background:var(--blue-wash);border-radius:3px;padding:4px 8px;font-size:13px;color:var(--ink)}
+.ctx2 em{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue)}
+.details{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.logged{font-size:12.5px;color:var(--ink2);margin-top:10px}
+.quiet{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.qc{display:flex;justify-content:center;align-items:baseline;gap:7px;padding:9px 6px;border:1px solid var(--rule);border-radius:3px;
+  background:transparent;font:inherit;cursor:pointer;color:var(--ink2);transition:transform 90ms var(--ease)}
+.qc .ql{font-size:12.5px;font-weight:500}
+.qc .iv{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted)}
+.qc.sel{background:var(--ink);border-color:var(--ink);color:var(--paper)} .qc.sel .iv{color:rgba(255,255,255,.75)}
+.qc:active{transform:scale(.97)}
+.faux{font-size:19px;padding:12px 13px;border:1px solid var(--red);border-radius:3px;background:var(--panel2);
+  margin-top:14px;min-height:50px;line-height:1.3}
+.caret{display:inline-block;width:1.5px;height:20px;background:var(--red);vertical-align:-3px;margin-left:2px}
+.qtop{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;min-height:30px}
+/* Fix: the hatch ties the tag to its rail segment */
+.fixtag{display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:var(--red);border:1px solid var(--red-soft);
+  border-radius:3px;padding:3px 9px;background:repeating-linear-gradient(135deg,var(--red-wash) 0 4px,transparent 4px 8px)}
+
+/* building blocks */
+.buildline{min-height:56px}
+.buildline .tile-word{animation:none}
+.tile-word.ph{color:transparent;background:transparent;border-style:dashed;cursor:default}
+
+/* reader: 22px, no English under it (Type amendment; principle 5 amendment) */
+.reader{padding:13px 13px 10px}
+.rl{font-size:22px;line-height:1.6;font-weight:400;color:var(--ink)}
+.rl.sm{font-size:17px;line-height:1.5;margin-top:8px}
+.reader.sm .rl{font-size:17px;line-height:1.55}
+.w{cursor:pointer;border-radius:2px}
+.w.on{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:5px}
+.rl.hit{text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:2px;text-underline-offset:6px}
+.rchip{display:inline-block;margin:1px 0 9px;border:1px solid var(--rule);border-radius:3px;padding:4px 9px;background:var(--panel2);
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink2);letter-spacing:.02em}
+.rchip b{font-family:'Geologica',sans-serif;font-size:14px;font-weight:600;color:var(--ink);letter-spacing:0}
+.rtitle{font-size:26px;font-weight:500;letter-spacing:-.02em;margin-top:12px;line-height:1.2}
+.rq{font-size:20px;font-weight:500;line-height:1.35;margin-top:14px;letter-spacing:-.01em}
+.pairs .gl{margin:0 0 10px}
+
+/* session close */
+.dline{font-size:14px;color:var(--ink);margin-top:9px}
+.drow{display:flex;align-items:baseline;gap:7px;margin-top:18px}
+.drow.u{margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)}
+.callouts{margin-top:14px;border-top:1px solid var(--rule)}
+.callouts .earned{font-size:14px}
+.enter .earned{animation:rise 180ms var(--ease) backwards}
+.enter .earned:nth-child(1){animation-delay:140ms}
+.enter .earned:nth-child(2){animation-delay:175ms}
+.enter .earned:nth-child(3){animation-delay:210ms}
+.rsq{width:26px;height:26px;border-radius:3px;flex:none;
+  background:repeating-linear-gradient(135deg,var(--gold) 0 3px,rgba(249,207,2,.22) 3px 7px)}
+
+/* progress: path rows, word-state marks, badge meters, Numbers */
+.sechead{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:22px}
+.prow,.hrow{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;font:inherit;color:var(--ink);text-align:left}
+.prow{padding:10px 0;border-top:1px solid var(--rule2)}
+button.prow,button.hrow{cursor:pointer}
+.prow .ck,.hrow .ck{width:14px;flex:none;color:var(--blue);font-weight:700;font-size:13px}
+.prow .pt{flex:1;font-size:14px;line-height:1.35}
+.prow.cur .pt{font-weight:600}
+.prow .pv{font-size:12.5px;color:var(--ink2);text-align:right}
+.prow .dim2{color:var(--muted)}
+.prow.sep{margin-top:8px;border-top:1px solid var(--rule)}
+.num{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink2);letter-spacing:.02em;flex:none}
+.sheet{margin:0 0 6px 22px}
+.hrow{padding:6px 0;font-size:13px}
+.hrow .pt{flex:1}
+.words{margin:2px 0 8px 22px;padding:8px 10px;background:var(--panel2);border:1px solid var(--rule2);border-radius:3px}
+.wst{display:flex;align-items:baseline;gap:8px;padding:3px 0}
+.wst .m{width:12px;flex:none;font-size:12px;font-weight:700;text-align:center}
+.wst .m.f{color:var(--blue)} .wst .m.l{color:var(--muted)}
+.wst .mn{font-size:14px;font-weight:500}
+.wst .en{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.legend{font-size:11.5px;color:var(--muted);margin-top:6px}
+.bnext{padding:9px 0 1px}
+.brow{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px}
+.wk{display:grid;grid-template-columns:1fr 1fr;margin-top:8px}
+.wk>div{display:flex;align-items:baseline;gap:7px}
+.wk .t{font-size:12.5px;color:var(--ink2)}
+.disc{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:16px;padding:12px 2px;border:0;
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);background:none;font:inherit;font-size:14px;font-weight:500;
+  color:var(--ink);cursor:pointer;text-align:left}
+.nrows{padding:2px 2px 6px}
+.nrow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule2)}
+.nrow .v{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink);text-align:right}
+
+/* settings */
+.srow{display:flex;align-items:center;gap:8px;min-height:46px;border-bottom:1px solid var(--rule2)}
+.panel.rows .srow:last-child{border-bottom:0}
+.srow .sl{flex:1;font-size:14px}
+.srow .sv{font-size:13px;font-weight:600;color:var(--blue)}
+.srow.build{border:0;margin-top:8px;padding:0 2px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden;flex:none}
+.seg button{font:inherit;font-size:12px;padding:6px 10px;border:0;background:var(--panel);cursor:pointer;color:var(--ink2)}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button.on{background:var(--ink);color:var(--paper);font-weight:600}
+.bk .inline{margin:8px 0}
+.bk input.text{margin-top:4px;font-size:16px}
+@media(prefers-reduced-motion:reduce){.qc:active,.cue:active,.mini:active{transform:none!important}}
+</style>
+</head>
+<body class="mock">
+
+<header class="pagehead">
+  <h1>Mockups v4 — the plan, clickable</h1>
+  <p>Ten phone screens (375px) for the final plan of 12 Oct 2026, in the order Fred meets them: Today, a lesson,
+    the lesson's close, Progress and Settings. They are live: answers grade, blocks move, the reader glosses on tap, and
+    every verdict plays the plan's own sounds. <b>Mongolian is copied exactly from words.json and sentences.json; no new
+    Mongolian is written.</b> XP, dates, intervals and counts are examples. Every screen uses the plan's sentence-case
+    labels, which is itself a proposed INSTRUMENT amendment, and each screen names the other amendments it relies on.
+    Under each phone, a live count of its chrome words is set against the plan's budget. Mongolian and the English
+    being taught are content, so they are not counted.</p>
+  <div class="rels">
+    <span><span class="rel">R1</span>13–20 Oct · sound, retries, honest numbers</span>
+    <span><span class="rel">R2</span>to ~27 Oct · score, passages, blocks</span>
+    <span><span class="rel">R3</span>to ~4 Nov · less text, one path</span>
+  </div>
+</header>
+
+<section class="soundbar" id="sound" aria-label="Play sounds">
+  <div class="sbh">
+    <h2>Play sounds</h2>
+    <p>The plan's cue palette (design B §3.2), synthesised live with Web Audio: no files and no requests. In the app a cue
+      plays only on a tap that answers a question or closes the lesson, and the screens below play them at the same moments.</p>
+    <div id="lvl-bar"></div>
+  </div>
+  <div class="cues">
+    <button class="cue ok" data-act="cue" data-cue="right"><b>Correct</b><span>A5 → E6 · triangle · 245 ms</span></button>
+    <button class="cue no" data-act="cue" data-cue="wrong"><b>Wrong</b><span>G4 → E♭4 · soft fall · 310 ms</span></button>
+    <button class="cue ok" data-act="cue" data-cue="combo"><b>5 in a row</b><span>the rise + A6 · 410 ms</span></button>
+    <button class="cue" data-act="cue" data-cue="tick"><b>Tile placed</b><span>1600 Hz · 35 ms</span></button>
+    <button class="cue" data-act="cue" data-cue="tock"><b>Tile back</b><span>1200 Hz · 35 ms</span></button>
+    <button class="cue gd" data-act="cue" data-cue="finish"><b>Lesson done</b><span>C5 E5 G5 C6 · 790 ms</span></button>
+    <button class="cue gd" data-act="cue" data-cue="milestone"><b>Unit or badge crossed</b><span>+ held C–E–G · 1.5 s</span></button>
+  </div>
+  <div class="sbfoot">
+    <label><input type="checkbox" id="tickon"> Tick while placing blocks <span class="m">(off in the plan, decision 5)</span></label>
+    <span id="run"></span>
+  </div>
+</section>
+
+<main class="frames">
+
+  <figure class="fig" id="f-today">
+    <figcaption class="fhead"><span class="rel">R3</span><span class="nm">Today</span>
+      <span class="amend"><b>Proposed amendment</b>Gold holds the current unit, the streak and Start. A rest day is a gold hatch. The streak counts lessons.</span></figcaption>
+    <div class="phone"><div class="screen" data-frame="today"></div></div>
+    <div class="fnote">One gold panel: the unit his new words come from, the streak and Start. The gold-hatched Tuesday is a
+      rest day that covered a miss. Tap the unit line or Start. The purpose line is Fred's own sentence; this one is a stand-in.
+      <span class="wc" data-wc="today"></span></div>
+  </figure>
+
+  <figure class="fig" id="f-card">
+    <figcaption class="fhead"><span class="rel">R1</span><span class="nm">Word card, answered wrong</span>
+      <span class="amend"><b>Proposed amendment</b>Hatched retry segments in the lesson bar. The miss is graded Again at the verdict.</span></figcaption>
+    <div class="phone"><div class="screen" data-frame="card"></div></div>
+    <div class="fnote">Pick a wrong meaning. The lesson bar grows a hatched segment three steps ahead, and the miss is graded
+      at once, so quitting cannot undo it.
+      <span class="src">words.json: хөнжил blanket · дэр pillow · буйдан sofa/couch · хивс carpet/rug</span>
+      <button class="mini" data-act="reset" data-f="card">Reset</button>
+      <span class="wc" data-wc="card"></span></div>
+  </figure>
+
+  <figure class="fig" id="f-fix">
+    <figcaption class="fhead"><span class="rel">R1</span><span class="nm">Three screens later: Fix</span>
+      <span class="amend"><b>Proposed amendment</b>Retries are never graded, scored or counted (closed-set rule).</span></figcaption>
+    <div class="phone"><div class="screen" data-frame="fix"></div></div>
+    <div class="fnote">The same word comes back as <b>Fix</b>, one rung easier: the right meaning and the one he picked on the
+      left. Right is <i>Fixed</i>, with no grade and no XP. Wrong brings one more go at the end, then Study.
+      <button class="mini" data-act="reset" data-f="fix">Reset</button>
+      <span class="wc" data-wc="fix"></span></div>
+  </figure>
+
+  <figure class="fig" id="f-tiles">
+    <figcaption class="fhead"><span class="rel">R2</span><span class="nm">Sentence on blocks</span>
+      <span class="amend"><b>Proposed amendment</b>Blocks are a closed set: a correct build from English is Hard and never Easy.</span></figcaption>
+    <div class="phone"><div class="screen" data-frame="tiles"></div></div>
+    <div class="fnote">Tap blocks to build. Tap a placed block to send it back, then Check. Each sentence has three decoys,
+      other forms of the same word first, and only the word orders Luna listed pass. Try хаалгыг for <i>Right word, wrong
+      ending</i>, or leave out байна (also accepted). Continue moves to the next of three reviewed sentences.
+      <span class="src">sentences.json: Хаалга нээлттэй байна. · Муурын сарвуу зөөлөн. · Уут минь шинэ. Decoys from Хаалгыг
+        хаагаач. · Ширээ том. · Муур минь жижиг. · Энэ сүүл жижиг. · Уут чинь хаана байна? · Энэ ном хуучин. · Уут минь бохир.</span>
+      <button class="mini" data-act="reset" data-f="tiles">Reset</button>
+      <span class="wc" data-wc="tiles"></span></div>
+  </figure>
+
+  <figure class="fig" id="f-right">
+    <figcaption class="fhead"><span class="rel">R1</span><span class="nm">Typed sentence, right</span>
+      <span class="amend"><b>Proposed amendment</b>Continue (Good) with quiet Was hard and Was easy replaces the four-cell grade bar.</span></figcaption>
+    <div class="phone"><div class="screen" data-frame="right"></div></div>
+    <div class="fnote">Press Check. The interval is whole days, exactly what the scheduler will do. The plan keeps XP off
+      lesson screens (decision 9), and the combo is a sound only (decision 5).
+      <label class="ctl"><input type="checkbox" data-opt="fifth"> Make this the 5th unassisted first-try answer in a row (plays the combo)</label>
+      <label class="ctl"><input type="checkbox" data-opt="readout"> Show an in-lesson XP and combo readout <i>(the draft's idea, not in the final plan)</i></label>
+      <span class="src">sentences.json: Өрөөг цэвэрлээч. — Please clean the room.</span>
+      <button class="mini" data-act="reset" data-f="right">Reset</button>
+      <span class="wc" data-wc="right"></span></div>
+  </figure>
+
+  <figure class="fig" id="f-wrong">
+    <figcaption class="fhead"><span class="rel">R1</span><span class="nm">Typed sentence, no match</span>
+      <span class="amend"><b>Proposed amendment</b>A miss is Again at once, with <i>I was right</i> graded Hard and logged.</span></figcaption>
+    <div class="phone"><div class="screen" data-frame="wrong"></div></div>
+    <div class="fnote">Press Check. Words in the wrong place are underlined. <i>I was right</i> grades Hard, saves his phrasing
+      for Luna and cancels the retry.
+      <span class="src">sentences.json: Манай цэцэрлэг гоё. — Our garden is beautiful.</span>
+      <button class="mini" data-act="reset" data-f="wrong">Reset</button>
+      <span class="wc" data-wc="wrong"></span></div>
+  </figure>
+
+  <figure class="fig" id="f-read">
+    <figcaption class="fhead"><span class="rel">R2</span><span class="nm">Baby paragraph, then questions</span>
+      <span class="amend"><b>Proposed amendment</b>English one tap away, never removed (principle 5). Reading text is 22px.</span></figcaption>
+    <div class="phone"><div class="screen" data-frame="read"></div></div>
+    <div class="fnote">Tap a word for its meaning, and tap it again for the sentence. Three questions follow with no English on
+      screen. A wrong answer underlines the line that held the answer. Afterwards every line shows its English.
+      <span class="src">Every line is an existing sentence from sentences.json, so there is no new Mongolian to review.
+        As a passage it still goes to Sarnai before going live.</span>
+      <button class="mini" data-act="reset" data-f="read">Reset</button>
+      <span class="wc" data-wc="read"></span></div>
+  </figure>
+
+  <figure class="fig" id="f-done">
+    <figcaption class="fhead"><span class="rel">R2–R3</span><span class="nm">Lesson done</span>
+      <span class="amend"><b>Proposed amendment</b>XP per first attempt (principle 3). The close is a summary with at most three callouts.</span></figcaption>
+    <div class="phone"><div class="screen" data-frame="done"></div></div>
+    <div class="fnote">The one celebration. Replay plays the close and fills today's square. A badge was crossed, so it ends
+      on the held chord.
+      <button class="mini" data-act="replay">▶ Replay the close</button>
+      <label class="ctl"><input type="checkbox" data-opt="quiet"> An ordinary day: no callouts, so the plain arpeggio</label>
+      <span class="wc" data-wc="done"></span></div>
+  </figure>
+
+  <figure class="fig" id="f-progress">
+    <figcaption class="fhead"><span class="rel">R3</span><span class="nm">Progress: the path</span>
+      <span class="amend"><b>Proposed amendment</b>Units replace levels, with blue unit meters. Badges show have/need. Levels and the B1 date move into Numbers.</span></figcaption>
+    <div class="phone"><div class="screen" data-frame="progress"></div></div>
+    <div class="fnote">The path comes first. Home 1–11 is credited from his memory data (question 3), then the textbook units
+      follow. Tap Home 1–11, then Home 6, to see the word-state marks. Tap Badges and Numbers too. The home unit titles are
+      proposals for Fred to approve.
+      <span class="src">Home 6 words: words.json ids 161–170</span>
+      <span class="wc" data-wc="progress"></span></div>
+  </figure>
+
+  <figure class="fig" id="f-settings">
+    <figcaption class="fhead"><span class="rel">R1–R3</span><span class="nm">Settings</span>
+      <span class="amend"><b>Proposed amendment</b>A new Sound section. Captions sit behind ⓘ.</span></figcaption>
+    <div class="phone"><div class="screen" data-frame="settings"></div></div>
+    <div class="fnote">Sound effects is set per device and drives every cue on this page. <i>Tips · Show again</i> brings back
+      every one-time tip. The build row shows when the iPhone has updated.
+      <span class="wc" data-wc="settings"></span></div>
+  </figure>
+
+</main>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════════════
+   Helpers
+   ═══════════════════════════════════════════════════════════════════════ */
+const $ = (s, r = document) => r.querySelector(s);
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Sound: design B §3.2, as specified. Every note is an oscillator into its
+   own gain envelope (0.0001 → peak → 0.0001, exponential), through the cue's
+   optional filter, then the master gain (On 0.70, Soft 0.25, Off: no
+   AudioContext at all). One cue at a time; ticks rate-limited to 40 ms; the
+   same cue twice within 60 ms plays once.
+   ═══════════════════════════════════════════════════════════════════════ */
+const SND = (() => {
+  const LEVELS = { on: 0.70, soft: 0.25, off: 0 };
+  // wave, Hz, start ms, attack ms, end ms (from cue start), peak
+  const n = (f, at, a, e, p, w = 'triangle') => ({ f, at, a, e, p, w });
+  const RIGHT = [n(880.00, 0, 5, 110, 0.30), n(1318.51, 75, 5, 245, 0.30)];
+  const FINISH = [n(523.25, 0, 5, 160, 0.22), n(659.26, 90, 5, 250, 0.22),
+                  n(783.99, 180, 5, 340, 0.22), n(1046.50, 270, 5, 790, 0.24)];
+  const CUES = {
+    right: { notes: RIGHT },
+    wrong: { notes: [n(392.00, 0, 8, 140, 0.26), n(311.13, 110, 8, 310, 0.26)], lowpass: 1400 },
+    combo: { notes: [...RIGHT, n(1760.00, 150, 5, 410, 0.26), n(3520, 150, 5, 350, 0.05, 'sine')] },
+    tick: { notes: [n(1600, 0, 1, 35, 0.12, 'sine')] },
+    tock: { notes: [n(1200, 0, 1, 35, 0.10, 'sine')] },
+    finish: { notes: FINISH },
+    milestone: { notes: [...FINISH, n(1046.50, 380, 20, 1480, 0.12), n(1318.51, 380, 20, 1480, 0.12),
+                         n(1567.98, 380, 20, 1480, 0.12)] },
+  };
+  let ctx = null, master = null, level = 'on', voices = [], lastTick = -1e9;
+  const lastAt = {};
+  function ensure() {
+    if (ctx) return ctx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    ctx = new AC();
+    master = ctx.createGain();
+    master.gain.value = LEVELS[level];
+    master.connect(ctx.destination);
+    return ctx;
+  }
+  function play(name) {
+    const cue = CUES[name];
+    if (!cue || level === 'off') return;
+    const now = performance.now();
+    if (now - (lastAt[name] || -1e9) < 60) return;               // double-fire guard
+    const tickLike = name === 'tick' || name === 'tock';
+    if (tickLike && now - lastTick < 40) return;                  // tick rate limit
+    lastAt[name] = now;
+    if (tickLike) lastTick = now;
+    if (!ensure()) return;
+    if (ctx.state !== 'running') ctx.resume();
+    const t0 = ctx.currentTime + 0.005;
+    if (!tickLike) {                                              // one cue at a time
+      for (const v of voices) {
+        try {
+          if (v.s >= t0) { v.o.stop(t0); continue; }              // not started yet: never start
+          v.g.gain.cancelScheduledValues(t0);
+          v.g.gain.setTargetAtTime(0, t0, 0.005);
+          v.o.stop(t0 + 0.03);
+        } catch (e) { /* already stopped */ }
+      }
+      voices = [];
+    }
+    let dest = master;
+    if (cue.lowpass) {
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass'; f.frequency.value = cue.lowpass; f.Q.value = 0.707;
+      f.connect(master); dest = f;
+    }
+    for (const x of cue.notes) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = x.w; o.frequency.value = x.f;
+      const s = t0 + x.at / 1000, e = t0 + x.e / 1000;
+      g.gain.value = 0.0001;
+      g.gain.setValueAtTime(0.0001, s);
+      g.gain.exponentialRampToValueAtTime(x.p, s + x.a / 1000);
+      g.gain.exponentialRampToValueAtTime(0.0001, e);
+      o.connect(g); g.connect(dest);
+      o.start(s); o.stop(e + 0.02);
+      if (!tickLike) voices.push({ o, g, s });
+    }
+  }
+  function setLevel(l) { level = l; if (master) master.gain.value = LEVELS[l]; }
+  return { play, setLevel, get level() { return level; } };
+})();
+
+let TICK = false;      // tile tick: off in the plan (decision 5); the sound bar can turn it on
+let READOUT = false;   // the draft's in-lesson score; the final plan shows XP on Done only
+const tile = name => { if (TICK) SND.play(name); };
+
+/* The combo: a run of unassisted first-try answers (B §3.3, final plan
+   decision 5). Retries neither add nor reset; an assisted answer (blocks)
+   that is right does not add; any first-try miss resets. */
+let RUN = 0, LASTCUE = '';
+function verdict(ok, { first = true, unassisted = true, run } = {}) {
+  if (typeof run === 'number') RUN = run;
+  let cue = ok ? 'right' : 'wrong';
+  if (first) {
+    if (!ok) RUN = 0;
+    else if (unassisted) { RUN += 1; if (RUN % 5 === 0) cue = 'combo'; }
+  }
+  SND.play(cue);
+  LASTCUE = cue;
+  showRun();
+  return cue;
+}
+function showRun() {
+  const el = $('#run');
+  if (el) el.textContent = `Run: ${RUN} unassisted first-try ${RUN === 1 ? 'answer' : 'answers'} in a row; the 5th, 10th… plays the third note`
+    + (LASTCUE ? ` · last cue: ${LASTCUE}` : '');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Shared UI pieces
+   ═══════════════════════════════════════════════════════════════════════ */
+const OPEN = new Set();   // open ⓘ captions and disclosures
+const SEEN = new Set();   // one-time tips already seen on this "device"
+
+const tip = (k, text) => SEEN.has(k) ? '' :
+  `<div class="tip"><span>${text}</span><button class="tipx" data-act="tipx" data-k="${k}" aria-label="Dismiss tip">×</button></div>`;
+const info = k => `<button class="info${OPEN.has(k) ? ' on' : ''}" data-act="open" data-k="${k}" aria-label="Details"></button>`;
+const infoText = (k, text) => OPEN.has(k) ? `<div class="infotext">${text}</div>` : '';
+const details = (k, items) => OPEN.has(k) ? `<div class="details">${items.map(t => `<span class="lab">${t}</span>`).join('')}</div>` : '';
+const chips = list => `<div class="ctx2 c">${list.map(([mn, en]) => `<span>${mn} <em>· ${en}</em></span>`).join('')}</div>`;
+
+const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+function week(cells, letters = true) {
+  return `<div class="week${letters ? '' : ' sm'}">${cells.map((c, i) => `<div class="d${c === 'today' ? ' now' : ''}">
+    <div class="bar ${c}"></div>${letters ? `<div class="dl">${DAYS[i]}</div>` : ''}</div>`).join('')}</div>`;
+}
+
+function lessonBar(cur, total, { fix = [], xp = null } = {}) {
+  let segs = '';
+  for (let i = 1; i <= total; i++) {
+    const cls = [i < cur ? 'done' : i === cur ? 'now' : '', fix.includes(i) ? 'fix' : ''].join(' ').trim();
+    segs += `<i class="${cls}"></i>`;
+  }
+  return `<div class="lessonbar"><div class="rail">${segs}</div>
+    <div class="barfoot"><span class="count">${cur} / ${total}</span>${xp != null ? `<span class="xpread">+${xp} XP</span>` : ''}
+    <button class="exit" aria-label="Leave the lesson">✕</button></div></div>`;
+}
+
+// R3 tab bar: Achievements folded into Progress; Read arrives in R4.
+const TABS = [['Today', 'red', 'f-today'], ['Progress', 'blue', 'f-progress'], ['Grammar', '', ''], ['Settings', '', 'f-settings']];
+const tabbar = on => `<nav class="tabbar">${TABS.map(([l, d, to]) =>
+  `<button class="tab${l === on ? ' on ' + d : ''}"${to ? ` data-act="goto" data-to="${to}"` : ' data-act="noop"'}><span class="tl">${l}</span></button>`).join('')}</nav>`;
+
+const levelSeg = () => `<div class="seg" role="group" aria-label="Sound effects">${['on', 'soft', 'off'].map(v =>
+  `<button class="${SND.level === v ? 'on' : ''}" data-act="level" data-v="${v}">${cap(v)}</button>`).join('')}</div>`;
+
+const quiet = (h, e, sel) => `<div class="quiet">
+  <button class="qc${sel === 'h' ? ' sel' : ''}" data-act="sel" data-g="h"><span class="ql">Was hard</span><span class="iv">${h}d</span></button>
+  <button class="qc${sel === 'e' ? ' sel' : ''}" data-act="sel" data-g="e"><span class="ql">Was easy</span><span class="iv">${e}d</span></button></div>`;
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Frames. Each has state `s`, a `render(s)` returning HTML, and `act()`.
+   ═══════════════════════════════════════════════════════════════════════ */
+const F = {};
+
+/* ── 1 · Today (R3) ──────────────────────────────────────────────────── */
+F.today = {
+  s: {}, reset() {},
+  render() {
+    return `<div class="scr">
+      <div class="dateline"><span>Thu 5 Nov</span><span class="syncdot on" aria-hidden="true"></span></div>
+      <button class="purpose" data-act="noop">To talk with Sarnai’s family without translating.</button>
+      <div class="panel gold">
+        <button class="rowbtn" data-act="goto" data-to="f-progress"><span class="unit">Unit 3 · Numbers · 12 new words</span><span class="chev">›</span></button>
+        <div class="meter"><i style="width:40%"></i></div>
+        ${tip('t-new', 'Levels are now units. Tap to see your path.')}
+        <div class="streak"><b>12</b><span class="t">lessons in a row</span>${info('i-week')}</div>
+        ${infoText('i-week', 'A finished lesson fills its day. Every 7 lessons earn a rest day.')}
+        ${week(['done', 'rest', 'done', 'today', 'future', 'future', 'future'])}
+        <div class="btns"><button class="btn primary" data-act="goto" data-to="f-card">Start · 21 items · ~9 min</button></div>
+      </div>
+    </div>${tabbar('Today')}`;
+  }
+};
+
+/* ── 2 · Word card, answered wrong (R1) ──────────────────────────────── */
+const CARD = [
+  { en: 'pillow' }, { en: 'blanket', ok: true }, { en: 'sofa/couch' }, { en: 'carpet/rug' }
+];
+F.card = {
+  s: { picked: null },
+  reset() { this.s = { picked: null }; },
+  render(s) {
+    const ans = s.picked != null, ok = ans && !!CARD[s.picked].ok;
+    const opts = CARD.map((o, i) => {
+      const cls = !ans ? '' : o.ok ? ' right' : i === s.picked ? ' wrong' : ' muted';
+      return `<button class="choice${cls}" data-act="pick" data-i="${i}"${ans ? ' disabled' : ''}><span class="k">${i + 1}</span><span class="txt c">${o.en}</span></button>`;
+    }).join('');
+    let after;
+    if (!ans) after = `<div class="btns"><button class="btn ghost" data-act="noop">Type instead</button></div>`;
+    else if (ok) after = `<div class="panel green reveal">
+        <div class="vrow"><span class="vl ok">Correct</span><span class="nx">Back in 6 days</span>${info('i-card')}</div>
+        <div class="pair c">хөнжил — blanket</div>${details('i-card', ['Recall before 82%', 'Word #103'])}</div>
+      <div class="btns"><button class="btn correct" data-act="noop">Continue</button>
+        <button class="btn ghost slim" data-act="noop">Was easy · 14 days</button></div>`;
+    else after = `<div class="panel red reveal">
+        <div class="vrow"><span class="vl no">Wrong</span><span class="nx">Again later this lesson</span>${info('i-card')}</div>
+        <div class="pair c">хөнжил — blanket</div>${details('i-card', ['Recall before 41%', 'Word #103', 'Graded Again'])}</div>
+      ${tip('t-fix', 'Missed answers come back, a step easier, before the lesson ends.')}
+      <div class="btns"><button class="btn secondary" data-act="goto" data-to="f-fix">Continue</button></div>`;
+    return `<div class="scr">${lessonBar(9, ans && !ok ? 22 : 21, { fix: ans && !ok ? [12] : [] })}
+      <div class="panel${ans ? '' : ' red'}"><div class="prompt c">хөнжил</div></div>
+      <div class="choices">${opts}</div>${after}</div>`;
+  },
+  act(a, b) {
+    if (a !== 'pick' || this.s.picked != null) return;
+    const i = +b.dataset.i, ok = !!CARD[i].ok;
+    this.s.picked = i;
+    verdict(ok);
+    if (!ok) { F.fix.s = { pick: i, picked: null }; draw('fix', 'new'); }
+    draw('card', 'fresh');
+  }
+};
+
+/* ── 3 · Fix, three screens later (R1) ───────────────────────────────── */
+F.fix = {
+  s: { pick: 0, picked: null },
+  reset() {
+    const p = F.card.s.picked;
+    this.s = { pick: p != null && !CARD[p].ok ? p : 0, picked: null };
+  },
+  render(s) {
+    const two = [CARD[s.pick], CARD[1]];           // his own pick, and the truth
+    const ans = s.picked != null, ok = ans && !!two[s.picked].ok;
+    const opts = two.map((o, i) => {
+      const cls = !ans ? '' : o.ok ? ' right' : i === s.picked ? ' wrong' : ' muted';
+      return `<button class="choice${cls}" data-act="pick" data-i="${i}"${ans ? ' disabled' : ''}><span class="k">${i + 1}</span><span class="txt c">${o.en}</span></button>`;
+    }).join('');
+    let after = '';
+    if (ans && ok) after = `<div class="panel green reveal"><div class="vrow"><span class="vl ok">Fixed</span></div>
+        <div class="pair c">хөнжил — blanket</div></div>
+      <div class="btns"><button class="btn correct" data-act="noop">Continue</button></div>`;
+    else if (ans) after = `<div class="panel red reveal"><div class="vrow"><span class="vl no">Wrong</span><span class="nx">One more go at the end</span></div>
+        <div class="pair c">хөнжил — blanket</div></div>
+      <div class="btns"><button class="btn secondary" data-act="noop">Continue</button></div>`;
+    return `<div class="scr">${lessonBar(12, 22, { fix: [12] })}
+      <div class="qtop"><span class="fixtag">Fix</span></div>
+      <div class="panel${ans ? '' : ' red'}"><div class="prompt c">хөнжил</div></div>
+      <div class="choices">${opts}</div>${after}</div>`;
+  },
+  act(a, b) {
+    if (a !== 'pick' || this.s.picked != null) return;
+    const i = +b.dataset.i, two = [CARD[this.s.pick], CARD[1]];
+    this.s.picked = i;
+    verdict(!!two[i].ok, { first: false });       // a retry: never graded, never moves the run
+    draw('fix', 'fresh');
+  }
+};
+
+/* ── 4 · Sentence on building blocks (R2) ────────────────────────────── */
+// acc[0] is the canonical answer; the rest are Luna-reviewed alternatives.
+// Decoys never appear in any accepted answer; sib maps a decoy to the form it imitates.
+const TS = [
+  { en: 'The door is open.',
+    acc: [['хаалга', 'нээлттэй', 'байна'], ['хаалга', 'нээлттэй']],
+    bank: ['нээлттэй', 'хаалгыг', 'байна', 'хаалга', 'том', 'хаалгаа'],
+    sib: { 'хаалгыг': 'хаалга', 'хаалгаа': 'хаалга' },
+    chips: [['хаалга', 'door'], ['нээлттэй', 'open']] },
+  { en: "The cat's paws are soft.",
+    acc: [['муурын', 'сарвуу', 'зөөлөн'], ['муурын', 'сарвуу', 'зөөлөн', 'байна']],
+    bank: ['сарвуу', 'муур', 'зөөлөн', 'жижиг', 'муурын', 'сүүл'],
+    sib: { 'муур': 'муурын' },
+    chips: [['муур', 'cat'], ['сарвуу', 'paw'], ['зөөлөн', 'soft']] },
+  { en: 'My bag is new.',
+    acc: [['уут', 'минь', 'шинэ'], ['уут', 'минь', 'шинэ', 'байна'], ['миний', 'уут', 'шинэ']],
+    bank: ['шинэ', 'чинь', 'уут', 'хуучин', 'минь', 'бохир'],
+    sib: {},
+    chips: [['уут', 'bag'], ['шинэ', 'new']] },
+];
+const norm = str => str.toLowerCase().replace(/[.,!?;:«»"'’]/g, ' ').split(/\s+/).filter(Boolean);
+
+F.tiles = {
+  s: { si: 0, placed: [], res: null, mode: 'blocks', typed: '' },
+  reset() { this.s = { si: 0, placed: [], res: null, mode: 'blocks', typed: '' }; },
+  render(s) {
+    const t = TS[s.si], placed = new Set(s.placed), min = Math.min(...t.acc.map(a => a.length));
+    const res = s.res, blocks = s.mode === 'blocks';
+    const retry = res && !res.ok && !res.appeal;
+    const field = blocks
+      ? `<div class="buildline c">${s.placed.map(i => `<button class="tile-word" data-act="unplace" data-i="${i}"${res ? ' disabled' : ''}>${t.bank[i]}</button>`).join('')}</div>`
+      : (res ? `<div class="faux c" style="border-color:var(--rule)">${s.typed}</div>`
+             : `<textarea class="text" data-input="tiles" rows="2" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Write it in Mongolian">${s.typed}</textarea>`);
+    const bank = blocks && !res ? `<div class="wordbank c">${t.bank.map((w, i) => placed.has(i)
+      ? `<span class="tile-word ph" aria-hidden="true">${w}</span>`
+      : `<button class="tile-word" data-act="place" data-i="${i}">${w}</button>`).join('')}</div>` : '';
+    const can = blocks ? s.placed.length >= min : s.typed.trim().length > 0;
+
+    let after;
+    if (!res) {
+      after = `${blocks ? tip('t-tiles', 'Tap blocks in order. Tap a placed block to undo.') : ''}
+        <div class="btns"><button class="btn primary" data-act="check"${can ? '' : ' disabled'}>Check</button>
+        <button class="btn ghost" data-act="mode">${blocks ? 'Type instead' : 'Use blocks'}</button></div>`;
+    } else if (res.ok) {
+      const viaBlocks = res.mode === 'blocks';
+      after = `<div class="panel green reveal">
+          <div class="vrow"><span class="vl ok">Correct</span><span class="nx">Back in ${viaBlocks ? 2 : 4} days</span>${info('i-tiles')}</div>
+          <div class="ans c">${cap(res.toks.join(' '))}.</div>
+          ${res.alt ? '<span class="alsoacc">Also accepted</span>' : ''}
+          ${chips(t.chips)}
+          ${details('i-tiles', viaBlocks ? ['Graded Hard', 'Blocks supplied the Mongolian'] : ['Graded Good', 'Typed'])}</div>
+        ${viaBlocks ? tip('t-hard', 'Built with blocks counts as Hard. Typing it scores more.') : ''}
+        <div class="btns"><button class="btn correct" data-act="next">Continue</button>${viaBlocks ? '' : quiet(2, 9, s.sel)}</div>`;
+    } else {
+      const canon = t.acc[0], all = new Set(t.acc.flat());
+      const diff = canon.map((w, i) => {
+        const cls = res.toks[i] === w ? 'hit' : res.toks.includes(w) ? 'hit mv' : 'miss';
+        return `<span class="${cls}">${i === 0 ? cap(w) : w}</span>`;
+      }).join(' ') + '.';
+      const you = res.toks.length ? res.toks.map(w => `<span class="${all.has(w) ? '' : 'struck'}">${w}</span>`).join(' ') : '—';
+      // Another form of the right word: the verdict itself says so, in place of "No match".
+      const end = res.toks.find(w => t.sib[w] && !res.toks.includes(t.sib[w]));
+      after = `<div class="panel red reveal">
+          <div class="vrow"><span class="vl no">${end ? 'Right word, wrong ending' : 'No match'}</span><span class="nx">${res.appeal ? 'Back in 3 days' : 'Again later this lesson'}</span>${info('i-tiles')}</div>
+          <div class="ans diff c">${diff}</div>
+          <div class="yours"><span>You:</span> <span class="c">${you}</span></div>
+          ${chips(t.chips)}
+          ${details('i-tiles', ['Graded Again', 'Order changes meaning'])}</div>
+        ${res.appeal ? '<div class="logged">Saved for Luna to check. Graded Hard.</div>' : ''}
+        <div class="btns"><button class="btn secondary" data-act="next">Continue</button>
+          ${res.appeal ? '' : '<button class="btn ghost" data-act="iwr">I was right</button>'}</div>`;
+    }
+    return `<div class="scr">${lessonBar(14, retry ? 22 : 21, { fix: retry ? [17] : [] })}
+      <div class="panel${res ? '' : ' red'}"><div class="prompt en c">${t.en}</div>${field}</div>
+      ${bank}${after}</div>`;
+  },
+  act(a, b) {
+    const s = this.s, t = TS[s.si];
+    if (a === 'place' && !s.res) { s.placed.push(+b.dataset.i); tile('tick'); draw('tiles', 'still'); }
+    else if (a === 'unplace' && !s.res) { const i = +b.dataset.i; s.placed = s.placed.filter(x => x !== i); tile('tock'); draw('tiles', 'still'); }
+    else if (a === 'mode' && !s.res) { s.mode = s.mode === 'blocks' ? 'type' : 'blocks'; draw('tiles', 'still'); }
+    else if (a === 'check' && !s.res) {
+      const toks = s.mode === 'blocks' ? s.placed.map(i => t.bank[i]) : norm(s.typed);
+      const hit = t.acc.findIndex(x => x.join(' ') === toks.join(' '));
+      s.res = { ok: hit >= 0, alt: hit > 0, toks, mode: s.mode };
+      if (s.mode === 'blocks') SEEN.add('t-tiles');
+      verdict(hit >= 0, { unassisted: s.mode !== 'blocks' });
+      draw('tiles', 'fresh');
+    }
+    else if (a === 'iwr' && s.res) { s.res.appeal = true; draw('tiles', 'still'); }
+    else if (a === 'sel') { s.sel = s.sel === b.dataset.g ? null : b.dataset.g; draw('tiles', 'still'); }
+    else if (a === 'next') { this.s = { si: (s.si + 1) % TS.length, placed: [], res: null, mode: 'blocks', typed: '' }; draw('tiles', 'new'); }
+  }
+};
+
+/* ── 5a · Typed sentence, right (R1) ─────────────────────────────────── */
+F.right = {
+  s: { checked: false, fifth: false, sel: null },
+  reset() { this.s = { checked: false, fifth: this.s.fifth, sel: null }; },
+  render(s) {
+    const xp = READOUT ? (s.checked ? 21 : 18) : null;
+    const label = 'Correct' + (READOUT && s.checked && s.fifth ? ' · 5 in a row' : '');
+    return `<div class="scr">${lessonBar(6, 21, { xp })}
+      <div class="panel${s.checked ? '' : ' red'}"><div class="prompt en c">Please clean the room.</div>
+        ${s.checked ? '' : '<div class="faux c">Өрөөг цэвэрлээч<span class="caret"></span></div>'}</div>
+      ${!s.checked
+        ? `<div class="btns"><button class="btn primary" data-act="check">Check</button>
+             <button class="btn ghost" data-act="goto" data-to="f-tiles">Use blocks</button></div>`
+        : `<div class="panel green reveal">
+             <div class="vrow"><span class="vl ok">${label}</span><span class="nx">Back in 4 days</span>${info('i-right')}</div>
+             <div class="ans c">Өрөөг цэвэрлээч.</div>
+             ${chips([['өрөө', 'room'], ['цэвэрлэх', 'to clean']])}
+             ${details('i-right', ['Recall before 74%', 'Known in sentence 100%', 'Graded Good'])}</div>
+           <div class="btns"><button class="btn correct" data-act="noop">Continue</button>${quiet(2, 9, s.sel)}</div>`}
+    </div>`;
+  },
+  act(a, b) {
+    if (a === 'check' && !this.s.checked) {
+      this.s.checked = true;
+      verdict(true, this.s.fifth ? { run: 4 } : {});
+      draw('right', 'fresh');
+    } else if (a === 'sel') { this.s.sel = this.s.sel === b.dataset.g ? null : b.dataset.g; draw('right', 'still'); }
+  }
+};
+
+/* ── 5b · Typed sentence, no match (R1) ──────────────────────────────── */
+F.wrong = {
+  s: { checked: false, appeal: false },
+  reset() { this.s = { checked: false, appeal: false }; },
+  render(s) {
+    const xp = READOUT ? (s.checked ? 29 : 27) : null;
+    const retry = s.checked && !s.appeal;
+    return `<div class="scr">${lessonBar(11, retry ? 22 : 21, { xp, fix: retry ? [14] : [] })}
+      <div class="panel${s.checked ? '' : ' red'}"><div class="prompt en c">Our garden is beautiful.</div>
+        ${s.checked ? '' : '<div class="faux c">Цэцэрлэг манай гоё<span class="caret"></span></div>'}</div>
+      ${!s.checked
+        ? `<div class="btns"><button class="btn primary" data-act="check">Check</button>
+             <button class="btn ghost" data-act="goto" data-to="f-tiles">Use blocks</button></div>`
+        : `<div class="panel red reveal">
+             <div class="vrow"><span class="vl no">No match</span><span class="nx">${s.appeal ? 'Back in 3 days' : 'Again later this lesson'}</span>${info('i-wrong')}</div>
+             <div class="ans diff c"><span class="hit mv">Манай</span> <span class="hit mv">цэцэрлэг</span> <span class="hit">гоё</span>.</div>
+             <div class="yours"><span>You:</span> <span class="c">Цэцэрлэг манай гоё</span></div>
+             ${chips([['цэцэрлэг', 'garden'], ['гоё', 'beautiful/nice']])}
+             ${details('i-wrong', ['Recall before 63%', s.appeal ? 'Graded Hard' : 'Graded Again', 'Order changes meaning'])}</div>
+           ${s.appeal ? '<div class="logged">Saved for Luna to check. Graded Hard.</div>' : ''}
+           <div class="btns"><button class="btn secondary" data-act="noop">Continue</button>
+             ${s.appeal ? '' : '<button class="btn ghost" data-act="iwr">I was right</button>'}</div>`}
+    </div>`;
+  },
+  act(a) {
+    if (a === 'check' && !this.s.checked) { this.s.checked = true; verdict(false); draw('wrong', 'fresh'); }
+    else if (a === 'iwr' && this.s.checked) { this.s.appeal = true; draw('wrong', 'still'); }
+  }
+};
+
+/* ── 6 · Baby paragraph (R2) ─────────────────────────────────────────── */
+// Six existing sentences from sentences.json; each token carries its lexicon entry from words.json.
+const RL = [
+  { en: 'My cat is small.', w: [['Муур', 'муур', 'cat'], ['минь', 'минь', 'my'], ['жижиг', 'жижиг', 'small']] },
+  { en: 'The cat has a long tail.', w: [['Муурын', 'муур', 'cat'], ['сүүл', 'сүүл', 'tail'], ['урт', 'урт', 'long']] },
+  { en: "The cat's paws are soft.", w: [['Муурын', 'муур', 'cat'], ['сарвуу', 'сарвуу', 'paw'], ['зөөлөн', 'зөөлөн', 'soft']] },
+  { en: 'I feed the cat in the morning.', w: [['Би', 'би', 'I'], ['өглөө', 'өглөө', 'morning'], ['мууранд', 'муур', 'cat'], ['хоол өгдөг', 'хоол өгөх', 'to feed']] },
+  { en: 'Our sofa is new.', w: [['Манай', 'манай', 'our'], ['буйдан', 'буйдан', 'sofa/couch'], ['шинэ', 'шинэ', 'new']] },
+  { en: 'The cat is sleeping on the sofa.', w: [['Муур', 'муур', 'cat'], ['буйдан', 'буйдан', 'sofa/couch'], ['дээр', 'дээр', 'on / above'], ['унтаж', 'унтах', 'to sleep'], ['байна', 'байна', 'is / are']] },
+];
+const RQ = [
+  { q: 'Where is the cat sleeping?', o: ['On the bed', 'On the sofa', 'In the yard', 'On the floor'], a: 1, line: 5 },
+  { q: 'When is the cat fed?', o: ['In the evening', 'After dinner', 'In the morning', 'On Sunday'], a: 2, line: 3 },
+  { q: 'The cat is big.', o: ['True', 'False'], a: 1, line: 0 },
+];
+const lineMn = i => RL[i].w.map(w => w[0]).join(' ') + '.';
+
+F.read = {
+  s: { step: 'text', qi: 0, ans: [null, null, null], chip: null, show: false },
+  reset() { this.s = { step: 'text', qi: 0, ans: [null, null, null], chip: null, show: false }; },
+  line(i, tappable, hit) {
+    const s = this.s, L = RL[i];
+    if (!tappable) return `<div class="rl c${hit ? ' hit' : ''}">${lineMn(i)}</div>`;
+    const words = L.w.map((w, j) => `<span class="w${s.chip && s.chip.l === i && s.chip.t === j ? ' on' : ''}" data-act="w" data-l="${i}" data-t="${j}">${w[0]}</span>`).join(' ') + '.';
+    let chip = '';
+    if (s.chip && s.chip.l === i) {
+      const w = L.w[s.chip.t];
+      chip = s.chip.m === 1 ? `<div class="rchip c"><b>${w[1]}</b> · ${w[2]}</div>` : `<div class="rchip c">${L.en}</div>`;
+    }
+    return `<div class="rl c">${words}</div>${chip}`;
+  },
+  render(s) {
+    const head = `<div class="rtitle c">Муур</div><div class="gl c">the cat</div>`;
+    if (s.step === 'text') {
+      return `<div class="scr">${lessonBar(21, 24)}
+        <div class="qtop"><span class="lbl2">Reading</span></div>${head}
+        <div class="panel reader">${RL.map((_, i) => this.line(i, true)).join('')}</div>
+        ${tip('t-read', 'Tap a word for its meaning. Tap again for the sentence.')}
+        <div class="btns"><button class="btn primary" data-act="toq">Questions</button>
+          <button class="btn ghost" data-act="skip">Skip</button></div></div>`;
+    }
+    if (s.step === 'q') {
+      const Q = RQ[s.qi], a = s.ans[s.qi], done = a != null, ok = done && a === Q.a;
+      const opts = Q.o.map((o, i) => {
+        const cls = !done ? '' : i === Q.a ? ' right' : i === a ? ' wrong' : ' muted';
+        return `<button class="choice${cls}" data-act="ans" data-i="${i}"${done ? ' disabled' : ''}><span class="k">${i + 1}</span><span class="txt c">${o}</span></button>`;
+      }).join('');
+      let after = '';
+      if (done && ok) after = `<div class="panel green reveal"><div class="vrow"><span class="vl ok">Correct</span></div></div>
+        <div class="btns"><button class="btn correct" data-act="nextq">Continue</button></div>`;
+      else if (done) after = `<div class="panel red reveal"><div class="vrow"><span class="vl no">Wrong</span></div>
+          <div class="pair c">${Q.o[Q.a]}</div>
+          <div class="rl sm hit c">${lineMn(Q.line)}</div><div class="gl raw c">${RL[Q.line].en}</div></div>
+        <div class="btns"><button class="btn secondary" data-act="nextq">Continue</button></div>`;
+      return `<div class="scr">${lessonBar(22 + s.qi, 24)}
+        <div class="qtop"><span class="lbl2">Reading · ${s.qi + 1} / ${RQ.length}</span>
+          <button class="btn ghost slim" data-act="show">${s.show ? 'Hide text' : 'Show text'}</button></div>
+        ${s.show ? `<div class="panel reader sm">${RL.map((_, i) => this.line(i, false, done && !ok && i === Q.line)).join('')}</div>` : ''}
+        <div class="rq">${Q.q}</div>
+        <div class="choices">${opts}</div>${after}</div>`;
+    }
+    const right = s.ans.filter((a, i) => a === RQ[i].a).length;
+    return `<div class="scr">${lessonBar(24, 24)}
+      <div class="qtop"><span class="lbl2">Reading · ${right} of ${RQ.length} right</span></div>${head}
+      <div class="panel reader pairs">${RL.map((L, i) => `<div class="rl c">${lineMn(i)}</div><div class="gl raw c">${L.en}</div>`).join('')}</div>
+      <div class="btns"><button class="btn primary" data-act="close">Continue</button></div></div>`;
+  },
+  act(a, b) {
+    const s = this.s;
+    if (a === 'w') {                    // taps are never counted against him, and make no sound
+      const l = +b.dataset.l, t = +b.dataset.t, c = s.chip;
+      s.chip = c && c.l === l && c.t === t ? (c.m === 1 ? { l, t, m: 2 } : null) : { l, t, m: 1 };
+      SEEN.add('t-read');
+      draw('read', 'still');
+    } else if (a === 'toq') { s.step = 'q'; s.qi = 0; s.show = false; draw('read', 'new'); }
+    else if (a === 'skip') { this.reset(); goTo('f-done'); }
+    else if (a === 'show') { s.show = !s.show; draw('read', 'still'); }
+    else if (a === 'ans' && s.ans[s.qi] == null) {
+      const i = +b.dataset.i; s.ans[s.qi] = i;
+      verdict(i === RQ[s.qi].a);
+      draw('read', 'fresh');
+    } else if (a === 'nextq') {
+      if (s.qi < RQ.length - 1) { s.qi += 1; s.show = false; } else s.step = 'end';
+      draw('read', 'new');
+    } else if (a === 'close') { goTo('f-done'); F.done.replay(); }
+  }
+};
+
+/* ── 7 · Lesson done (R2–R3) ─────────────────────────────────────────── */
+F.done = {
+  s: { quiet: false, filled: true, anim: false },
+  reset() {},
+  render(s) {
+    const today = s.filled ? 'done' + (s.anim ? ' fill' : '') : 'today';
+    return `<div class="scr">
+      <div class="ttl">Lesson done</div>
+      <div class="panel gold">
+        <div class="big">+46<span class="u"> XP</span></div>
+        <div class="dline">17 of 21 right first time · 3 fixed</div>
+        ${tip('t-xp', '1 per answer, +1 if right, +1 if you typed it.')}
+      </div>
+      <div class="drow"><b>13</b><span class="t">lessons in a row</span></div>
+      ${week(['done', 'rest', 'done', today, 'future', 'future', 'future'], false)}
+      <div class="drow u"><span class="t">Unit 3 · Numbers · +4 familiar</span></div>
+      <div class="meter"><i style="width:51%"></i></div>
+      ${s.quiet ? '' : `<div class="callouts">
+        <div class="earned"><span class="dot"></span><span>New badge · 25 words recovered</span></div>
+        <div class="earned"><span class="rsq"></span><span>Rest day earned · 2 saved</span></div></div>`}
+      <div class="btns"><button class="btn primary" data-act="goto" data-to="f-today">Close</button></div>
+    </div>`;
+  },
+  replay() {
+    // The close is the one place a held chord may sound: only when a unit, part or badge was crossed.
+    SND.play(this.s.quiet ? 'finish' : 'milestone');
+    this.s.filled = false; this.s.anim = false;
+    draw('done', 'new');
+    setTimeout(() => { this.s.filled = true; this.s.anim = true; draw('done', 'fresh'); this.s.anim = false; }, REDUCED ? 0 : 380);
+  }
+};
+
+/* ── 8 · Progress: the path (R3) ─────────────────────────────────────── */
+// Home 1–11 = the 154 drillable words already in words.json (design D §5.1 titles, pending Fred).
+const HOME = [['Rooms and furniture', 17, 17], ['Around the house', 14, 14], ['Housework', 18, 18], ['Meals', 10, 10],
+  ['In the kitchen', 12, 12], ['The cat', 8, 10], ['Books', 10, 10], ['The garden', 12, 12], ['Describing things', 13, 13],
+  ['Home, days and family', 17, 17], ['Everyday verbs', 21, 21]];
+const CAT = [['муур', 'cat', 'f'], ['зулзага муур', 'kitten', 'f'], ['тэжээвэр амьтан', 'pet', 'l'], ['тоглоом', 'toy', 'f'],
+  ['тоглох', 'to play', 'f'], ['хумхих', 'to scratch', 'l'], ['сүүл', 'tail', 'f'], ['сарвуу', 'paw', 'f'],
+  ['хоол өгөх', 'to feed', 'f'], ['эмнэлэг', 'vet/clinic', 'f']];
+const PILLS = ['First lesson', '7 lessons in a row', 'Full week', '25 words known', '50 words known', '100 words known',
+  'Recall at 90%', 'First unit', '25 words recovered'];
+const NUMBERS = [['Lifetime XP', '8,940'], ['Last level', '5 · retired'], ['B1 at this rate', 'early 2029 · simulated'],
+  ['Average recall (RET)', '94%'], ['Accuracy, all time (ACC)', '88%'], ['Rest days saved', '2 of 2'],
+  ['Best streak', '21 lessons'], ['Words tracked', '234']];
+
+F.progress = {
+  s: {}, reset() {},
+  render() {
+    const home = OPEN.has('p-home') ? `<div class="sheet">${HOME.map(([t, h, n], i) => {
+      const done = h === n, isCat = i === 5;
+      const row = `<${isCat ? 'button' : 'div'} class="hrow"${isCat ? ' data-act="open" data-k="p-cat"' : ''}>
+        <span class="ck">${done ? '✓' : ''}</span><span class="pt">Home ${i + 1} · ${t}</span>
+        ${done ? '' : `<span class="num">${h}/${n}</span><span class="chev">${OPEN.has('p-cat') ? '⌄' : '›'}</span>`}</${isCat ? 'button' : 'div'}>`;
+      const words = isCat && OPEN.has('p-cat') ? `<div class="words">${CAT.map(([mn, en, st]) =>
+        `<div class="wst"><span class="m ${st}">${st === 'f' ? '✓' : '•'}</span><span class="mn c">${mn}</span><span class="en c">${en}</span></div>`).join('')}
+        <div class="legend">✓ familiar · • learning · ○ not met</div></div>` : '';
+      return row + words;
+    }).join('')}</div>` : '';
+    const pills = OPEN.has('p-badges') ? `<div class="badges">${PILLS.map(p => `<span class="badge">${p}</span>`).join('')}</div>` : '';
+    const nums = OPEN.has('p-num') ? `<div class="nrows">${NUMBERS.map(([k, v]) =>
+      `<div class="nrow"><span class="mono">${k}</span><span class="v">${v}</span></div>`).join('')}</div>` : '';
+    return `<div class="scr">
+      <div class="panel gold">
+        <div class="sechead"><span class="lbl2">Path</span></div>
+        <button class="prow" data-act="open" data-k="p-home"><span class="ck"></span><span class="pt">Home 1–11</span>
+          <span class="pv">10 of 11</span><span class="chev">${OPEN.has('p-home') ? '⌄' : '›'}</span></button>
+        ${home}
+        <div class="prow"><span class="ck">✓</span><span class="pt">Unit 1 · Who, what and whose</span></div>
+        <div class="prow"><span class="ck"></span><span class="pt">Unit 2 · Where are you from?</span><span class="pv">Checkpoint next lesson</span></div>
+        <div class="prow cur"><span class="ck"></span><span class="pt">Unit 3 · Numbers, age and time</span><span class="num">14/35</span></div>
+        <div class="meter" style="margin:0 0 10px 22px"><i style="width:40%"></i></div>
+        <div class="prow"><span class="ck"></span><span class="pt">Unit 4 · Family</span></div>
+        <div class="prow"><span class="ck"></span><span class="pt dim2">+24 more</span></div>
+        <button class="prow sep" data-act="open" data-k="p-badges"><span class="pt"><b>Badges</b> · 9 earned</span>
+          <span class="chev">${OPEN.has('p-badges') ? '⌄' : '›'}</span></button>
+        ${pills}
+        <div class="bnext"><div class="brow"><span>30 lessons in a row</span><span class="num">13/30</span></div>
+          <div class="meter gold"><i style="width:43%"></i></div></div>
+        <div class="bnext"><div class="brow"><span>100 words recovered</span><span class="num">25/100</span></div>
+          <div class="meter gold"><i style="width:25%"></i></div></div>
+      </div>
+      <div class="panel blue">
+        <div class="sechead"><span class="lbl2">Made familiar</span>${info('i-fam')}</div>
+        ${infoText('i-fam', 'Familiar: remembered well enough to last 7 days.')}
+        <div class="wk"><div><span class="big blue">14</span><span class="t">this week</span></div>
+          <div><span class="big">9</span><span class="t">last week</span></div></div>
+      </div>
+      <button class="disc" data-act="open" data-k="p-num"><span>Numbers</span><span class="chev">${OPEN.has('p-num') ? '⌄' : '›'}</span></button>
+      ${nums}
+    </div>${tabbar('Progress')}`;
+  }
+};
+
+/* ── 9 · Settings (R1–R3) ────────────────────────────────────────────── */
+const SENT = ['Type first', 'Auto', 'Blocks'], DRILLS = [0, 4, 8, 14];
+F.settings = {
+  s: { mc: true, drills: 2, sent: 0 },
+  reset() {},
+  render(s) {
+    return `<div class="scr">
+      <div class="panel blue rows">
+        <div class="srow"><span class="sl">Online sync</span><span class="sv">On</span>${info('s-sync')}</div>
+        ${infoText('s-sync', 'Lessons save online by themselves. Every signed-in device matches.')}
+        <div class="srow"><span class="sl">fred@…</span><button class="btn ghost slim" data-act="noop">Sign out</button></div>
+      </div>
+      <div class="panel rows">
+        <div class="srow"><span class="sl">Multiple choice</span><button class="btn ghost slim" data-act="mc">${s.mc ? 'On' : 'Off'}</button>${info('s-mc')}</div>
+        ${infoText('s-mc', 'Off: you type word answers instead of choosing.')}
+        <div class="srow"><span class="sl">Word drills per lesson</span><button class="btn ghost slim" data-act="drills">${DRILLS[s.drills]}</button>${info('s-dr')}</div>
+        ${infoText('s-dr', 'Words practised alone before the sentences.')}
+        <div class="srow"><span class="sl">Sentences</span><button class="btn ghost slim" data-act="sent">${SENT[s.sent]}</button>${info('s-se')}</div>
+        ${infoText('s-se', 'Type first keeps blocks one tap away. Auto starts shaky words on blocks.')}
+        <div class="srow"><span class="sl">Sound effects</span>${levelSeg()}${info('s-snd')}</div>
+        ${infoText('s-snd', 'This device only. Soft is quieter; Off makes no sound.')}
+        <div class="srow"><span class="sl">Tips</span><button class="btn ghost slim" data-act="tipsagain">Show again</button></div>
+      </div>
+      <button class="disc" data-act="open" data-k="s-backup"><span>Backup code</span><span class="chev">${OPEN.has('s-backup') ? '⌄' : '›'}</span></button>
+      ${OPEN.has('s-backup') ? `<div class="panel rows bk">
+        <div class="srow"><span class="sl">Last export 20 days ago</span></div>
+        <div class="inline"><button class="btn secondary slim" data-act="noop">Copy</button><button class="btn secondary slim" data-act="noop">Share</button></div>
+        <input class="text" placeholder="Paste a code">
+        <div class="btns" style="margin:8px 0 10px"><button class="btn ghost" data-act="noop">Import</button></div></div>` : ''}
+      <div class="srow build"><span class="sl">App build</span><span class="num">mng-3f9a1c</span></div>
+    </div>${tabbar('Settings')}`;
+  },
+  act(a) {
+    const s = this.s;
+    if (a === 'mc') s.mc = !s.mc;
+    else if (a === 'drills') s.drills = (s.drills + 1) % DRILLS.length;
+    else if (a === 'sent') s.sent = (s.sent + 1) % SENT.length;
+    else if (a === 'tipsagain') { SEEN.clear(); redrawAll(); return; }
+    else return;
+    draw('settings', 'still');
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Drawing, word counts, events
+   ═══════════════════════════════════════════════════════════════════════ */
+const BUDGET = {
+  today: '≈40', card: '9 / 17 / 16 (design E)', fix: '4–10 (design A)', tiles: '≤16',
+  right: '≈12', wrong: '≈12', read: '≤8 on the text, ≤12 per question', done: '22–34',
+  progress: '≈60 closed', settings: '≈35'
+};
+
+// 'new' = a new screen (fade + rise); 'fresh' = only the verdict and options move; 'still' = nothing moves.
+function draw(id, mode = 'still') {
+  const el = document.querySelector(`[data-frame="${id}"]`);
+  if (!el) return;
+  const old = el.querySelector('.scr'), top = old ? old.scrollTop : 0;
+  el.classList.remove('enter', 'still');
+  el.innerHTML = F[id].render(F[id].s);
+  if (mode === 'new') { void el.offsetWidth; el.classList.add('enter'); }
+  else if (mode === 'still') el.classList.add('still');
+  const scr = el.querySelector('.scr');
+  if (scr) scr.scrollTop = mode === 'new' ? 0 : top;
+  count(id);
+}
+function redrawAll() { for (const id of Object.keys(F)) draw(id, 'still'); drawLevelBar(); }
+
+/* Chrome words: the app's own English that is visible right now. Content
+   (Mongolian and the English being taught, marked .c) is not chrome; tips
+   are counted apart because they show once. Tokens need a Latin letter or a
+   digit, so "·", "›" and "✕" are free, as in the plan's counts. */
+function count(id) {
+  const el = document.querySelector(`[data-frame="${id}"]`), out = document.querySelector(`[data-wc="${id}"]`);
+  if (!el || !out) return;
+  let chrome = 0, tips = 0;
+  const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  for (let node = walk.nextNode(); node; node = walk.nextNode()) {
+    const p = node.parentElement;
+    if (!p || p.closest('.c') || p.closest('[aria-hidden="true"]') || !p.getClientRects().length) continue;
+    const k = (node.textContent.match(/\S+/g) || []).filter(t => /[A-Za-z0-9]/.test(t)).length;
+    if (p.closest('.tip')) tips += k; else chrome += k;
+  }
+  out.innerHTML = `chrome words on screen <b>${chrome}</b>${tips ? ` (+${tips} in a one-time tip)` : ''} · plan ${BUDGET[id]}`;
+}
+
+function goTo(to) {
+  const fig = document.getElementById(to);
+  if (!fig) return;
+  fig.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center', inline: 'nearest' });
+  fig.classList.remove('flash'); void fig.offsetWidth; fig.classList.add('flash');
+  setTimeout(() => fig.classList.remove('flash'), 1100);
+}
+
+function drawLevelBar() { const el = $('#lvl-bar'); if (el) el.innerHTML = levelSeg(); }
+function setLevel(v) {
+  SND.setLevel(v);
+  drawLevelBar(); draw('settings', 'still');
+  if (v !== 'off') SND.play('right');   // design B: switching to On or Soft previews at the new level
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const act = b.dataset.act, k = b.dataset.k;
+  switch (act) {
+    case 'noop': return;
+    case 'cue': SND.play(b.dataset.cue); return;
+    case 'level': setLevel(b.dataset.v); return;
+    case 'goto': goTo(b.dataset.to); return;
+    case 'tipx': SEEN.add(k); redrawAll(); return;
+    case 'replay': F.done.replay(); return;
+    case 'reset': { const id = b.dataset.f; F[id].reset(); draw(id, 'new'); return; }
+    case 'open': {
+      OPEN.has(k) ? OPEN.delete(k) : OPEN.add(k);
+      const owner = b.closest('[data-frame]');
+      if (owner) draw(owner.dataset.frame, 'still');
+      return;
+    }
+  }
+  const owner = b.closest('[data-frame]');
+  const id = owner && owner.dataset.frame;
+  if (id && F[id] && F[id].act) F[id].act(act, b);
+});
+
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.matches('[data-input="tiles"]')) {
+    F.tiles.s.typed = t.value;
+    const btn = t.closest('.screen').querySelector('[data-act="check"]');
+    if (btn) btn.disabled = !t.value.trim();
+  }
+});
+
+document.addEventListener('change', e => {
+  const t = e.target, o = t.dataset.opt;
+  if (t.id === 'tickon') TICK = t.checked;
+  else if (o === 'fifth') { F.right.s.fifth = t.checked; F.right.reset(); draw('right', 'new'); }
+  else if (o === 'readout') { READOUT = t.checked; draw('right', 'still'); draw('wrong', 'still'); }
+  else if (o === 'quiet') { F.done.s.quiet = t.checked; draw('done', 'still'); }
+});
+
+/* Fonts change line breaks, so recount once they are in. */
+redrawAll();
+showRun();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { for (const id of Object.keys(F)) count(id); });
+</script>
+</body>
+</html>
