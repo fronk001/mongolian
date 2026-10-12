@@ -19,8 +19,9 @@ implementation; if the two disagree, the CSS is wrong.
    one is wrong.
 3. **Numbers are real, including the game.** The app has XP, levels, streaks
    and badges — but each is derived from an event that actually happened. XP
-   is the base for grading a card plus the memory stability the review
-   genuinely bought. Levels are thresholds on known words. A streak day
+   is counted per first attempt (since October 2026): 1 for answering, 1 more
+   if right, 1 more if typed rather than picked or built; retries, rereads
+   and appeals earn nothing. Levels are thresholds on known words. A streak day
    requires a *finished* session. Badges are checkable conditions. Nothing in
    the interface can be earned without doing the work, and no figure is
    invented to make a screen feel better.

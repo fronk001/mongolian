@@ -43,7 +43,7 @@ import { buildChoices, distractors, makeRng, faceKey } from '../src/core/choices
 import {
   streak, bestStreak, weekCells, monthCells, weekStart, monthStart, weekday,
   periodTotals, punctuality, intakeRate, projectDate, levelFor, xpFor,
-  earnedBadges, lessonWorth, stepCount, LEVELS, BADGES, xpForGrammar, badgeProgress
+  earnedBadges, lessonWorth, stepCount, LEVELS, BADGES, xpForGrammar, badgeProgress, xpForAnswer
 } from '../src/core/goals.js';
 import { gradeDrill, applyGrammarGrade, topicMastery, MASTERY_MIN_ATTEMPTS } from '../src/core/grammar.js';
 import {
@@ -801,6 +801,12 @@ section('goals and consistency');
 // Grammar topics (src/data/grammar.json) are a separate, on-demand practice
 // area — not scheduled by buildSession() — but the content still has to be
 // well-formed and the grading/mastery logic still has to be correct.
+section('xp per answer');
+ok('a typed right answer scores 3', xpForAnswer(true, true) === 3);
+ok('a right answer with help scores 2', xpForAnswer(true, false) === 2);
+ok('a wrong answer scores 1, typed or not', xpForAnswer(false, true) === 1 && xpForAnswer(false, false) === 1);
+ok('failing then fixing never beats being right with help', xpForAnswer(false, true) + 0 < xpForAnswer(true, false));
+
 section('practice and badge targets');
 {
   // A day with nothing due still has a lesson: least-remembered words, never

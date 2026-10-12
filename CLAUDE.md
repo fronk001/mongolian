@@ -250,8 +250,11 @@ merging — while synced, the online copy too (`commit(P, { replace: true })`).
 - `goalWords` — B1 target, default **2500**. A research estimate (Milton 2009
   and others put B1 at ~2,500–3,000 lemmas), *not* a CEFR specification —
   CEFR publishes no vocabulary counts, and the UI says so.
-- `xp`, `badges` — lifetime XP and earned milestone ids. Only ever moved by
-  `awardGrade()` in `app.js` and `earnedBadges()` in `core/goals.js`.
+- `xp`, `badges` — lifetime XP and earned milestone ids. XP is per answer
+  (`xpForAnswer()` in `core/goals.js`: 1 / +1 right / +1 typed), moved only by
+  `commit()` and `awardGrammarGrade()` in `app.js`; history rows on this scale
+  carry `xv: 2` (older rows used stability-based XP). Badges only by
+  `earnedBadges()`.
 - **Start always works.** With nothing due and nothing new, `buildPractice()`
   offers up to 8 of the least-remembered words not graded today, graded as
   normal. After Done, *Practise today's mistakes* replays the day's missed

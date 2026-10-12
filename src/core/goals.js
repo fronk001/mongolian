@@ -243,6 +243,18 @@ export function xpFor(prevS, nextS) {
 }
 
 /**
+ * XP for one answer, the scale Fred can check by eye (October 2026):
+ * 1 for answering on the first try, +1 if it was right, +1 more if it was
+ * typed rather than picked or built. Retries, rereads and "I was right"
+ * earn nothing, so failing then fixing (1) earns less than a right answer
+ * with help (2), and a typed right answer (3) the most. History rows written
+ * on this scale carry `xv: 2`.
+ */
+export function xpForAnswer(ok, typed) {
+  return 1 + (ok ? 1 : 0) + (ok && typed ? 1 : 0);
+}
+
+/**
  * XP for one graded grammar drill.
  *
  * Grammar practice has no FSRS stability to measure a gain against — it is

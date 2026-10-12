@@ -4,7 +4,7 @@ import { load, save as saveLocal, STORE_KEY, stats, encodeCode, importCode, expo
 import { buildSession, applyGrade, buildPractice } from '../core/scheduler.js';
 import { gradeAnswer } from '../core/grade.js';
 import { buildChoices, shuffle, makeRng, hashSeed } from '../core/choices.js';
-import { xpFor, earnedBadges, stepCount, levelFor, xpForGrammar } from '../core/goals.js';
+import { xpForAnswer, earnedBadges, stepCount, levelFor } from '../core/goals.js';
 import { gradeDrill, applyGrammarGrade, topicMastery } from '../core/grammar.js';
 import { afterAnswer, retryIndex, retryItem } from '../core/ladder.js';
 import { makeTilePools, bankFor, acceptedFor, minTiles, gradeBuild, orderDiff, tokensOf } from '../core/tiles.js';
@@ -132,13 +132,18 @@ const verdictGrade = g => (!g.ok ? 1 : g.typo ? 2 : 3);
  * back fresh. Was hard / Was easy / I was right amend it — undo, then grade
  * again — so one answer is still one grade.
  */
-function commit(item, g) {
+function commit(item, g, typed = false, gain = null) {
   const ids = item.kind === 'sentence' ? item.targetIds : [item.word.id];
   const snaps = ids.filter(id => !S.graded.has(id)).map(id => ({
     id, prev: P.items[id] ? { ...P.items[id] } : null, intro: P.introduced.includes(id)
   }));
-  S.pending = { item, g, snaps, xp: P.xp || 0, summary: { ...S.summary } };
+  // XP is per answer and fixed by the verdict, so amending the grade later
+  // (Was easy, I was right) never changes what the answer scored.
+  const xp = gain ?? xpForAnswer(g > 1, typed);
+  S.pending = { item, g, snaps, xp: P.xp || 0, gain: xp, summary: { ...S.summary } };
   ids.forEach(id => awardGrade(id, g));
+  S.summary.xp += xp;
+  P.xp = (P.xp || 0) + xp;      // lifetime total, only ever moved by an answer
   if (item.kind === 'sentence') item.attempt = S.sawBlocks ? 'blocks' : 'type';
   if (g === 1 && (item.kind === 'card' || item.kind === 'sentence')) {
     S.summary.missed++;
@@ -160,7 +165,7 @@ function amend(g) {
   S.summary = pd.summary;
   // "I was right": the miss is withdrawn, and so is its retry.
   if (pd.g === 1) S.session.items = S.session.items.filter((it, i) => i <= S.i || it.first !== pd.item);
-  commit(pd.item, g);
+  commit(pd.item, g, false, pd.gain);
 }
 
 /** Put a retry of `item` into the lesson: a fix a few screens on, the rest at the end. */
@@ -490,7 +495,8 @@ function finish() {
     newWords: S.summary.newWords,
     onTime: S.summary.onTime,
     late: S.summary.late,
-    xp: S.summary.xp
+    xp: S.summary.xp,
+    xv: 2
   });
 
   const before = new Set(P.badges || []);
@@ -531,9 +537,6 @@ function awardGrade(id, g) {
   // On time = not already overdue when it was answered.
   if (prev) (prev.due >= today ? S.summary.onTime++ : S.summary.late++);
   const next = applyGrade(P, id, g);
-  const xp = xpFor(prev?.s, next.s);
-  S.summary.xp += xp;
-  P.xp = (P.xp || 0) + xp;      // lifetime total, only ever moved by a real grade
   S.summary.reviews++;
   if (g > 1) S.summary.right++;
   if (!prev) S.summary.newWords++;
@@ -558,7 +561,7 @@ function awardGrammarGrade(ok) {
   applyGrammarGrade(P, S.gTopic.id, ok);
   // XP for the first pass through a topic each day; a replay of the same
   // drills the same day is practice, and scores nothing.
-  const xp = S.gScores ? xpForGrammar(ok) : 0;
+  const xp = S.gScores ? xpForAnswer(ok, S.gTopic.drills[S.gStep]?.kind === 'transform') : 0;
   S.gSummary.xp += xp;
   P.xp = (P.xp || 0) + xp;      // lifetime total, same figure the word/sentence XP moves
   S.gSummary.right += ok ? 1 : 0;
@@ -626,7 +629,7 @@ document.addEventListener('click', e => {
     const given = placed.join(' ');
     S.fb = { ...g, given, diff: orderDiff(given, g.matched || accepted[0]), blocks: true,
       alternative: g.matched !== accepted[0], grade: g.ok ? (toMn ? 2 : 3) : 1 };
-    if (item.retry) S.retryOk = g.ok; else commit(item, S.fb.grade);
+    if (item.retry) S.retryOk = g.ok; else commit(item, S.fb.grade, false);
     cue(g.ok, !item.retry);
     render();
   }
@@ -676,7 +679,7 @@ document.addEventListener('click', e => {
     const opt = choicesFor(item).options[S.picked];
     const right = !!(opt && opt.correct);
     if (item.retry) S.retryOk = right;
-    else { S.lastPick = opt; commit(item, right ? 3 : 1); }
+    else { S.lastPick = opt; commit(item, right ? 3 : 1, false); }
     cue(right, !item.retry);
     render();
   }
@@ -710,7 +713,7 @@ document.addEventListener('click', e => {
     const g = gradeAnswer(given, [target], Math.max(0, P.strictness - 0.15));
     S.fb = { ...g, given };
     if (item.retry) S.retryOk = g.ok;
-    else commit(item, verdictGrade(g));
+    else commit(item, verdictGrade(g), true);
     cue(g.ok, !item.retry);
     render();
   }
@@ -734,7 +737,7 @@ document.addEventListener('click', e => {
     S.fb = { ...g, given, diff, alternative: g.matched !== accepted[0], grade, blocks: S.sawBlocks };
     // A sentence reproduced with nothing missing — a real, checkable event.
     if (g.ok && !g.typo && !item.retry && !S.sawBlocks && diff.every(d => d.state === 'hit')) S.summary.perfect = true;
-    if (item.retry) S.retryOk = g.ok; else commit(item, grade);
+    if (item.retry) S.retryOk = g.ok; else commit(item, grade, !S.sawBlocks);
     cue(g.ok, !item.retry);
     render();
   }
