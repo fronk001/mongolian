@@ -440,3 +440,11 @@ transform 90ms var(--ease)}
 .grade:active,.tab:active,.syncdot:active{transform:none!important}
 .sec{perspective:none!important}
 }
+
+/* A disclosure row on the tab pages: a plain button that opens a panel. Its
+   state lives in app.js (S.open), so a sync redraw does not snap it shut. */
+.disclose{display:flex;justify-content:space-between;align-items:center;width:100%;
+  margin-top:14px;padding:11px 13px;background:var(--panel);border:1px solid var(--rule);
+  border-radius:3px;font:500 14px/1.2 Geologica,sans-serif;color:var(--ink);cursor:pointer}
+.nextbadge{margin-top:8px}
+.nextbadge .wline{padding:0}

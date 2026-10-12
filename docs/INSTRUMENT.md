@@ -147,9 +147,16 @@ reference layer harder to read than the content layer, that change is wrong.
   is checked by one question in the harder direction straight after the deck.
 - **Flashcard deck** — Mongolian faces up, tap or Space to flip, then a
   decision that routes the word. Never shows both sides at once.
-- **Badge** — gold pill, English label. The lexicon still names each badge in
-  Mongolian too (`BADGES` in `core/goals.js`), pending Luna or Sarnai, but the
-  pill itself shows only what the interface now speaks.
+- **Badge** — gold pill, English label. Locked badges are shown as targets:
+  the nearest two, named, with have / need and a gold meter — never a bare
+  "+10". A badge the content cannot yet make reachable (250 words known with
+  154 written) is not a target, and `backup` is retired as one. The Mongolian
+  names Luna approved stay in `BADGES` (`core/goals.js`); the pill shows English.
+- **Numbers** — the slow figures (words known against the goal, level,
+  lifetime XP, the B1 projection) sit in a closed disclosure on Achievements.
+  They are real but moved weeks after the work or swung by years, and read
+  as a verdict on the screen meant to motivate. Disclosure state lives in
+  `S.open`, so a sync redraw does not close it.
 - **Waveform** / **recording credit chip** — *not yet built (audio phase).*
 
 ## Layout & motion

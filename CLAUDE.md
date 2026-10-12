@@ -228,6 +228,12 @@ merging — while synced, the online copy too (`commit(P, { replace: true })`).
   CEFR publishes no vocabulary counts, and the UI says so.
 - `xp`, `badges` — lifetime XP and earned milestone ids. Only ever moved by
   `awardGrade()` in `app.js` and `earnedBadges()` in `core/goals.js`.
+- **Start always works.** With nothing due and nothing new, `buildPractice()`
+  offers up to 8 of the least-remembered words not graded today, graded as
+  normal. After Done, *Practise today's mistakes* replays the day's missed
+  cards as retries: never graded, never recorded.
+- **Grammar XP** is earned on the first pass through a topic each day; a
+  replay the same day scores nothing (`S.gScores`).
 - `history` — one row **per day**, not per session. `recordDay()` upserts;
   appending twice would make two sessions in a day read as two streak days,
   which rewards re-opening the app instead of doing the work.

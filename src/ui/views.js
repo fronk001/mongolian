@@ -2,7 +2,7 @@
 import { scheduledDays } from '../core/scheduler.js';
 import {
   weekCells, monthCells, weekTotals, monthTotals, punctuality, streak, bestStreak,
-  intakeRate, projectDate, levelFor, lessonWorth, byBadgeId, BADGES
+  intakeRate, projectDate, levelFor, lessonWorth, byBadgeId, BADGES, badgeProgress
 } from '../core/goals.js';
 import { topicMastery } from '../core/grammar.js';
 
@@ -196,18 +196,20 @@ function monthGrid(cells) {
     <div class="month">${cells.map(c => `<i class="${c.state}"></i>`).join('')}</div>`;
 }
 
-function badgeRow(earned) {
+function badgeRow(earned, next = []) {
   const has = new Set(earned);
   const won = BADGES.filter(b => has.has(b.id));
-  const locked = BADGES.length - won.length;
-  if (!won.length) {
-    return `<div class="gl" style="margin-top:8px">no milestones yet — the first arrives when you finish a session</div>`;
-  }
-  return `<div class="badges">
+  // The nearest two targets, named, with how far there is to go — a locked
+  // badge used to be a bare "+10".
+  const targets = next.slice(0, 2).map(b => `
+    <div class="nextbadge">
+      <div class="wline"><span class="mn">${esc(b.en)}</span><span class="n">${b.have} / ${b.need}</span></div>
+      <div class="meter gold"><i style="width:${Math.max(2, pct(b.have / b.need))}%"></i></div>
+    </div>`).join('');
+  return `${won.length ? `<div class="badges">
       ${won.map(b => `<span class="badge" title="${esc(b.en)}">${esc(b.en)}</span>`).join('')}
-      ${locked ? `<span class="badge locked">+${locked}</span>` : ''}
-    </div>
-    <div class="mono" style="margin-top:6px">${won.length} / ${BADGES.length} EARNED</div>`;
+    </div>` : ''}
+    ${targets ? `<div class="h" style="margin-top:12px"><span class="mono">NEXT</span></div>${targets}` : ''}`;
 }
 
 /**
@@ -279,7 +281,7 @@ export const pageHead = title => `<div class="h" style="margin-top:0"><span clas
 export function viewToday(p, st, session, ctx = {}) {
   const { exportAge, today, editPurpose } = ctx;
   const diag = session.diagnostics;
-  const nothing = diag.dueCount + diag.newCount === 0;
+  const nothing = !session.items.length;
   const history = p.history || [];
 
   const cells = weekCells(history, today);
@@ -324,7 +326,9 @@ export function viewToday(p, st, session, ctx = {}) {
     </div>
 
     <div class="btns"><button class="btn primary" data-act="start"${nothing ? ' disabled' : ''}>
-      ${nothing ? 'Nothing due today' : `Start →${gli(`${worth.items} items · ~${worth.minutes} min`)}`}</button></div>`;
+      ${nothing ? 'Nothing to practise yet'
+        : session.practice ? `Practice →${gli(`${worth.items} cards · nothing is due`)}`
+        : `Start →${gli(`${worth.items} items · ~${worth.minutes} min`)}`}</button></div>`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -365,45 +369,35 @@ export function viewProgress(p, st, ctx = {}) {
    ══════════════════════════════════════════════════════════════════════ */
 
 export function viewAchievements(p, st, ctx = {}) {
-  const { today, corpusWords } = ctx;
+  const { today, corpusWords, open = new Set(), drillable } = ctx;
   const history = p.history || [];
   const goal = p.goalWords || 2500;
   const lvl = levelFor(st.known);
   const rate = intakeRate(history, today);
   const eta = projectDate(st.known, goal, rate, today);
+  const next = badgeProgress(p, { stats: st, today, drillable });
+  const numbersOpen = open.has('numbers');
 
+  // Badges are the game layer on this page. The level, lifetime XP and the B1
+  // projection are real figures but moved slowly or swung by years, and read
+  // as a verdict rather than a target — they stay, one tap away, in Numbers.
   return pageHead('ACHIEVEMENTS') +
-    `<div class="h" style="margin-top:10px"><span class="mono">LEVEL</span></div>
-    <div class="panel gold">
-      <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div class="big">${lvl.level}<span class="u"> level</span></div>
-        <span class="lab">${p.xp || 0} XP</span>
-      </div>
-      <div class="meter gold"><i style="width:${Math.max(2, pct(lvl.share))}%"></i></div>
-      <div class="gl">${lvl.toNext === null
-        ? 'top level — the goal itself'
-        : `${lvl.toNext} more known words to level ${lvl.level + 1} · xp comes from reviews graded`}</div>
-      ${badgeRow(p.badges || [])}
+    `<div class="panel gold" style="margin-top:10px">
+      <span class="lab">BADGES</span>
+      ${badgeRow(p.badges || [], next)}
     </div>
 
-    <div class="h"><span class="mono">GOAL</span></div>
-    <div class="panel blue">
-      <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div class="big">${st.known}<span class="u"> / ${goal.toLocaleString('en-GB')} words</span></div>
-        <span class="lab blue">B1 · ${(st.known / goal * 100).toFixed(1)}%</span>
-      </div>
-      <div class="meter gold"><i style="width:${Math.max(0.6, st.known / goal * 100)}%"></i></div>
-      <div class="wline" style="margin-top:6px">
-        <span class="mn" style="font-size:13px">${rate === null ? '—' : (rate >= 0 ? '+' : '') + rate.toFixed(1) + ' words'}</span>
-        <span class="en">${rate === null ? 'rate needs two days of history' : 'known words per day, last 14d'}</span></div>
-      <div class="wline">
-        <span class="mn" style="font-size:13px">${eta ? dateLabel(eta) : '—'}</span>
-        <span class="en">${eta ? 'projected at this rate' : 'no projection at this rate'}</span></div>
+    <button class="disclose" data-act="toggle" data-id="numbers">
+      <span>Numbers</span><span class="mono">${numbersOpen ? '−' : '+'}</span></button>
+    ${numbersOpen ? `<div class="panel blue">
+      <div class="wline"><span class="mn">Words known</span><span class="n">${st.known} / ${goal.toLocaleString('en-GB')}</span></div>
+      <div class="wline"><span class="mn">Level</span><span class="n">${lvl.level}</span></div>
+      <div class="wline"><span class="mn">Lifetime XP</span><span class="n">${p.xp || 0}</span></div>
+      <div class="wline"><span class="mn">Known per day, 14d</span><span class="n">${rate === null ? '—' : (rate >= 0 ? '+' : '') + rate.toFixed(1)}</span></div>
+      <div class="wline"><span class="mn">B1 at this rate</span><span class="n">${eta ? dateLabel(eta) : '—'}</span></div>
+      <div class="wline"><span class="mn">Words written so far</span><span class="n">${corpusWords || 0}</span></div>
       <div class="gl" style="margin-top:8px">known = fsrs stability ≥ 21d · b1 target is a research estimate, not a cefr spec</div>
-      <div class="mono red" style="margin-top:7px">CORPUS CEILING · ${corpusWords || 0} WORDS WRITTEN</div>
-    </div>
-
-    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE-FIRST</span></div>`;
+    </div>` : ''}`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -780,46 +774,32 @@ export function viewDone(summary, st, p, ctx = {}) {
   const { today } = ctx;
   const history = p.history || [];
   const cells = weekCells(history, today);
-  const doneThisWeek = cells.filter(c => c.state === 'done').length;
   const run = streak(history, today);
-  const lvl = levelFor(st.known);
   const fresh = (summary.newBadges || []).map(id => byBadgeId[id]).filter(Boolean);
+  const answered = summary.reviews;
 
-  return header(st, 'Finished') +
-    `<div class="goldband">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-        <div><div class="mono">TODAY</div>
-          <div class="big" style="margin-top:5px">+${summary.xp}<span class="u"> XP</span></div></div>
-        <div style="text-align:right"><div class="big" style="font-size:26px">${doneThisWeek}/7</div>
-          <div class="mono" style="margin-top:2px">THIS WEEK</div></div>
-      </div>
-      <div class="gl">${summary.reviews} reviews graded · ${summary.newWords} new words met · ${run}-day streak</div>
-      ${summary.missed ? `<div class="gl">${summary.fixed} of ${summary.missed} mistakes fixed${summary.shown ? ` · ${summary.shown} shown again` : ''}</div>` : ''}
+  // What this lesson did, nothing lifetime: the score, how much was right the
+  // first time, the mistakes that were put right, and today's square.
+  return `<div class="top"><div><h1>Done</h1></div></div>
+    <div class="goldband">
+      <div class="big">+${summary.xp}<span class="u"> XP</span></div>
+      <div class="gl">${summary.right} of ${answered} right first time${
+        summary.missed ? ` · ${summary.fixed} of ${summary.missed} mistakes fixed` : ''}</div>
     </div>
 
-    <div class="h"><span class="mono">WEEK</span></div>
-    <div class="panel red">${weekStrip(cells, today)}</div>
+    <div class="panel">
+      <div class="wline" style="margin-bottom:8px"><span class="mn">${run} day streak</span></div>
+      ${weekStrip(cells, today)}
+    </div>` +
 
-    <div class="panel blue flush"><div class="grid2">
-      <div><span class="lab">REVIEWS</span><div class="big">${summary.reviews}</div><div class="gl">graded this session</div></div>
-      <div><span class="lab green">CORRECT</span><div class="big green">${summary.reviews ? pct(summary.right / summary.reviews) : 0}%</div><div class="gl">answered correctly</div></div>
-      <div><span class="lab">KNOWN</span><div class="big">${st.known}</div><div class="gl">words known overall</div></div>
-      <div><span class="lab">LEVEL</span><div class="big">${lvl.level}</div>
-        <div class="gl">${lvl.toNext === null ? 'top level' : `${lvl.toNext} words to next`}</div></div>
-    </div></div>` +
-
-    (summary.leveledTo ? `<div class="h"><span class="mono">LEVEL UP</span></div>
-      <div class="panel gold reveal">
-        <div style="display:flex;align-items:baseline;gap:10px">
-          <div class="big" style="font-size:34px">${summary.leveledTo}</div>
-          <div class="gl raw" style="margin-top:0">level ${summary.leveledTo - 1} → ${summary.leveledTo}, crossed this session</div>
-        </div>
-      </div>` : '') +
-
-    (fresh.length ? `<div class="h"><span class="mono">NEW MILESTONE</span></div>
-      <div class="panel gold">${fresh.map(b => `
+    (fresh.length ? `<div class="panel gold reveal">${fresh.map(b => `
         <div class="earned"><span class="dot"></span>
           <div><div style="font-size:14px;font-weight:600">${esc(b.en)}</div></div></div>`).join('')}</div>` : '') +
 
-    `<div class="btns"><button class="btn primary" data-act="home">Close</button></div>`;
+    `<div class="btns">
+      <button class="btn primary" data-act="home">Close</button>
+      ${summary.missedWords && summary.missedWords.length
+        ? `<button class="btn ghost" data-act="practise-mistakes">Practise today's mistakes${gli(`${summary.missedWords.length} · not graded`)}</button>` : ''}
+    </div>`;
 }
+

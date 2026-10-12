@@ -260,23 +260,25 @@ export function xpForGrammar(ok) {
 // ---------------------------------------------------------------- badges
 
 /**
- * Every badge is a real event with a checkable condition. Mongolian labels are
- * machine-written and follow the lexicon's `reviewed: false` convention —
- * Luna or Sarnai should confirm them before they count as chrome.
+ * Every badge is a real event with a checkable condition. Names are English
+ * chrome (INSTRUMENT 5). The Mongolian labels were approved by Luna in August
+ * 2026 and are kept for reference; the interface does not show them.
  */
 export const BADGES = [
-  { id: 'first',      mn: 'Эхлэл',              en: 'first session',      reviewed: false },
-  { id: 'week7',      mn: 'Долоо хоног',        en: '7 day streak',       reviewed: false },
-  { id: 'day30',      mn: 'Гуч хоног',          en: '30 day streak',      reviewed: false },
-  { id: 'day100',     mn: 'Зуу хоног',          en: '100 day streak',     reviewed: false },
-  { id: 'full-week',  mn: 'Бүтэн долоо хоног',  en: 'all 7 days in a week', reviewed: false },
-  { id: 'known25',    mn: '25 үг',              en: '25 words known',     reviewed: false },
-  { id: 'known50',    mn: '50 үг',              en: '50 words known',     reviewed: false },
-  { id: 'known100',   mn: '100 үг',             en: '100 words known',    reviewed: false },
-  { id: 'known250',   mn: '250 үг',             en: '250 words known',    reviewed: false },
-  { id: 'perfect',    mn: 'Төгс өгүүлбэр',      en: 'sentence with no misses', reviewed: false },
-  { id: 'retention',  mn: 'Тогтоолт 90%',       en: 'retention at target', reviewed: false },
-  { id: 'backup',     mn: 'Нөөцлөв',            en: 'backup code taken',  reviewed: false }
+  { id: 'first',      mn: 'Эхлэл',              en: 'First lesson',        reviewed: true },
+  { id: 'week7',      mn: 'Долоо хоног',        en: '7 day streak',        reviewed: true },
+  { id: 'day30',      mn: 'Гуч хоног',          en: '30 day streak',       reviewed: true },
+  { id: 'day100',     mn: 'Зуу хоног',          en: '100 day streak',      reviewed: true },
+  { id: 'full-week',  mn: 'Бүтэн долоо хоног',  en: 'Full week',           reviewed: true },
+  { id: 'known25',    mn: '25 үг',              en: '25 words known',      reviewed: true },
+  { id: 'known50',    mn: '50 үг',              en: '50 words known',      reviewed: true },
+  { id: 'known100',   mn: '100 үг',             en: '100 words known',     reviewed: true },
+  { id: 'known250',   mn: '250 үг',             en: '250 words known',     reviewed: true },
+  { id: 'perfect',    mn: 'Төгс өгүүлбэр',      en: 'Perfect sentence',    reviewed: true },
+  { id: 'retention',  mn: 'Тогтоолт 90%',       en: 'Recall at 90%',       reviewed: true },
+  // Retired as a target: with sync on the online copy is the backup. Kept so
+  // an earned badge stays earned; never listed as something to aim for.
+  { id: 'backup',     mn: 'Нөөцлөв',            en: 'Backup code taken',   reviewed: true }
 ];
 
 export const byBadgeId = Object.fromEntries(BADGES.map(b => [b.id, b]));
@@ -306,6 +308,43 @@ export function earnedBadges(p, ctx = {}) {
   if (weekCells(history, today).filter(c => c.state === 'done').length === 7) out.add('full-week');
 
   return [...out];
+}
+
+/**
+ * How close each locked badge is, for the ones that can actually be earned.
+ *
+ * Locked badges used to show only as "+10": no names, no distance, and two of
+ * them could never be earned — `backup` is pointless while sync is on, and
+ * `known250` needs more drillable words than the corpus holds. A badge is a
+ * target only when it is reachable with the content that exists today; one
+ * already earned stays earned regardless.
+ *
+ * Returns [{ id, en, have, need }], nearest finish first. `ctx`:
+ * { stats, today, drillable } where `drillable` counts the words that exist.
+ */
+export function badgeProgress(p, ctx = {}) {
+  const { stats = {}, today, drillable = Infinity } = ctx;
+  const has = new Set(p.badges || []);
+  const history = p.history || [];
+  const run = streak(history, today);
+  const known = stats.known || 0;
+  const cells = weekCells(history, today);
+  const doneThisWeek = cells.filter(c => c.state === 'done').length;
+  const daysLeft = cells.filter(c => c.key >= today && c.state !== 'done').length;
+  const rows = [
+    { id: 'week7', have: run, need: 7 },
+    { id: 'day30', have: run, need: 30 },
+    { id: 'day100', have: run, need: 100 },
+    { id: 'known25', have: known, need: 25 },
+    { id: 'known50', have: known, need: 50 },
+    { id: 'known100', have: known, need: 100 },
+    { id: 'known250', have: known, need: 250, reachable: drillable >= 250 },
+    { id: 'full-week', have: doneThisWeek, need: 7, reachable: doneThisWeek + daysLeft >= 7 }
+  ];
+  return rows
+    .filter(r => !has.has(r.id) && r.reachable !== false && r.have < r.need)
+    .map(r => ({ id: r.id, en: byBadgeId[r.id].en, have: r.have, need: r.need }))
+    .sort((a, b) => b.have / b.need - a.have / a.need);
 }
 
 /**

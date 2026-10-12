@@ -191,6 +191,37 @@ export function buildSession(p, words, sentences, opts = {}) {
 }
 
 /**
+ * A lesson for a day with nothing due and nothing new: up to `n` word cards of
+ * the least-remembered introduced words, graded as normal. Only words not
+ * graded today, so practice never gives a word a second grade the same day.
+ * Without it Start was disabled on such a day and the streak broke for lack
+ * of content, not lack of work.
+ */
+export function buildPractice(p, words, opts = {}) {
+  const today = opts.today || dayKey();
+  const n = opts.n ?? 8;
+  const fsrs = makeFSRS(opts.w, p.desiredRetention);
+  const byId = Object.fromEntries(words.map(w => [w.id, w]));
+  const picks = Object.keys(p.items)
+    .filter(id => byId[id] && byId[id].drill !== false && p.items[id].last !== today)
+    .map(id => {
+      const it = p.items[id];
+      return { id, r: fsrs.retrievability(Math.max(0, daysBetween(it.last || today, today)), it.s) };
+    })
+    .sort((a, b) => a.r - b.r || Number(a.id) - Number(b.id))
+    .slice(0, n);
+  const items = picks.map(({ id }) => {
+    const word = byId[id];
+    return { kind: 'card', word, isNew: false, dir: cardDir(word, false, today) };
+  });
+  return {
+    date: today, fresh: [], due: [], practice: true, items,
+    diagnostics: { dueCount: 0, newCount: 0, sentenceCount: 0, cardCount: items.length,
+      avgComprehensibility: 0, iPlusOneShare: 0 }
+  };
+}
+
+/**
  * The whole days applyGrade() really schedules for an FSRS interval. FSRS can
  * propose a few hours after a lapse, but the app schedules by calendar day, so
  * anything under a day comes back tomorrow. Every interval shown to the

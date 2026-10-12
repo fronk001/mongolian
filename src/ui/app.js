@@ -1,7 +1,7 @@
 /** Controller: session flow, event wiring, persistence. */
 import { makeFSRS, dayKey, daysBetween } from '../core/fsrs.js';
 import { load, save as saveLocal, STORE_KEY, stats, encodeCode, importCode, exportAge, recordDay } from '../core/progress.js';
-import { buildSession, applyGrade } from '../core/scheduler.js';
+import { buildSession, applyGrade, buildPractice } from '../core/scheduler.js';
 import { gradeAnswer, diffTokens } from '../core/grade.js';
 import { buildChoices, shuffle, makeRng, hashSeed } from '../core/choices.js';
 import { xpFor, earnedBadges, stepCount, levelFor, xpForGrammar } from '../core/goals.js';
@@ -66,7 +66,7 @@ function adopt(next) {
   if (quiet()) render({ keep: true });
 }
 
-const blankSummary = () => ({ reviews: 0, right: 0, newWords: 0, xp: 0, onTime: 0, late: 0, newBadges: [], levelBefore: 1, leveledTo: null, missed: 0, fixed: 0, shown: 0 });
+const blankSummary = () => ({ reviews: 0, right: 0, newWords: 0, xp: 0, onTime: 0, late: 0, newBadges: [], levelBefore: 1, leveledTo: null, missed: 0, fixed: 0, shown: 0, missedWords: [] });
 const blankGrammarSummary = () => ({ xp: 0, right: 0, wrong: 0 });
 
 let S = {
@@ -81,6 +81,8 @@ let S = {
   lastPick: null,                     // the option picked on this card, for a two-option fix
   retryOk: null,                      // a retry's answer: right or not (never graded)
   claimed: [],                        // deck words claimed as known, checked after the deck
+  open: new Set(),                    // disclosures opened on the tab pages; survives sync redraws
+  gScores: true,                      // this grammar pass earns XP: the first of the day per topic
   editPurpose: false,
   summary: blankSummary(),
   // ---- grammar topic practice (separate from the daily FSRS session) -----
@@ -134,6 +136,7 @@ function commit(item, g) {
   ids.forEach(id => awardGrade(id, g));
   if (g === 1 && item.kind === 'card') {
     S.summary.missed++;
+    S.summary.missedWords.push(item.word);
     queueRetry(item, 'fix');
   }
   save(P);
@@ -202,8 +205,10 @@ function previewFor(id) {
   return fsrs().preview(P.items[id], elapsedFor(id));
 }
 
+/** Today's lesson — or, with nothing due and nothing new, a practice lesson, so Start always works. */
 function todaySession() {
-  return buildSession(P, WORDS, SENTENCES);
+  const s = buildSession(P, WORDS, SENTENCES);
+  return s.items.length ? s : buildPractice(P, WORDS);
 }
 
 /**
@@ -267,7 +272,7 @@ function render({ keep = false } = {}) {
     let body;
     if (S.tab === 'progress') body = V.viewProgress(P, st, ctx);
     else if (S.tab === 'grammar') body = V.viewGrammarList(GRAMMAR, P);
-    else if (S.tab === 'achievements') body = V.viewAchievements(P, st, ctx);
+    else if (S.tab === 'achievements') body = V.viewAchievements(P, st, { ...ctx, open: S.open, drillable: POOL.length });
     else if (S.tab === 'settings') body = settingsPage();
     else body = V.viewToday(P, st, todaySession(), ctx);
     el.innerHTML = body + V.tabBar(S.tab);
@@ -433,6 +438,9 @@ function advance() {
 }
 
 function finish() {
+  // Practising today's mistakes after Done is not a lesson: nothing is
+  // recorded, and it ends where it started.
+  if (S.session.mistakesRound) { S.screen = 'home'; S.session = null; render(); return; }
   const today = dayKey();
   P.lastDate = today;
   const st = stats(P, { words: WORDS });
@@ -463,7 +471,7 @@ function finish() {
 
   save(P);
   S.screen = 'done';
-  SND.play(S.summary.newBadges.length || S.summary.leveledTo ? 'milestone' : 'finish');
+  SND.play(S.summary.newBadges.length ? 'milestone' : 'finish');
   render();
 }
 
@@ -514,7 +522,9 @@ function grade(g) {
  */
 function awardGrammarGrade(ok) {
   applyGrammarGrade(P, S.gTopic.id, ok);
-  const xp = xpForGrammar(ok);
+  // XP for the first pass through a topic each day; a replay of the same
+  // drills the same day is practice, and scores nothing.
+  const xp = S.gScores ? xpForGrammar(ok) : 0;
   S.gSummary.xp += xp;
   P.xp = (P.xp || 0) + xp;      // lifetime total, same figure the word/sentence XP moves
   S.gSummary.right += ok ? 1 : 0;
@@ -552,6 +562,21 @@ document.addEventListener('click', e => {
   else if (act === 'tab') { S.tab = t.getAttribute('data-tab'); S.msg = ''; render(); }
   else if (act === 'next') advance();
   else if (act === 'retry-next') retryNext();
+  else if (act === 'toggle') {
+    const id = t.getAttribute('data-id');
+    if (S.open.has(id)) S.open.delete(id); else S.open.add(id);
+    render({ keep: true });
+  }
+  else if (act === 'practise-mistakes') {
+    // Today's missed words once more, ungraded: every item is a retry, so
+    // nothing here reaches applyGrade, XP or the day's record.
+    const words = S.summary.missedWords;
+    S.session = { mistakesRound: true, items: words.map(word =>
+      ({ kind: 'card', word, isNew: false, dir: 'egm', retry: 'again', first: { kind: 'card', word } })) };
+    S.i = 0; S.screen = 'run'; S.fb = null; S.picked = null;
+    S.summary = blankSummary();
+    render();
+  }
 
   // ---- flashcard deck ------------------------------------------------
   else if (act === 'flip') { S.flipped = !S.flipped; render(); }
@@ -659,6 +684,7 @@ document.addEventListener('click', e => {
     const topic = GRAMMAR.find(g => g.id === t.getAttribute('data-id'));
     if (!topic) return;
     S.gTopic = topic; S.gStep = -1; S.gPicked = null; S.gFb = null;
+    S.gScores = (P.grammar[topic.id] || {}).last !== dayKey();
     S.gBank = []; S.gBuild = []; S.gSummary = blankGrammarSummary(); S.run = 0;
     S.screen = 'grammar';
     render();

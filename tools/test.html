@@ -34,7 +34,7 @@
 <script type="module">
 import { makeFSRS, dayKey, daysBetween } from '../src/core/fsrs.js';
 import { blank, migrateV1, encodeCode, importCode, stats, exportAge, recordDay } from '../src/core/progress.js';
-import { buildSession, applyGrade, scheduledDays } from '../src/core/scheduler.js';
+import { buildSession, applyGrade, scheduledDays, buildPractice } from '../src/core/scheduler.js';
 import { backIn } from '../src/ui/views.js';
 import { afterAnswer, retryIndex, retryItem, RETRY_GAP } from '../src/core/ladder.js';
 import { gradeText, gradeAnswer, acceptedForms } from '../src/core/grade.js';
@@ -42,7 +42,7 @@ import { buildChoices, distractors, makeRng, faceKey } from '../src/core/choices
 import {
   streak, bestStreak, weekCells, monthCells, weekStart, monthStart, weekday,
   periodTotals, punctuality, intakeRate, projectDate, levelFor, xpFor,
-  earnedBadges, lessonWorth, stepCount, LEVELS, BADGES, xpForGrammar
+  earnedBadges, lessonWorth, stepCount, LEVELS, BADGES, xpForGrammar, badgeProgress
 } from '../src/core/goals.js';
 import { gradeDrill, applyGrammarGrade, topicMastery, MASTERY_MIN_ATTEMPTS } from '../src/core/grammar.js';
 import {
@@ -732,6 +732,33 @@ section('goals and consistency');
 // Grammar topics (src/data/grammar.json) are a separate, on-demand practice
 // area — not scheduled by buildSession() — but the content still has to be
 // well-formed and the grading/mastery logic still has to be correct.
+section('practice and badge targets');
+{
+  // A day with nothing due still has a lesson: least-remembered words, never
+  // one already graded today (one grade per word per day holds).
+  const q = blank();
+  const ids = W.filter(w => w.drill !== false).slice(0, 12).map(w => w.id);
+  ids.forEach((id, i) => applyGrade(q, id, 3, { today: i < 3 ? '2026-08-20' : '2026-08-01' }));
+  const pr = buildPractice(q, W, { today: '2026-08-20' });
+  ok('practice holds at most 8 cards', pr.items.length === 8, `${pr.items.length}`);
+  ok('practice never repeats a word graded today', pr.items.every(it => q.items[it.word.id].last !== '2026-08-20'));
+  ok('practice only uses words already introduced', pr.items.every(it => q.items[it.word.id]));
+  ok('practice is marked, so Today can say so', pr.practice === true);
+  ok('a cold start has nothing to practise', buildPractice(blank(), W).items.length === 0);
+
+  // Locked badges as targets: named, with distance, only when reachable.
+  const b = blank();
+  const tg = badgeProgress(b, { stats: { known: 20 }, today: '2026-08-20', drillable: 154 });
+  ok('the nearest target comes first', tg[0].id === 'known25' && tg[0].have === 20 && tg[0].need === 25, JSON.stringify(tg[0]));
+  ok('a badge the corpus cannot reach is not a target', !tg.some(x => x.id === 'known250'));
+  ok('known250 is a target once enough words exist',
+     badgeProgress(b, { stats: { known: 20 }, today: '2026-08-20', drillable: 300 }).some(x => x.id === 'known250'));
+  ok('backup is never a target', !tg.some(x => x.id === 'backup'));
+  b.badges = ['known25'];
+  ok('an earned badge is not a target', !badgeProgress(b, { stats: { known: 20 }, today: '2026-08-20' }).some(x => x.id === 'known25'));
+  ok('every badge has an English name', BADGES.every(x => /^[A-Z0-9]/.test(x.en)));
+}
+
 section('grammar');
 {
   ok('grammar.json has topics', G.length > 0, `${G.length} topics`);
