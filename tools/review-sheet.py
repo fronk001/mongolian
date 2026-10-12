@@ -619,6 +619,7 @@ def apply(path):
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8")
     if "--apply" in sys.argv:
         i = sys.argv.index("--apply")
         if i + 1 >= len(sys.argv):
