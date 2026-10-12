@@ -1099,7 +1099,12 @@ section('backup survives the redesign fields');
   ok('a new day travels field by field, so two devices\' counts can add up',
      newRow.length > 3 && newRow.every(o => o.path.length === 4));
   const older = migrateV1(v1);
-  ok('importing an older code removes what is gone, online too', same(toDocs(fromDocs(land(g2, older))), toDocs(older)));
+  {
+    const x = toDocs(fromDocs(land(g2, older))), y = toDocs(older);
+    const why = Object.keys({ ...x, ...y }).filter(k => !same(x[k], y[k]))
+      .map(k => `${k}: ${JSON.stringify(diff(y[k] ? { [k]: y[k] } : {}, x[k] ? { [k]: x[k] } : {}).map(o => o.path.join('.')))}`).join(' | ');
+    ok('importing an older code removes what is gone, online too', same(x, y), why);
+  }
   ok('removing a whole year never leaves an empty day behind',
      Object.keys(land(g2, older)['2026'] || {}).length === 0 && !diff(toDocs(g2), toDocs(older)).some(o => o.path.length === 1));
   ok('nothing changed, nothing sent', diff(docs, toDocs(clone(rec))).length === 0);
@@ -1143,6 +1148,37 @@ section('backup survives the redesign fields');
   const dayB = Object.assign(blank(), { history: [{ date: '2026-10-06', reviews: 4, xp: 90, known: 6 }] });
   ok('a day on both keeps the fuller row whole, never a figure from each',
      same(mergeStates(dayB, dayA).history[0], dayA.history[0]) && same(mergeStates(dayA, dayB).history[0], dayA.history[0]));
+
+  section('sync: the R2 fields');
+  {
+    // appeals, readings, the day's right/fixed counters, a word's last grade
+    const a = blank(), b = blank();
+    a.appeals = { k1: { target: 'Шал цэвэр.', given: 'Шал цэвэрхэн.', day: '2026-10-12' } };
+    b.appeals = { k2: { target: 'Ширээ том.', given: 'Том ширээ.', day: '2026-10-11' } };
+    a.readings = { r01: { reads: 2, last: '2026-10-12', firstDay: '2026-10-10', firstRight: 3, firstWrong: 0 } };
+    b.readings = { r01: { reads: 1, last: '2026-10-09', firstDay: '2026-10-09', firstRight: 2, firstWrong: 1 }, r02: { reads: 1, last: '2026-10-09', firstDay: '2026-10-09', firstRight: 1, firstWrong: 0 } };
+    const m = mergeStates(a, b);
+    ok('first sign-in keeps every appeal from both copies', Object.keys(m.appeals).sort().join() === 'k1,k2');
+    ok('a passage keeps the record with more reads', m.readings.r01.reads === 2 && !!m.readings.r02);
+    ok('a passage keeps its earliest first read', m.readings.r01.firstDay === '2026-10-09' && m.readings.r01.firstRight === 2);
+    const code = importCode(encodeCode(a));
+    ok('appeals and readings survive a backup code', same(code.appeals, a.appeals) && same(code.readings, a.readings));
+    ok('a code from before R2 imports with empty appeals and readings',
+       same(importCode(encodeCode({ ...blank(), appeals: undefined, readings: undefined })).appeals, {}));
+    const r = blank();
+    recordDay(r, { date: '2026-10-12', reviews: 3, xp: 6, right: 2, fixed: 1 });
+    recordDay(r, { date: '2026-10-12', reviews: 2, xp: 4, right: 1, fixed: 0 });
+    ok('right and fixed add up across two lessons in a day', r.history[0].right === 3 && r.history[0].fixed === 1);
+    // offline: a read on each device both count
+    const base = toDocs(a);
+    const mine = clone(a); mine.readings.r01.reads = 3;
+    const theirs = clone(base); theirs.main.readings.r01.reads = 5;
+    const ops = rebase(diff(base, toDocs(mine)), theirs);
+    ok('reads made offline on two devices add up', ops.find(o => o.path.join('.') === 'main.readings.r01.reads').value === 6);
+    const q = blank();
+    applyGrade(q, 90, 3, { today: '2026-10-12', mode: 'blocks' });
+    ok('a word remembers its last grade and how it was answered', q.items[90].g === 3 && q.items[90].m === 'blocks');
+  }
 
   section('sync: offline changes re-applied (rebase)');
   // The phone went offline at `rec` and made `ops`; meanwhile the laptop's

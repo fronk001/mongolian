@@ -250,7 +250,11 @@ export function applyGrade(p, wordId, g, opts = {}) {
     last: today,
     due: shift(today, ivlDays),
     right: (prev?.right || 0) + (g > 1 ? 1 : 0),
-    wrong: (prev?.wrong || 0) + (g === 1 ? 1 : 0)
+    wrong: (prev?.wrong || 0) + (g === 1 ? 1 : 0),
+    // The last grade and how it was answered ('type' | 'choice' | 'blocks'),
+    // so R5 can check whether helped answers predict later recall.
+    g,
+    ...(opts.mode ? { m: opts.mode } : {})
   };
   if (!p.introduced.includes(wordId)) p.introduced.push(wordId);
   return p.items[wordId];

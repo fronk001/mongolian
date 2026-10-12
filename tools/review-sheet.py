@@ -3,6 +3,7 @@ Build a review sheet for Luna or Sarnai, and apply what comes back.
 
     py tools/review-sheet.py             # write tools/review.html
     py tools/review-sheet.py --apply luna-review.json
+    py tools/review-sheet.py --code backup.txt   # also ask about Fred's "I was right" answers
 
 The sheet is one self-contained HTML file. It needs no server, no install and
 no account: Fred sends it, she opens it by double-clicking, works through it in
@@ -28,6 +29,7 @@ The most valuable thing she can do is not approving what is there — it is the
 "add your own" box under each sentence. A phrasing Fred would actually hear is
 worth more than a rule-derived one that is merely legal.
 """
+import base64
 import json
 import re
 import sys
@@ -103,6 +105,26 @@ def load_grammar():
     return items
 
 
+def load_appeals():
+    """
+    Fred's "I was right" answers, from a backup code (Settings → Copy) saved
+    to a file and passed with --code. Answers in Mongolian go on the sheet;
+    answers in English are his own to judge and are listed on the console.
+    """
+    if "--code" not in sys.argv:
+        return []
+    path = sys.argv[sys.argv.index("--code") + 1]
+    code = Path(path).read_text(encoding="utf-8").strip()
+    p = json.loads(base64.b64decode(code).decode("utf-8"))
+    out = []
+    for key, a in sorted((p.get("appeals") or {}).items(), key=lambda kv: kv[1].get("day", "")):
+        if a.get("toMn"):
+            out.append({"key": key, **a})
+        else:
+            print(f"  your English answer, for you to judge: {a.get('target')}  ->  {a.get('given')}")
+    return out
+
+
 def collect():
     sentences = json.loads((SRC / "sentences.json").read_text(encoding="utf-8"))
     words = json.loads((SRC / "words.json").read_text(encoding="utf-8"))
@@ -118,7 +140,7 @@ def collect():
         for w in words if w.get("reviewed") is False
     ]
     return {"sentences": items, "lexicon": lexicon, "badges": load_badges(),
-            "grammar": load_grammar(), "drafts": load_drafts()}
+            "grammar": load_grammar(), "drafts": load_drafts(), "appeals": load_appeals()}
 
 
 # --------------------------------------------------------------------- sheet
@@ -198,6 +220,11 @@ border-radius:4px;background:var(--panel);color:var(--muted);cursor:pointer}
      bottom and send Fred the file it produces. Nothing is uploaded anywhere.</p>
 </div>
 
+<h2 id="appeals-h">★ Фредийн хариулт <span class="en">— Fred's answers</span></h2>
+<div class="en" style="margin-top:8px" id="appeals-note">The app marked these wrong; Fred thinks they are right.
+  Is his Mongolian also a correct way to say it? Зөв adds it as an accepted answer.</div>
+<div id="appeals"></div>
+
 <h2 id="drafts-h">0. Шинэ өгүүлбэр <span class="en">— new sentences</span></h2>
 <div class="en" style="margin-top:8px" id="drafts-note">New sentences for Fred's next lessons. Would a Mongolian
   say this, and does the English match? If not, mark it Буруу and write it the way you would say it.</div>
@@ -236,9 +263,9 @@ const DATA = __DATA__;
 const TOTAL = __TOTAL__;
 const KEY = 'mng_review_v1';
 
-let state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{}, drafts:{} };
+let state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{}, drafts:{}, appeals:{} };
 try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
-for (const k of ['alts','added','lexicon','badges','grammar','drafts']) state[k] = state[k] || {};
+for (const k of ['alts','added','lexicon','badges','grammar','drafts','appeals']) state[k] = state[k] || {};
 
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
   .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -251,6 +278,14 @@ function picker(group, key, current) {
 }
 
 function render() {
+  for (const id of ['appeals-h', 'appeals-note']) document.getElementById(id).style.display = DATA.appeals.length ? '' : 'none';
+  document.getElementById('appeals').innerHTML = DATA.appeals.map(a => {
+    const v = state.appeals[a.key] || {};
+    return `<div class="item ${v.verdict ? 'done' : ''}">
+      <div class="q">${esc(a.given)}<span class="gloss">expected: ${esc(a.target)}${a.en ? ' — ' + esc(a.en) : ''}</span></div>
+      ${picker('appeals', a.key, v.verdict)}
+    </div>`;
+  }).join('');
   const none = !DATA.drafts.length;
   for (const id of ['drafts-h', 'drafts-note']) document.getElementById(id).style.display = none ? 'none' : '';
   document.getElementById('drafts').innerHTML = DATA.drafts.map(d => {
@@ -339,6 +374,7 @@ function progress() {
   n += Object.values(state.badges).filter(x => x.verdict).length;
   n += Object.values(state.grammar).filter(x => x.verdict).length;
   n += Object.values(state.drafts).filter(x => x.verdict).length;
+  n += Object.values(state.appeals).filter(x => x.verdict).length;
   document.getElementById('n').textContent = n;
   document.getElementById('fill').style.width = (100 * n / TOTAL) + '%';
   return n;
@@ -366,7 +402,8 @@ document.addEventListener('click', e => {
   } else {
     const store = group === 'lexicon' ? state.lexicon
       : group === 'badges' ? state.badges
-      : group === 'drafts' ? state.drafts : state.grammar;
+      : group === 'drafts' ? state.drafts
+      : group === 'appeals' ? state.appeals : state.grammar;
     const cur = store[key] = store[key] || {};
     if (cur.verdict === v) { delete cur.verdict; chosen = undefined; }
     else cur.verdict = v;
@@ -406,13 +443,14 @@ document.addEventListener('input', e => {
 
 document.getElementById('clear').addEventListener('click', () => {
   if (!confirm('Бүх хариултыг арилгах уу? — clear every answer?')) return;
-  state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{}, drafts:{} };
+  state = { alts:{}, added:{}, lexicon:{}, badges:{}, grammar:{}, drafts:{}, appeals:{} };
   localStorage.removeItem(KEY);
   render();
 });
 
 document.getElementById('finish').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(state, null, 1)], { type: 'application/json' });
+  // The appeals travel back with the verdicts: --apply needs what was asked.
+  const blob = new Blob([JSON.stringify({ ...state, appealData: DATA.appeals }, null, 1)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'mongolian-review.json';
@@ -431,7 +469,7 @@ def build_sheet():
     data = collect()
     total = (sum(len(s["alts"]) for s in data["sentences"])
              + len(data["lexicon"]) + len(data["badges"]) + len(data["grammar"])
-             + len(data["drafts"]))
+             + len(data["drafts"]) + len(data["appeals"]))
     html = (SHEET
             .replace("__DATA__", json.dumps(data, ensure_ascii=False))
             .replace("__TOTAL__", str(total)))
@@ -443,6 +481,7 @@ def build_sheet():
     print(f"  {len(data['badges'])} badge names")
     print(f"  {len(data['grammar'])} grammar topics")
     print(f"  {len(data['drafts'])} new sentences")
+    print(f"  {len(data['appeals'])} of Fred's answers to rule on")
     print(f"  {total} decisions in total")
 
 
@@ -556,6 +595,23 @@ def apply(path):
             # to edit in grammar.json by hand, same as a badge name.
             gflagged.append((t["id"], t["title"], text or "(no note left)"))
 
+    # Fred's "I was right" answers she confirmed: an accepted Mongolian
+    # phrasing for the sentence (alt.mn); for a word card, listed for Fred.
+    av = review.get("appeals") or {}
+    accepted_appeals = 0
+    for a in review.get("appealData") or []:
+        if (av.get(a["key"]) or {}).get("verdict") != "yes":
+            continue
+        if a.get("kind") == "sentence":
+            for s in sentences:
+                if s["mn"] == a.get("mn"):
+                    alts = s.setdefault("alt", {}).setdefault("mn", [])
+                    if tidy(a["given"]) not in alts and tidy(a["given"]) != s["mn"]:
+                        alts.append(tidy(a["given"]))
+                        accepted_appeals += 1
+        else:
+            print(f"  word answer confirmed — add by hand if wanted: {a.get('target')} = {a.get('given')}")
+
     # New sentences: yes goes live as written; wrong-and-rewritten goes live
     # in her wording; wrong without a rewrite is dropped; not sure stays a draft.
     dv = review.get("drafts") or {}
@@ -591,6 +647,7 @@ def apply(path):
     print(f"lexicon:   {signed} signed off, {corrected} glosses corrected, {noted} notes kept")
     print(f"grammar:   {gsigned} topics signed off")
     print(f"drafts:    {live} new sentences live, {dropped} dropped")
+    print(f"appeals:   {accepted_appeals} of Fred's answers now accepted")
     if live:
         print("  new sentences need their word ids: run `py tools/coverage.py --apply-tags`")
 

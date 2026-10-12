@@ -255,6 +255,17 @@ merging — while synced, the online copy too (`commit(P, { replace: true })`).
   `commit()` and `awardGrammarGrade()` in `app.js`; history rows on this scale
   carry `xv: 2` (older rows used stability-based XP). Badges only by
   `earnedBadges()`.
+- `appeals` — *I was right* on a mismatch: `{ [hash]: { kind, target, given,
+  toMn, day, … } }`. Union at first sign-in. `py tools/review-sheet.py --code
+  backup.txt` puts the Mongolian ones on Luna's sheet; her yes adds the
+  phrasing to `alt.mn`. An appeal grades Hard but counts as neither right
+  first time nor fixed.
+- `readings` — `{ [id]: { reads, last, firstDay, firstRight, firstWrong } }`:
+  reads add up offline, the first read is the earliest. Never touches FSRS.
+- A word's record also keeps its last grade `g` and answer mode `m`
+  (`type` / `choice` / `blocks`). History rows gain counters `right` (right
+  first time, per answer) and `fixed`. A whole-record write deletes fields
+  the new record lacks (`patchesFor`), since Firestore merges maps.
 - **Start always works.** With nothing due and nothing new, `buildPractice()`
   offers up to 8 of the least-remembered words not graded today, graded as
   normal. After Done, *Practise today's mistakes* replays the day's missed

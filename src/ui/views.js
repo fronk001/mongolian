@@ -836,7 +836,7 @@ export function viewDone(summary, st, p, ctx = {}) {
   return `<div class="top"><div><h1>Done</h1></div></div>
     <div class="goldband">
       <div class="big">+${summary.xp}<span class="u"> XP</span></div>
-      <div class="gl">${summary.right} of ${answered} right first time${
+      <div class="gl">${summary.firstRight ?? summary.right} of ${summary.answers ?? answered} right first time${
         summary.missed ? ` · ${summary.fixed} of ${summary.missed} mistakes fixed` : ''}</div>
     </div>
 

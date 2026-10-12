@@ -56,7 +56,7 @@ const byDate = (a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
 const docNumber = id => Number(id.slice(6));
 
 /** The figures in a history row that add up across sessions; the rest are snapshots. */
-export const ROW_COUNTERS = ['reviews', 'newWords', 'onTime', 'late', 'xp'];
+export const ROW_COUNTERS = ['reviews', 'newWords', 'onTime', 'late', 'xp', 'right', 'fixed'];
 
 /** Two rows for one day, folded the way recordDay() folds a second session into the first. */
 function fold(a, b) {
@@ -167,7 +167,14 @@ export function patchesFor(ops, DEL) {
       if (!isObj(o[k])) o[k] = {};
       o = o[k];
     }
-    o[rest[rest.length - 1]] = op.del ? DEL : clone(op.value);
+    let v = op.del ? DEL : clone(op.value);
+    // A word's record is one value, but a merge-write merges maps key by key:
+    // a field the new record no longer has (an older code imported over a
+    // newer one) would survive online. Delete it explicitly.
+    if (!op.del && isItem(op.path) && isObj(op.from) && isObj(v)) {
+      for (const k of Object.keys(op.from)) if (!(k in v)) v[k] = DEL;
+    }
+    o[rest[rest.length - 1]] = v;
   }
   return Object.entries(docs).map(([id, data]) => ({ id, data, merge: true }));
 }
@@ -270,6 +277,19 @@ export function mergeStates(a, b) {
   out.grammar = { ...(b.grammar || {}) };
   for (const [t, g] of Object.entries(a.grammar || {})) out.grammar[t] = out.grammar[t] ? moreAttempts(g, out.grammar[t]) : g;
 
+  // Appeals: every one from either copy. Readings: per passage, the record
+  // with more reads (then the later), its first read kept from the earlier.
+  out.appeals = { ...(b.appeals || {}), ...(a.appeals || {}) };
+  out.readings = { ...(b.readings || {}) };
+  for (const [id, r] of Object.entries(a.readings || {})) {
+    const o = out.readings[id];
+    if (!o) { out.readings[id] = r; continue; }
+    const keep = (r.reads || 0) !== (o.reads || 0) ? ((r.reads || 0) > (o.reads || 0) ? r : o)
+      : (r.last || '') > (o.last || '') ? r : o;
+    const first = (r.firstDay || '9') < (o.firstDay || '9') ? r : o;
+    out.readings[id] = { ...keep, firstDay: first.firstDay, firstRight: first.firstRight, firstWrong: first.firstWrong };
+  }
+
   out.xp = Math.max(a.xp || 0, b.xp || 0);
   out.createdAt = earlierDay(a.createdAt, b.createdAt) || out.createdAt;
   out.lastDate = laterDay(a.lastDate, b.lastDate) || null;
@@ -283,11 +303,13 @@ export function mergeStates(a, b) {
 const isCounter = p =>
   (p.length === 2 && p[0] === 'main' && p[1] === 'xp') ||
   (p.length === 4 && isYearDoc(p[0]) && p[1] === 'history' && ROW_COUNTERS.includes(p[3])) ||
-  (p.length === 4 && p[0] === 'main' && p[1] === 'grammar' && (p[3] === 'right' || p[3] === 'wrong'));
+  (p.length === 4 && p[0] === 'main' && p[1] === 'grammar' && (p[3] === 'right' || p[3] === 'wrong')) ||
+  (p.length === 4 && p[0] === 'main' && p[1] === 'readings' && p[3] === 'reads');
 const isLatest = p =>
   (p.length === 2 && p[0] === 'main' && (p[1] === 'lastDate' || p[1] === 'lastExport')) ||
-  (p.length === 4 && p[0] === 'main' && p[1] === 'grammar' && p[3] === 'last');
-const isEarliest = p => p.length === 2 && p[0] === 'main' && p[1] === 'createdAt';
+  (p.length === 4 && p[0] === 'main' && (p[1] === 'grammar' || p[1] === 'readings') && p[3] === 'last');
+const isEarliest = p => (p.length === 2 && p[0] === 'main' && p[1] === 'createdAt') ||
+  (p.length === 4 && p[0] === 'main' && p[1] === 'readings' && p[3] === 'firstDay');
 
 /**
  * Changes this device made, re-applied on top of what the database holds

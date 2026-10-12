@@ -68,7 +68,7 @@ function adopt(next) {
   if (quiet()) render({ keep: true });
 }
 
-const blankSummary = () => ({ reviews: 0, right: 0, newWords: 0, xp: 0, onTime: 0, late: 0, newBadges: [], levelBefore: 1, leveledTo: null, missed: 0, fixed: 0, shown: 0, missedWords: [] });
+const blankSummary = () => ({ reviews: 0, right: 0, newWords: 0, xp: 0, onTime: 0, late: 0, newBadges: [], levelBefore: 1, leveledTo: null, missed: 0, fixed: 0, shown: 0, missedWords: [], answers: 0, firstRight: 0, appealed: 0 });
 const blankGrammarSummary = () => ({ xp: 0, right: 0, wrong: 0 });
 
 let S = {
@@ -140,8 +140,11 @@ function commit(item, g, typed = false, gain = null) {
   // XP is per answer and fixed by the verdict, so amending the grade later
   // (Was easy, I was right) never changes what the answer scored.
   const xp = gain ?? xpForAnswer(g > 1, typed);
-  S.pending = { item, g, snaps, xp: P.xp || 0, gain: xp, summary: { ...S.summary } };
-  ids.forEach(id => awardGrade(id, g));
+  const mode = typed ? 'type' : item.kind === 'card' ? 'choice' : 'blocks';
+  S.pending = { item, g, snaps, xp: P.xp || 0, gain: xp, typed, summary: { ...S.summary, missedWords: [...S.summary.missedWords] } };
+  ids.forEach(id => awardGrade(id, g, mode));
+  S.summary.answers++;
+  if (g > 1) S.summary.firstRight++;
   S.summary.xp += xp;
   P.xp = (P.xp || 0) + xp;      // lifetime total, only ever moved by an answer
   if (item.kind === 'sentence') item.attempt = S.sawBlocks ? 'blocks' : 'type';
@@ -165,7 +168,20 @@ function amend(g) {
   S.summary = pd.summary;
   // "I was right": the miss is withdrawn, and so is its retry.
   if (pd.g === 1) S.session.items = S.session.items.filter((it, i) => i <= S.i || it.first !== pd.item);
-  commit(pd.item, g, false, pd.gain);
+  commit(pd.item, g, pd.typed, pd.gain);
+  // "I was right" on a mismatch: keep his phrasing for Luna to rule on. It
+  // grades Hard, but counts as neither right first time nor fixed.
+  if (pd.g === 1 && g === 2 && S.fb && S.fb.given) {
+    const it = pd.item, toMn = it.kind === 'sentence' ? it.dir === 'egm' : it.dir === 'egm';
+    const target = it.kind === 'sentence' ? (toMn ? it.sentence.mn : it.sentence.en) : (toMn ? it.word.mn : it.word.en);
+    const key = hashSeed(`${target}|${S.fb.given.trim()}`).toString(36);
+    P.appeals = { ...(P.appeals || {}), [key]: {
+      kind: it.kind, target, given: S.fb.given.trim(), toMn, day: dayKey(),
+      ...(it.kind === 'card' ? { id: it.word.id } : { en: it.sentence.en, mn: it.sentence.mn }) } };
+    S.summary.firstRight--;
+    S.summary.appealed++;
+    save(P);
+  }
 }
 
 /** Put a retry of `item` into the lesson: a fix a few screens on, the rest at the end. */
@@ -496,7 +512,9 @@ function finish() {
     onTime: S.summary.onTime,
     late: S.summary.late,
     xp: S.summary.xp,
-    xv: 2
+    xv: 2,
+    right: S.summary.firstRight,
+    fixed: S.summary.fixed
   });
 
   const before = new Set(P.badges || []);
@@ -529,14 +547,14 @@ function finish() {
  * wins: word cards run before sentences, and a card is the sharper measurement
  * of that one word than a sentence graded across all of its targets.
  */
-function awardGrade(id, g) {
+function awardGrade(id, g, mode) {
   if (S.graded.has(id)) return;
   S.graded.add(id);
   const today = dayKey();
   const prev = P.items[id];
   // On time = not already overdue when it was answered.
   if (prev) (prev.due >= today ? S.summary.onTime++ : S.summary.late++);
-  const next = applyGrade(P, id, g);
+  applyGrade(P, id, g, { mode });
   S.summary.reviews++;
   if (g > 1) S.summary.right++;
   if (!prev) S.summary.newWords++;

@@ -43,7 +43,14 @@ export function blank() {
     // Grammar topic practice (src/data/grammar.json). Keyed by topic id, not
     // FSRS — practice is on demand, not scheduled, so this is just a running
     // right/wrong count per topic. See core/grammar.js.
-    grammar: {}
+    grammar: {},
+    // --- added with R2 (October 2026): additive, merged in sync.js ---------
+    // "I was right" on a mismatch: his phrasing, kept for Luna to rule on
+    // (tools/review-sheet.py --code). Keyed by a hash of sentence + answer.
+    appeals: {},
+    // Baby paragraphs read: { [readingId]: { reads, last, firstDay,
+    // firstRight, firstWrong } }. Never touches FSRS.
+    readings: {}
   };
 }
 
@@ -67,7 +74,9 @@ export function recordDay(p, entry) {
       newWords: (prev.newWords || 0) + (entry.newWords || 0),
       onTime: (prev.onTime || 0) + (entry.onTime || 0),
       late: (prev.late || 0) + (entry.late || 0),
-      xp: (prev.xp || 0) + (entry.xp || 0)
+      xp: (prev.xp || 0) + (entry.xp || 0),
+      ...('right' in entry || 'right' in prev ? { right: (prev.right || 0) + (entry.right || 0) } : {}),
+      ...('fixed' in entry || 'fixed' in prev ? { fixed: (prev.fixed || 0) + (entry.fixed || 0) } : {})
     };
   } else {
     history.push(entry);
