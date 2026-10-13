@@ -33,18 +33,19 @@
 
 <script type="module">
 import { makeFSRS, dayKey, daysBetween } from '../src/core/fsrs.js';
-import { blank, migrateV1, encodeCode, importCode, stats, exportAge, recordDay } from '../src/core/progress.js';
+import { blank, migrateV1, encodeCode, importCode, stats, exportAge, recordDay, addDays } from '../src/core/progress.js';
 import { buildSession, applyGrade, scheduledDays, buildPractice } from '../src/core/scheduler.js';
 import { backIn } from '../src/ui/views.js';
 import { afterAnswer, retryIndex, retryItem, RETRY_GAP } from '../src/core/ladder.js';
 import { readingCoverage, pickReading, recordReading, READ_COVERAGE } from '../src/core/readings.js';
+import { pathState, unitState, wordState, buildCheckpoint, finishCheckpoint, startCheckpoint, creditHomeUnits, checkpointDue, FAMILIAR_S } from '../src/core/path.js';
 import { makeTilePools, bankFor, acceptedFor, minTiles, gradeBuild, orderDiff, tokensOf, DECOYS } from '../src/core/tiles.js';
 import { gradeText, gradeAnswer, acceptedForms } from '../src/core/grade.js';
 import { buildChoices, distractors, makeRng, faceKey } from '../src/core/choices.js';
 import {
   streak, bestStreak, weekCells, monthCells, weekStart, monthStart, weekday,
   periodTotals, punctuality, intakeRate, projectDate, levelFor, xpFor,
-  earnedBadges, lessonWorth, stepCount, LEVELS, BADGES, xpForGrammar, badgeProgress, xpForAnswer
+  earnedBadges, lessonWorth, stepCount, LEVELS, BADGES, xpForGrammar, badgeProgress, xpForAnswer, streakState, REST_EVERY
 } from '../src/core/goals.js';
 import { gradeDrill, applyGrammarGrade, topicMastery, MASTERY_MIN_ATTEMPTS } from '../src/core/grammar.js';
 import {
@@ -68,6 +69,7 @@ const W = await (await fetch('../src/data/words.json')).json();
 const S = await (await fetch('../src/data/sentences.json')).json();
 const G = await (await fetch('../src/data/grammar.json')).json();
 const RD = await (await fetch('../src/data/readings.json')).json();
+const UN = (await (await fetch('../src/data/units.json')).json()).units;
 
 // ---------------------------------------------------------------- fsrs
 section('fsrs');
@@ -835,6 +837,59 @@ section('reading');
   ok('a read passage is not offered again', pickReading(q, rev, W, { today: '2026-10-12' })?.id !== 'r01');
 }
 
+section('path and units');
+{
+  const drill = W.filter(w => w.drill !== false).map(w => w.id);
+  const inUnits = UN.flatMap(u => u.words);
+  ok('every drillable word is in exactly one unit',
+     inUnits.length === new Set(inUnits).size && drill.every(id => inUnits.includes(id)) && inUnits.every(id => drill.includes(id)),
+     `${inUnits.length} in units, ${drill.length} drillable`);
+  ok('unit ids are unique', new Set(UN.map(u => u.id)).size === UN.length);
+  ok('a planned unit has no words', UN.filter(u => u.planned).every(u => !u.words.length));
+  const q = blank();
+  const h1 = UN.find(u => u.id === 'h01');
+  ok('a cold start has no unit done', pathState(q, UN, W).done === 0);
+  for (const id of h1.words) { applyGrade(q, id, 3, { today: '2026-10-01' }); applyGrade(q, id, 3, { today: '2026-10-04' }); }
+  ok('two clean recalls make a word familiar', h1.words.every(id => wordState(q, id) === 'familiar'), `s=${q.items[h1.words[0]].s.toFixed(1)}`);
+  ok('a home unit with every word familiar is credited', creditHomeUnits(q, UN, '2026-10-04').includes('h01') && unitState(h1, q).status === 'done');
+  ok('credit is recorded once', creditHomeUnits(q, UN, '2026-10-05').length === 0);
+  // a textbook unit: checkpoint
+  const u1 = UN.find(u => u.id === 'u01');
+  const fake = { ...u1, words: h1.words };    // a textbook unit over familiar words
+  const units2 = [...UN.filter(u => u.id !== 'u01'), fake];
+  q.units = {};
+  ok('a textbook unit with familiar words is ready, not done', unitState(fake, q).status === 'ready');
+  const cp = buildCheckpoint(q, fake, S, W);
+  ok('a checkpoint has 5 items', cp.length === 5, `${cp.length}`);
+  ok('a checkpoint asks nothing unmet', cp.filter(i => i.kind === 'sentence').every(i => i.sentence.ids.every(id => {
+     const w = W.find(x => x.id === id); return !w || w.drill === false || q.items[id]; })));
+  ok('checkpoint items are marked, so they never reach FSRS', cp.every(i => i.checkpoint === 'u01'));
+  startCheckpoint(q, 'u01', '2026-10-06');
+  ok('an attempt counts from its start', q.units.u01.tries === 1 && q.units.u01.last === '2026-10-06');
+  ok('one attempt a day', checkpointDue(q, units2, W, '2026-10-06') === null);
+  ok('4 right but only 2 typed is not a pass', finishCheckpoint(q, 'u01', 4, 2, 5, '2026-10-06') === false);
+  ok('4 right with 3 typed passes', finishCheckpoint(q, 'u01', 4, 3, 5, '2026-10-07') === true && q.units.u01.passed === '2026-10-07');
+  ok('a pass is kept', unitState(fake, q).status === 'done');
+}
+
+section('rest days');
+{
+  const days = (from, n) => Array.from({ length: n }, (_, i) => ({ date: addDays(from, i) }));
+  const h7 = days('2026-10-13', REST_EVERY);
+  ok('every 7 lessons earn a rest day', streakState(h7, '2026-10-19').bank === 1);
+  const gap1 = [...h7, { date: '2026-10-21' }];          // 20 Oct missed
+  const s1 = streakState(gap1, '2026-10-21');
+  ok('a rest day covers a missed day and the streak continues', s1.streak === 8 && s1.covered.has('2026-10-20'), JSON.stringify({ ...s1, covered: [...s1.covered] }));
+  ok('a rest day is never a lesson day', s1.streak === 8);
+  const gap2 = [...h7, { date: '2026-10-22' }];          // 2 missed, 1 in the bank
+  ok('a gap longer than the bank breaks the streak, and the bank is kept', streakState(gap2, '2026-10-22').streak === 1 && streakState(gap2, '2026-10-22').bank === 1);
+  ok('yesterday missed is covered while today is pending', streakState(h7, '2026-10-21').covered.has('2026-10-20') && streakState(h7, '2026-10-21').streak === 7);
+  const old = [...days('2026-08-01', 7), { date: '2026-08-09' }];
+  ok('gaps before rest days existed are not rewritten', streakState(old, '2026-08-09').streak === 1);
+  ok('at most 2 rest days are held', streakState(days('2026-10-13', 28), '2026-11-09').bank === 2);
+  ok('a rest square is drawn as rest, never done', weekCells(gap1, '2026-10-21').find(c => c.key === '2026-10-20').state === 'rest');
+}
+
 section('practice and badge targets');
 {
   // A day with nothing due still has a lesson: least-remembered words, never
@@ -1206,6 +1261,17 @@ section('backup survives the redesign fields');
     const q = blank();
     applyGrade(q, 90, 3, { today: '2026-10-12', mode: 'blocks' });
     ok('a word remembers its last grade and how it was answered', q.items[90].g === 3 && q.items[90].m === 'blocks');
+    // units: the earlier pass wins at first sign-in; tries add up offline; a later pass never overwrites
+    const ua = blank(), ub = blank();
+    ua.units = { u01: { tries: 2, last: '2026-10-14', passed: '2026-10-14' } };
+    ub.units = { u01: { tries: 1, last: '2026-10-13', passed: '2026-10-13' }, u02: { tries: 1, last: '2026-10-13' } };
+    const um = mergeStates(ua, ub);
+    ok('first sign-in keeps the earlier unit pass, and every unit', um.units.u01.passed === '2026-10-13' && !!um.units.u02);
+    const ubase = toDocs(ub), umine = clone(ub); umine.units.u02.tries = 2;
+    const utheirs = clone(ubase); utheirs.main.units.u02.tries = 3;
+    ok('checkpoint tries made offline on two devices add up',
+       rebase(diff(ubase, toDocs(umine)), utheirs).find(o => o.path.join('.') === 'main.units.u02.tries').value === 4);
+    ok('units survive a backup code', same(importCode(encodeCode(ua)).units, ua.units));
   }
 
   section('sync: offline changes re-applied (rebase)');

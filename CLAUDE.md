@@ -126,6 +126,21 @@ wrong answer underlines the evidence line. The first read scores 1 XP per
 question +1 if right, once; rereads score nothing; reading never calls
 `applyGrade`. `?dev` shows unreviewed passages and skips the coverage gate.
 
+## Path
+
+`src/data/units.json`: `parts` and `units` (`{ id, part, title, can, words,
+grammar, readings, source, planned? }`). Every drillable word is in exactly one
+unit (`tools/test.html` asserts it). Home units h01–h11 are the original
+lexicon; u01+ follow the textbooks. `core/path.js`: a word is familiar at
+stability ≥ 7; a home unit completes when all its words are familiar
+(`creditHomeUnits()` at Done, recorded once); a textbook unit is then ready,
+and its checkpoint (5 items, 4 right, ≥3 typed, one attempt a day, counted at
+the first answer) rides after the lesson's main items and before the reading.
+Checkpoint answers never reach FSRS. `P.units[id] = { tries, last, passed,
+right, of, credited? }`. Streak and rest days come from history alone
+(`streakState()` in `core/goals.js`; rest days cover gaps only from
+`REST_FROM`, so past streaks are not rewritten).
+
 ## Content schema
 
 `words.json` — `{id, mn, en}` plus two optional fields:

@@ -3,8 +3,9 @@ import { scheduledDays } from '../core/scheduler.js';
 import { norm } from '../core/grade.js';
 import {
   weekCells, monthCells, weekTotals, monthTotals, punctuality, streak, bestStreak,
-  intakeRate, projectDate, levelFor, lessonWorth, byBadgeId, BADGES, badgeProgress
+  intakeRate, projectDate, levelFor, lessonWorth, byBadgeId, BADGES, badgeProgress, streakState, REST_MAX
 } from '../core/goals.js';
+import { wordState } from '../core/path.js';
 import { topicMastery } from '../core/grammar.js';
 
 export const esc = s => String(s)
@@ -260,7 +261,6 @@ const TABS = [
   { id: 'today', label: 'Today', dom: 'red' },
   { id: 'progress', label: 'Progress', dom: 'blue' },
   { id: 'grammar', label: 'Grammar', dom: '' },
-  { id: 'achievements', label: 'Achievements', dom: 'gold' },
   { id: 'settings', label: 'Settings', dom: '' }
 ];
 export function tabBar(active) {
@@ -280,56 +280,54 @@ export const pageHead = title => `<div class="h" style="margin-top:0"><span clas
    ══════════════════════════════════════════════════════════════════════ */
 
 export function viewToday(p, st, session, ctx = {}) {
-  const { exportAge, today, editPurpose } = ctx;
-  const diag = session.diagnostics;
-  const nothing = !session.items.length;
+  const { today, editPurpose, path, checkpointToday } = ctx;
   const history = p.history || [];
-
   const cells = weekCells(history, today);
-  const doneThisWeek = cells.filter(c => c.state === 'done').length;
-  const run = streak(history, today);
-  const best = bestStreak(history);
+  const ss = streakState(history, today);
   const worth = lessonWorth(session, history, today);
+  const nothing = !session.items.length;
+  const date = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
-  return header(st, 'Today', ctx.dot) +
-    // Sync's notice when app.js passes one: it stands in for the backup
-    // reminder, which only applies while this device doesn't sync.
-    (ctx.notice !== undefined ? ctx.notice : backupNotice(ctx.exportAge === undefined ? null : exportAge)) +
-    purposeBand(p.purpose, editPurpose) +
+  // The unit line: where the new words come from and how close it is.
+  let unit = '';
+  const cur = path && path.current;
+  if (cur) {
+    const u = cur.unit;
+    const state = cur.status === 'ready' && u.part !== 'home'
+      ? (checkpointToday ? 'checkpoint today' : 'checkpoint tomorrow')
+      : cur.status === 'later' ? `${cur.need} new words`
+      : `${cur.need - cur.have} words to go`;
+    unit = `<button class="unitline" data-act="tab" data-tab="progress">
+        <span class="mn">${esc(cur.label)} · ${esc(u.title)} · ${state}</span>
+        <span class="meter blue"><i style="width:${Math.max(2, pct(cur.have / (cur.need || 1)))}%"></i></span>
+      </button>`;
+  } else if (path) {
+    unit = `<div class="unitline"><span class="mn">All units done · more coming</span></div>`;
+  }
 
-    // ---- the week: the period one lesson can actually move ----------
-    `<div class="h"><span class="mono">THIS WEEK</span></div>
-    <div class="panel red">
-      <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div class="big">${doneThisWeek}<span class="u"> / 7 days</span></div>
-        <span class="lab red">STREAK ${run}</span>
-      </div>
-      <div class="gl">${doneThisWeek} of 7 days · ${run}-day streak${best > run ? ` · best ${best}` : ''}</div>
+  const purpose = editPurpose ? purposeBand(p.purpose, true)
+    : p.purpose ? `<button class="purpose" data-act="purpose">${esc(p.purpose)}</button>`
+    : `<button class="purpose empty" data-act="purpose">Add why you are learning</button>`;
+
+  const start = nothing ? 'Nothing to practise yet'
+    : session.practice ? `Practice${gli(`${worth.items} cards · nothing is due`)}`
+    : `Start${gli(`${worth.items} items · ~${worth.minutes} min`)}`;
+
+  // One panel, three things: why, the unit, the streak. Everything else that
+  // used to sit here (tracked, due, RET, ACC, comprehensibility) is on
+  // Progress under Numbers — moved, not deleted.
+  return `<div class="todaypage" data-tracked="${st.tracked}">
+    <div class="top lean"><div></div><div class="mono right">${ctx.dot || ''}${esc(date.toUpperCase())}</div></div>
+    ${ctx.notice !== undefined ? ctx.notice : backupNotice(ctx.exportAge === undefined ? null : ctx.exportAge)}
+    ${editPurpose ? purpose : ''}
+    <div class="panel gold">
+      ${editPurpose ? '' : purpose}
+      ${unit}
+      <div class="streakline"><span class="mn">${ss.streak ? `${ss.streak} day streak` : 'Start a streak'}</span></div>
       ${weekStrip(cells, today)}
     </div>
-
-    <div class="goldband">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-        <div><div class="mono">THIS LESSON</div>
-          <div class="big" style="margin-top:5px">${worth.items}<span class="u"> items</span></div></div>
-        <div style="text-align:right">
-          <div class="big" style="font-size:26px">${worth.weekShare ? '+1' : '✓'}</div>
-          <div class="mono" style="margin-top:2px">${worth.weekShare ? 'DAY OF 7' : 'DONE TODAY'}</div></div>
-      </div>
-      <div class="gl">${worth.newWords} new · ${worth.reviews} due · ~${worth.minutes} min estimated</div>
-    </div>
-
-    <div class="panel red rows">
-      <div class="wline"><span class="mn">Due reviews</span><span class="n">${diag.dueCount}</span></div>
-      <div class="wline"><span class="mn">New words</span><span class="n">${diag.newCount}</span></div>
-      <div class="wline"><span class="mn">Sentences</span><span class="n">${diag.sentenceCount}</span></div>
-      <div class="wline"><span class="mn">Comprehensible</span><span class="n">${pct(diag.avgComprehensibility)}%</span></div>
-    </div>
-
-    <div class="btns"><button class="btn primary" data-act="start"${nothing ? ' disabled' : ''}>
-      ${nothing ? 'Nothing to practise yet'
-        : session.practice ? `Practice →${gli(`${worth.items} cards · nothing is due`)}`
-        : `Start →${gli(`${worth.items} items · ~${worth.minutes} min`)}`}</button></div>`;
+    <div class="btns"><button class="btn primary" data-act="start"${nothing ? ' disabled' : ''}>${start}</button></div>
+  </div>`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -338,30 +336,73 @@ export function viewToday(p, st, session, ctx = {}) {
    ══════════════════════════════════════════════════════════════════════ */
 
 export function viewProgress(p, st, ctx = {}) {
-  const { today } = ctx;
+  const { today, path, open = new Set(), drillable, corpusWords, byId = {} } = ctx;
   const history = p.history || [];
   const wt = weekTotals(history, today);
-  const mt = monthTotals(history, today);
-  const onTime = punctuality(wt);
+  const ss = streakState(history, today);
+  const goal = p.goalWords || 2500;
+  const rate = intakeRate(history, today);
+  const eta = projectDate(st.known, goal, rate, today);
+  const next = badgeProgress(p, { stats: st, today, drillable });
+  const won = BADGES.filter(b => (p.badges || []).includes(b.id));
 
-  return pageHead('PROGRESS') +
-    `<div class="h" style="margin-top:10px"><span class="mono">WEEK SO FAR</span></div>
-    <div class="panel blue flush"><div class="grid2">
-      <div><span class="lab">REVIEWS</span><div class="big">${wt.reviews}</div><div class="gl">reviews landed</div></div>
-      <div><span class="lab">NEW WORDS</span><div class="big">${wt.newWords}</div><div class="gl">new words met</div></div>
-      <div><span class="lab">KNOWN</span><div class="big blue">${wt.knownGain === null ? '—' : '+' + wt.knownGain}</div>
-        <div class="gl">${wt.knownGain === null ? 'not measured yet' : 'crossed into known'}</div></div>
-      <div><span class="lab">ON TIME</span><div class="big">${onTime === null ? '—' : pct(onTime) + '%'}</div>
-        <div class="gl">${onTime === null ? 'no reviews yet' : 'reviews on time'}</div></div>
-    </div></div>
+  // The path: done units folded into one line, the current one open with its
+  // meter, the next two by title, then the count of the rest.
+  let pathBlock = '';
+  if (path) {
+    const list = path.list.filter(x => x.status !== 'planned');
+    const done = list.filter(x => x.status === 'done');
+    const rest = path.list.filter(x => x.status !== 'done');
+    const sheet = x => open.has('u:' + x.unit.id) ? `<div class="unitsheet">${x.unit.words.map(id => {
+        const w = byId[id]; const s = wordState(p, id);
+        return w ? `<span class="wstate ${s}">${s === 'familiar' ? '✓' : s === 'learning' ? '·' : '○'} ${esc(w.mn)} · ${esc(w.en)}</span>` : '';
+      }).join('')}<div class="gl" style="margin-top:6px">${esc(x.unit.source || '')}</div></div>` : '';
+    const row = (x, big) => x.status === 'planned'
+      ? `<div class="unitrow planned"><span class="mn">${esc(x.label)} · ${esc(x.unit.title)}</span><span class="n">Coming</span></div>`
+      : `<button class="unitrow" data-act="toggle" data-id="u:${x.unit.id}">
+          <span class="mn">${esc(x.label)} · ${esc(x.unit.title)}</span><span class="n">${x.have} / ${x.need}</span></button>
+        ${big ? `<div class="meter blue"><i style="width:${Math.max(2, pct(x.have / (x.need || 1)))}%"></i></div>
+          <div class="gl">${esc(x.unit.can || '')}${x.status === 'ready' && x.unit.part !== 'home' ? ' · checkpoint ready' : ''}</div>` : ''}
+        ${sheet(x)}`;
+    pathBlock = `<div class="panel blue" style="margin-top:10px">
+      <div class="wline"><span class="mn"><b>Path</b></span><span class="n">${done.length} of ${list.length} done</span></div>
+      ${done.length ? `<button class="unitrow" data-act="toggle" data-id="donelist"><span class="mn">✓ ${done.length} unit${done.length === 1 ? '' : 's'} done</span><span class="n">${open.has('donelist') ? '−' : '+'}</span></button>
+        ${open.has('donelist') ? done.map(x => row(x, false)).join('') : ''}` : ''}
+      ${rest.slice(0, 3).map((x, i) => row(x, i === 0)).join('')}
+      ${rest.length > 3 ? `<div class="gl">+${rest.length - 3} more</div>` : ''}
+    </div>`;
+  }
 
-    <div class="h"><span class="mono">${monthLabel(today)}</span><span class="mono">MONTH · ${mt.days}/${monthCells(history, today).filter(c => c.day).length}</span></div>
-    <div class="panel">
-      ${monthGrid(monthCells(history, today))}
-      <div class="gl" style="margin-top:9px">each square is a day you finished a session · ${mt.reviews} reviews this month</div>
+  return pageHead('PROGRESS') + pathBlock +
+    `<div class="panel gold">
+      <div class="wline"><span class="mn"><b>Badges</b></span><span class="n">${won.length} earned</span></div>
+      ${badgeRow(p.badges || [], next)}
     </div>
 
-    <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE-FIRST</span></div>`;
+    <div class="panel flush"><div class="grid2">
+      <div><span class="lab">THIS WEEK</span><div class="big">${wt.reviews}</div><div class="gl">reviews</div></div>
+      <div><span class="lab">NEW WORDS</span><div class="big">${wt.newWords}</div><div class="gl">met this week</div></div>
+    </div></div>
+
+    <div class="panel">
+      ${monthGrid(monthCells(history, today))}
+    </div>
+
+    <button class="disclose" data-act="toggle" data-id="numbers">
+      <span>Numbers</span><span class="mono">${open.has('numbers') ? '−' : '+'}</span></button>
+    ${open.has('numbers') ? `<div class="panel">
+      <div class="wline"><span class="mn">Words tracked</span><span class="n">${st.tracked}</span></div>
+      <div class="wline"><span class="mn">Due now</span><span class="n">${st.due}</span></div>
+      <div class="wline"><span class="mn">Recall, average</span><span class="n">${pct(st.avgRetrievability)}%</span></div>
+      <div class="wline"><span class="mn">Accuracy</span><span class="n">${pct(st.accuracy)}%</span></div>
+      <div class="wline"><span class="mn">Words known (21 days)</span><span class="n">${st.known} / ${goal.toLocaleString('en-GB')}</span></div>
+      <div class="wline"><span class="mn">Best streak</span><span class="n">${ss.best}</span></div>
+      <div class="wline"><span class="mn">Rest days saved</span><span class="n">${ss.bank} of ${REST_MAX}</span></div>
+      <div class="wline"><span class="mn">Lifetime XP</span><span class="n">${p.xp || 0}</span></div>
+      <div class="wline"><span class="mn">B1 at this rate</span><span class="n">${eta ? dateLabel(eta) : '—'}</span></div>
+      <div class="wline"><span class="mn">Words written so far</span><span class="n">${corpusWords || 0}</span></div>
+      <div class="gl" style="margin-top:8px">b1 target is a research estimate, not a cefr spec · xp before 12 oct measured memory gained</div>
+    </div>` : ''}`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -424,8 +465,13 @@ export function viewGrammarList(topics, p) {
     <div class="foot"><span class="mono">INSTRUMENT v3 · SOYOMBO</span><span class="mono">FSRS-6 · OFFLINE-FIRST</span></div>`;
 }
 
-export function viewGrammarIntro(topic) {
-  const exRows = topic.examples.map(e =>
+export function viewGrammarIntro(topic, ctx = {}) {
+  // First visit: the whole explanation. On a revisit (the topic has been
+  // practised) it folds to the title, two examples and Start; the summary is
+  // one tap away under "Why?" — teach first, then get out of the way.
+  const { seen = false, open = false } = ctx;
+  const full = !seen || open;
+  const exRows = (full ? topic.examples : topic.examples.slice(0, 2)).map(e =>
     `<div class="wline"><span class="mn">${esc(e.mn)}</span><span class="en">${esc(e.en)}</span></div>`
   ).join('');
   return `<div class="sec">
@@ -433,12 +479,13 @@ export function viewGrammarIntro(topic) {
       <span class="mono">GRAMMAR</span></div>
     <div class="panel">
       <div style="font-size:15px;font-weight:600">${esc(topic.title)}</div>
-      <div style="font-size:14px;color:var(--ink2);line-height:1.55;margin-top:8px">${esc(topic.summary)}</div>
+      ${full ? `<div style="font-size:14px;color:var(--ink2);line-height:1.55;margin-top:8px">${esc(topic.summary)}</div>` : ''}
     </div>
     <div class="panel rows">${exRows}</div>
-    <div class="gl" style="margin-top:8px">${esc(topic.sourceCite)}</div>
+    ${full ? `<div class="gl" style="margin-top:8px">${esc(topic.sourceCite)}</div>` : ''}
     <div class="btns">
       <button class="btn primary" data-act="grammar-begin">Start drills${gli(`${topic.drills.length} items`)}</button>
+      ${seen && !open ? `<button class="btn ghost" data-act="toggle" data-id="why:${esc(topic.id)}">Why?</button>` : ''}
       <button class="btn ghost" data-act="grammar-exit">← All topics</button>
     </div>
   </div>`;
@@ -828,7 +875,8 @@ export function viewDone(summary, st, p, ctx = {}) {
   const history = p.history || [];
   const cells = weekCells(history, today);
   const run = streak(history, today);
-  const fresh = (summary.newBadges || []).map(id => byBadgeId[id]).filter(Boolean);
+  const fresh = (summary.newBadges || []).map(id => byBadgeId[id]).filter(Boolean)
+    .filter(() => !(summary.events || []).length);   // badges are in the callouts when there are events
   const answered = summary.reviews;
 
   // What this lesson did, nothing lifetime: the score, how much was right the
@@ -844,6 +892,9 @@ export function viewDone(summary, st, p, ctx = {}) {
       <div class="wline" style="margin-bottom:8px"><span class="mn">${run} day streak</span></div>
       ${weekStrip(cells, today)}
     </div>` +
+    // Callouts: only what happened, at most three.
+    ((summary.events || []).length ? `<div class="panel gold reveal">${summary.events.slice(0, 3).map(e =>
+      `<div class="earned"><span class="dot"></span><div style="font-size:14px;font-weight:600">${esc(e)}</div></div>`).join('')}</div>` : '') +
 
     (fresh.length ? `<div class="panel gold reveal">${fresh.map(b => `
         <div class="earned"><span class="dot"></span>

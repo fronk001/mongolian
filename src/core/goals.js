@@ -10,9 +10,11 @@
  * Two deliberate design decisions, both from the gamification-misuse research
  * in ROADMAP.md:
  *
- *   1. A streak day requires a *finished session*, not an app open. Sessions
- *      only close once every item has been graded, so protecting the streak
- *      and doing the work are the same action. There are no streak freezes.
+ *   1. A streak counts finished lessons in a row, not app opens. A rest day,
+ *      earned by every 7 lessons (at most 2 held), covers a missed day; it is
+ *      computed from history, drawn as rest, and never counts as a lesson.
+ *      (Before October 2026: "there are no streak freezes" — reversed at
+ *      Fred's request, plan decision 4; past streaks are not rewritten.)
  *   2. The week, not the 2,500-word goal, is the headline period. One lesson
  *      is 14% of a week and 0.04% of B1; a horizon nobody can move in a day
  *      does not motivate, it flattens.
@@ -73,25 +75,58 @@ export function entryFor(history, key) {
  * still unstarted — an unfinished today must not read as a broken streak at
  * nine in the morning.
  */
-export function streak(history, today) {
-  const days = studyDays(history);
-  if (!days.size) return 0;
-  let cursor = days.has(today) ? today : addDays(today, -1);
-  let n = 0;
-  while (days.has(cursor)) { n++; cursor = addDays(cursor, -1); }
-  return n;
-}
+/** Rest days: one per this many finished lessons, at most REST_MAX held. */
+export const REST_EVERY = 7;
+export const REST_MAX = 2;
+/** Rest days cover only gaps from this day on: past streaks are never rewritten. */
+export const REST_FROM = '2026-10-13';
 
-/** Longest run of consecutive finished days ever recorded. */
-export function bestStreak(history) {
-  const days = [...studyDays(history)].sort();
-  let best = 0, run = 0, prev = null;
+/**
+ * The streak with rest days, derived from history alone (nothing stored, so
+ * nothing to sync or corrupt). Every REST_EVERY lesson days earn a rest day,
+ * at most REST_MAX in the bank; a gap the bank can cover is covered and the
+ * run continues, a longer gap breaks it and the bank is kept. Today is
+ * pending, never a miss. Returns { streak, best, bank, covered: Set }.
+ */
+export function streakState(history, today, { from = REST_FROM } = {}) {
+  const days = [...studyDays(history)].filter(d => !today || d <= today).sort();
+  let run = 0, best = 0, bank = 0, count = 0, prev = null;
+  const covered = new Set();
+  const between = (a, b) => {
+    const out = [];
+    for (let k = addDays(a, 1); k < b; k = addDays(k, 1)) out.push(k);
+    return out;
+  };
   for (const d of days) {
-    run = prev && daysBetween(prev, d) === 1 ? run + 1 : 1;
+    if (prev) {
+      const gap = between(prev, d);
+      if (gap.length) {
+        if (gap.every(k => k >= from) && gap.length <= bank) { bank -= gap.length; gap.forEach(k => covered.add(k)); }
+        else run = 0;
+      }
+    }
+    run++; count++;
+    if (count % REST_EVERY === 0 && bank < REST_MAX) bank++;
     if (run > best) best = run;
     prev = d;
   }
-  return best;
+  if (prev && today) {
+    const pending = between(prev, today);      // days missed up to yesterday
+    if (pending.length) {
+      if (pending.every(k => k >= from) && pending.length <= bank) { bank -= pending.length; pending.forEach(k => covered.add(k)); }
+      else run = 0;
+    }
+  }
+  return { streak: run, best, bank, covered };
+}
+
+export function streak(history, today) {
+  return streakState(history, today).streak;
+}
+
+/** Longest run ever, rest days included where they covered a gap. */
+export function bestStreak(history, today) {
+  return streakState(history, today).best;
 }
 
 // ---------------------------------------------------------------- periods
@@ -105,13 +140,14 @@ export function bestStreak(history) {
  */
 export function weekCells(history, today) {
   const days = studyDays(history);
+  const { covered } = streakState(history, today);
   const start = weekStart(today);
   return Array.from({ length: 7 }, (_, i) => {
     const key = addDays(start, i);
     const done = days.has(key);
     const state = key === today ? (done ? 'done' : 'today')
       : key > today ? 'future'
-      : done ? 'done' : 'missed';
+      : done ? 'done' : covered.has(key) ? 'rest' : 'missed';
     return { key, state, index: i };
   });
 }
@@ -122,6 +158,7 @@ export function weekCells(history, today) {
  */
 export function monthCells(history, today) {
   const days = studyDays(history);
+  const { covered } = streakState(history, today);
   const first = monthStart(today);
   const cells = Array.from({ length: weekday(first) }, () => ({ key: null, state: 'blank' }));
   for (let d = 1; d <= daysInMonth(today); d++) {
@@ -131,7 +168,7 @@ export function monthCells(history, today) {
       key, day: d,
       state: key === today ? (done ? 'done' : 'today')
         : key > today ? 'future'
-        : done ? 'done' : 'missed'
+        : done ? 'done' : covered.has(key) ? 'rest' : 'missed'
     });
   }
   return cells;

@@ -50,7 +50,10 @@ export function blank() {
     appeals: {},
     // Baby paragraphs read: { [readingId]: { reads, last, firstDay,
     // firstRight, firstWrong } }. Never touches FSRS.
-    readings: {}
+    readings: {},
+    // Path progress (src/data/units.json): only checkpoint events and credit
+    // days are stored; how full a unit is comes from items. core/path.js.
+    units: {}
   };
 }
 

@@ -8,6 +8,8 @@ import { xpForAnswer, earnedBadges, stepCount, levelFor } from '../core/goals.js
 import { gradeDrill, applyGrammarGrade, topicMastery } from '../core/grammar.js';
 import { afterAnswer, retryIndex, retryItem } from '../core/ladder.js';
 import { pickReading, recordReading } from '../core/readings.js';
+import { pathState, checkpointDue, buildCheckpoint, startCheckpoint, finishCheckpoint, creditHomeUnits, unitLabel, PASS_RIGHT } from '../core/path.js';
+import { streakState, byBadgeId } from '../core/goals.js';
 import { makeTilePools, bankFor, acceptedFor, minTiles, gradeBuild, orderDiff, tokensOf } from '../core/tiles.js';
 import { createSync } from '../sync/engine.js';
 import { firebaseBackend } from '../sync/firebase.js';
@@ -24,7 +26,7 @@ const el = document.getElementById('app');
 const params = new URLSearchParams(location.search);
 const fake = params.has('fake-sync') ? params.get('fake-sync') || 'laptop' : null;
 const KEY = fake ? `${STORE_KEY}:fake:${fake}` : STORE_KEY;
-let WORDS = [], SENTENCES = [], GRAMMAR = [], READINGS = [], BYID = {}, POOL = [];
+let WORDS = [], SENTENCES = [], GRAMMAR = [], READINGS = [], UNITS = [], BYID = {}, POOL = [];
 // ?dev: preview what is waiting for review (reading drafts) before Luna or Sarnai sign off.
 const DEV = params.has('dev');
 let TILEPOOL = () => ({ siblings: [], others: [] });   // decoy candidates per sentence, built at boot
@@ -90,6 +92,7 @@ let S = {
   tiles: null,                        // { bank: [{t, ans}], placed: [bank index], refused }
   sawBlocks: false,                   // blocks were shown this attempt: it is graded as a blocks attempt
   rd: null,                           // the reader: { phase, qi, picked, right, wrong, word, en }
+  cp: null,                           // today's checkpoint: { unit, of, right, typedRight, started }
   open: new Set(),                    // disclosures opened on the tab pages; survives sync redraws
   gScores: true,                      // this grammar pass earns XP: the first of the day per topic
   editPurpose: false,
@@ -146,7 +149,12 @@ function commit(item, g, typed = false, gain = null) {
   const xp = gain ?? xpForAnswer(g > 1, typed);
   const mode = typed ? 'type' : item.kind === 'card' ? 'choice' : 'blocks';
   S.pending = { item, g, snaps, xp: P.xp || 0, gain: xp, typed, summary: { ...S.summary, missedWords: [...S.summary.missedWords] } };
-  ids.forEach(id => awardGrade(id, g, mode));
+  if (item.checkpoint) {
+    // A checkpoint answer is evidence for the unit, not a review: no FSRS.
+    // The attempt counts from its first answer, so quitting is an attempt.
+    if (!S.cp.started) { startCheckpoint(P, item.checkpoint); S.cp.started = true; }
+    if (g > 1) { S.cp.right++; if (typed) S.cp.typedRight++; }
+  } else ids.forEach(id => awardGrade(id, g, mode));
   S.summary.answers++;
   if (g > 1) S.summary.firstRight++;
   S.summary.xp += xp;
@@ -267,6 +275,13 @@ function todaySession() {
   const built = buildSession(P, WORDS, SENTENCES);
   const s = built.items.length ? built : buildPractice(P, WORDS);
   // A baby paragraph closes the lesson when he can read one (core/readings.js).
+  // A ready unit's checkpoint rides after the main items, before the reading.
+  const unit = s.items.length ? checkpointDue(P, UNITS, WORDS) : null;
+  if (unit) {
+    const exclude = new Set(s.items.filter(it => it.kind === 'sentence').map(it => it.sentence.mn));
+    const cp = buildCheckpoint(P, unit, SENTENCES, WORDS, { exclude, tries: (P.units?.[unit.id]?.tries) || 0 });
+    if (cp.length) { s.items.push(...cp); s.checkpoint = { unit, of: cp.length }; }
+  }
   const reading = s.items.length ? pickReading(P, READINGS, WORDS, { dev: DEV }) : null;
   if (reading) s.items.push({ kind: 'reading', reading });
   return s;
@@ -334,11 +349,12 @@ function render({ keep = false } = {}) {
       dot: syncDot(syncStatus())
     };
     let body;
-    if (S.tab === 'progress') body = V.viewProgress(P, st, ctx);
+    const path = UNITS.length ? pathState(P, UNITS, WORDS) : null;
+    if (S.tab === 'progress') body = V.viewProgress(P, st, { ...ctx, path, open: S.open, drillable: POOL.length, byId: BYID });
     else if (S.tab === 'grammar') body = V.viewGrammarList(GRAMMAR, P);
-    else if (S.tab === 'achievements') body = V.viewAchievements(P, st, { ...ctx, open: S.open, drillable: POOL.length });
+    else if (S.tab === 'achievements') { S.tab = 'progress'; render(); return; }
     else if (S.tab === 'settings') body = settingsPage();
-    else body = V.viewToday(P, st, todaySession(), ctx);
+    else body = V.viewToday(P, st, todaySession(), { ...ctx, path, checkpointToday: !!checkpointDue(P, UNITS, WORDS) });
     el.innerHTML = body + V.tabBar(S.tab);
   } else if (S.screen === 'done') {
     el.innerHTML = V.viewDone(S.summary, st, P, { today });
@@ -347,7 +363,7 @@ function render({ keep = false } = {}) {
     if (!topic) { S.screen = 'home'; S.tab = 'grammar'; render(); return; }
     let body;
     if (S.gStep === -1) {
-      body = V.viewGrammarIntro(topic);
+      body = V.viewGrammarIntro(topic, { seen: !!P.grammar[topic.id], open: S.open.has('why:' + topic.id) });
     } else if (S.gStep >= topic.drills.length) {
       body = V.viewGrammarDone(topic, S.gSummary, topicMastery(P.grammar[topic.id]));
     } else {
@@ -518,6 +534,19 @@ function finish() {
   P.lastDate = today;
   const st = stats(P, { words: WORDS });
 
+  const before = streakState(P.history, today);
+  const firstToday = !(P.history || []).some(h => h.date === today);
+  const events = [];
+  if (S.cp && S.cp.started) {
+    const label = `${unitLabel(S.cp.unit, UNITS)} · ${S.cp.unit.title}`;
+    if (finishCheckpoint(P, S.cp.unit.id, S.cp.right, S.cp.typedRight, S.cp.of)) events.push(`${label} complete`);
+    else events.push(`Checkpoint ${S.cp.right} of ${S.cp.of} · again tomorrow`);
+  }
+  for (const id of creditHomeUnits(P, UNITS, today)) {
+    const u = UNITS.find(x => x.id === id);
+    events.push(`${unitLabel(u, UNITS)} complete · ${u.title}`);
+  }
+
   // One row per day, not per session: two sessions in a day are one study
   // day, or the streak rewards re-opening the app rather than doing the work.
   recordDay(P, {
@@ -535,9 +564,19 @@ function finish() {
     fixed: S.summary.fixed
   });
 
-  const before = new Set(P.badges || []);
+  const had = new Set(P.badges || []);
   P.badges = earnedBadges(P, { stats: st, today, perfectSentence: S.summary.perfect });
-  S.summary.newBadges = P.badges.filter(b => !before.has(b));
+  S.summary.newBadges = P.badges.filter(b => !had.has(b));
+  const after = streakState(P.history, today);
+  // A rest day used: on the first lesson of the day, the covered days since
+  // the previous lesson are the gap a rest day just bridged.
+  const prior = (P.history || []).map(h => h.date).filter(d => d < today).sort().pop() || '';
+  const rested = firstToday ? [...after.covered].filter(d => d > prior && d < today).length : 0;
+  if (rested) events.push(rested === 1 ? 'Yesterday covered by a rest day' : `${rested} days covered by rest days`);
+  if (after.bank > before.bank) events.push(`Rest day earned · ${after.bank} saved`);
+  for (const id of S.summary.newBadges) { const b = byBadgeId[id]; if (b) events.push(`New badge · ${b.en}`); }
+  S.summary.events = events;
+  S.summary.milestone = events.some(e => / complete|New badge/.test(e));
 
   // A level crossed during this session, not just reported on it — the one
   // thing INSTRUMENT's "no fanfare but session-close" rule still gets a
@@ -547,7 +586,7 @@ function finish() {
 
   save(P);
   S.screen = 'done';
-  SND.play(S.summary.newBadges.length ? 'milestone' : 'finish');
+  SND.play(S.summary.milestone ? 'milestone' : 'finish');
   render();
 }
 
@@ -625,6 +664,7 @@ document.addEventListener('click', e => {
     S.fb = null; S.picked = null;
     S.deckI = 0; S.flipped = false; S.skip = new Set(); S.graded = new Set(); S.run = 0;
     S.pending = null; S.lastPick = null; S.retryOk = null; S.claimed = [];
+    S.cp = S.session.checkpoint ? { ...S.session.checkpoint, right: 0, typedRight: 0, started: false } : null;
     S.summary = blankSummary();
     // The level going in, so finish() can tell a level gained during this
     // session from a level the learner was already sitting at.
@@ -994,13 +1034,14 @@ async function makeBackend() {
 }
 
 async function boot() {
-  const [w, s, g, rd] = await Promise.all([
+  const [w, s, g, rd, un] = await Promise.all([
     fetch('./data/words.json').then(r => r.json()),
     fetch('./data/sentences.json').then(r => r.json()),
     fetch('./data/grammar.json').then(r => r.json()),
-    fetch('./data/readings.json').then(r => r.json()).catch(() => [])
+    fetch('./data/readings.json').then(r => r.json()).catch(() => []),
+    fetch('./data/units.json').then(r => r.json()).catch(() => ({ units: [] }))
   ]);
-  WORDS = w; SENTENCES = s; GRAMMAR = g; READINGS = rd;
+  WORDS = w; SENTENCES = s; GRAMMAR = g; READINGS = rd; UNITS = un.units || [];
   BYID = Object.fromEntries(WORDS.map(x => [x.id, x]));
   // Distractors come from drillable vocabulary only: offering «байна» as an
   // option against a noun gives the answer away by register alone.

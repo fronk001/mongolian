@@ -17,14 +17,18 @@ implementation; if the two disagree, the CSS is wrong.
    verified or known, gold for the goal layer. A panel with no spine is
    reference material. Two panels claiming the same domain on one screen means
    one is wrong.
-3. **Numbers are real, including the game.** The app has XP, levels, streaks
-   and badges — but each is derived from an event that actually happened. XP
-   is counted per first attempt (since October 2026): 1 for answering, 1 more
-   if right, 1 more if typed rather than picked or built; retries, rereads
-   and appeals earn nothing. Levels are thresholds on known words. A streak day
-   requires a *finished* session. Badges are checkable conditions. Nothing in
-   the interface can be earned without doing the work, and no figure is
-   invented to make a screen feel better.
+3. **Numbers are real, including the game.** Every figure is derived from an
+   event that actually happened. XP is counted per first attempt: 1 for
+   answering, 1 more if right, 1 more if typed; retries, rereads and appeals
+   earn nothing. Levels are retired; the path is the ladder. A unit fills as
+   its words become familiar (stability ≥ 7 days); a home unit completes when
+   all its words are familiar, a textbook unit when its checkpoint is passed
+   (4 of 5 right first time, at least 3 typed; one attempt a day). A streak
+   counts finished lessons in a row; a rest day, earned every 7 lessons with at
+   most 2 saved, covers a missed day and is drawn as rest, never as done.
+   Badges are checkable conditions and show their progress. Nothing is earned
+   without the work, nothing is bought, and no figure is invented to make a
+   screen feel better.
 4. **Mongolian is the largest thing.** Cyrillic sits at the top of the type
    scale, uncrowded. English is mono, small and grey — reference, not content.
 5. **Interface chrome is English only.** Buttons, section headers, verdicts,
@@ -115,7 +119,8 @@ reference layer harder to read than the content layer, that change is wrong.
   over a figure over a gloss.
 - **Week strip** — seven slots. A finished day is solid blue; today unstarted
   is a red-outlined hatch, an empty space waiting to be filled; a missed day
-  stays visible as a gap. Renumbering a week to hide a miss is forbidden.
+  stays visible as a gap. A rest day — a miss covered by one earned with 7
+  lessons — is a gold hatch: never blue, never counted as a lesson. Renumbering a week to hide a miss is forbidden.
 - **Month grid** — Monday-first, capped at 266px so it stays evidence rather
   than headline.
 - **Gold band** — the goal and lesson-worth readouts. Ink on gold.
@@ -165,6 +170,14 @@ reference layer harder to read than the content layer, that change is wrong.
   "+10". A badge the content cannot yet make reachable (250 words known with
   154 written) is not a target, and `backup` is retired as one. The Mongolian
   names Luna approved stay in `BADGES` (`core/goals.js`); the pill shows English.
+- **Today** (October 2026) — one gold panel: his purpose line, the current
+  unit with a blue meter, the streak and the week strip; then Start. About 40
+  words where there were 86. Tracked, due, RET, ACC and the rest moved to
+  Progress → Numbers.
+- **Path** — on Progress: done units folded into one line, the current unit
+  open with its meter and can-do line, the next two by title. Tapping a unit
+  lists its words, each marked familiar (✓), learning (·) or not met (○).
+  Achievements is folded into Progress.
 - **Numbers** — the slow figures (words known against the goal, level,
   lifetime XP, the B1 projection) sit in a closed disclosure on Achievements.
   They are real but moved weeks after the work or swung by years, and read

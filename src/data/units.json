@@ -1,0 +1,407 @@
+{
+ "parts": [
+  {
+   "id": "home",
+   "title": "At home"
+  },
+  {
+   "id": "a1",
+   "title": "First steps"
+  }
+ ],
+ "units": [
+  {
+   "id": "h01",
+   "part": "home",
+   "title": "Rooms and furniture",
+   "can": "Name what is in a room",
+   "words": [
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106
+   ],
+   "grammar": [
+    "g_byna"
+   ],
+   "readings": [],
+   "source": "Booklet days 1-3 (pp. 2-5)"
+  },
+  {
+   "id": "h02",
+   "part": "home",
+   "title": "Around the house",
+   "can": "Say where things are",
+   "words": [
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120
+   ],
+   "grammar": [
+    "g_qparticle"
+   ],
+   "readings": [],
+   "source": "Booklet days 3-5 (pp. 4-9)"
+  },
+  {
+   "id": "h03",
+   "part": "home",
+   "title": "Housework",
+   "can": "Say what needs doing",
+   "words": [
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138
+   ],
+   "grammar": [
+    "g_habitual"
+   ],
+   "readings": [],
+   "source": "Booklet days 5-7 (pp. 8-13)"
+  },
+  {
+   "id": "h04",
+   "part": "home",
+   "title": "Meals",
+   "can": "Talk about meals",
+   "words": [
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148
+   ],
+   "grammar": [],
+   "readings": [],
+   "source": "Booklet days 8-9 (pp. 14-17)"
+  },
+  {
+   "id": "h05",
+   "part": "home",
+   "title": "In the kitchen",
+   "can": "Name food and kitchen things",
+   "words": [
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160
+   ],
+   "grammar": [],
+   "readings": [],
+   "source": "Booklet days 9-11 (pp. 16-21)"
+  },
+  {
+   "id": "h06",
+   "part": "home",
+   "title": "The cat",
+   "can": "Talk about a pet",
+   "words": [
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168,
+    169,
+    170
+   ],
+   "grammar": [
+    "g_tai"
+   ],
+   "readings": [],
+   "source": "Booklet days 11-12 (pp. 20-23)"
+  },
+  {
+   "id": "h07",
+   "part": "home",
+   "title": "Books",
+   "can": "Talk about reading and writing",
+   "words": [
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180
+   ],
+   "grammar": [
+    "g_accusative"
+   ],
+   "readings": [],
+   "source": "Booklet days 12-13 (pp. 22-25)"
+  },
+  {
+   "id": "h08",
+   "part": "home",
+   "title": "The garden",
+   "can": "Talk about the garden",
+   "words": [
+    181,
+    182,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192
+   ],
+   "grammar": [],
+   "readings": [],
+   "source": "Booklet days 14-15 (pp. 26-29)"
+  },
+  {
+   "id": "h09",
+   "part": "home",
+   "title": "Describing things",
+   "can": "Say what things are like",
+   "words": [
+    193,
+    194,
+    195,
+    196,
+    197,
+    198,
+    199,
+    200,
+    251,
+    252,
+    253,
+    254,
+    255
+   ],
+   "grammar": [],
+   "readings": [],
+   "source": "Booklet days 15-16 (pp. 28-30) and key"
+  },
+  {
+   "id": "h10",
+   "part": "home",
+   "title": "Home, days and family",
+   "can": "Say when, and who",
+   "words": [
+    231,
+    232,
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    242,
+    243,
+    244,
+    245,
+    246,
+    247
+   ],
+   "grammar": [],
+   "readings": [],
+   "source": "Booklet answer key (pp. 31-39)"
+  },
+  {
+   "id": "h11",
+   "part": "home",
+   "title": "Everyday verbs",
+   "can": "Say what people do",
+   "words": [
+    248,
+    249,
+    250,
+    256,
+    257,
+    258,
+    259,
+    260,
+    261,
+    262,
+    263,
+    264,
+    265,
+    266,
+    267,
+    268,
+    269,
+    270,
+    271,
+    272,
+    273
+   ],
+   "grammar": [],
+   "readings": [],
+   "source": "Booklet answer key (pp. 31-39)"
+  },
+  {
+   "id": "u01",
+   "part": "a1",
+   "title": "Who, what and whose",
+   "can": "Say who someone is and whose things are",
+   "words": [
+    1000,
+    1001,
+    1002,
+    1003,
+    1004,
+    1005,
+    1006,
+    1007,
+    1008,
+    1009,
+    1010,
+    1011,
+    1012,
+    1013,
+    1014,
+    1015,
+    1016,
+    1017,
+    1018,
+    1019,
+    1020,
+    1021,
+    1022,
+    1023,
+    1024,
+    1025,
+    1026,
+    1027,
+    1028,
+    1029,
+    1030,
+    1031,
+    1032,
+    1033,
+    1034,
+    1035,
+    1036
+   ],
+   "grammar": [
+    "g_qparticle"
+   ],
+   "readings": [],
+   "source": "Beg lessons 1-2, p1-23 [PDF 2-24]; Surv lessons 1-2"
+  },
+  {
+   "id": "u02",
+   "part": "a1",
+   "title": "Where are you from?",
+   "can": "Say where you are from and what you do",
+   "words": [
+    1042,
+    1043,
+    1044,
+    1045,
+    1046,
+    1047,
+    1048,
+    1049,
+    1050,
+    1051,
+    1052,
+    1053,
+    1054,
+    1055,
+    1056,
+    1057,
+    1058,
+    1059,
+    1060,
+    1061
+   ],
+   "grammar": [],
+   "readings": [],
+   "source": "Beg lesson 2, Surv lessons 2-3, p13-37 [PDF 15-39]"
+  },
+  {
+   "id": "u03",
+   "part": "a1",
+   "title": "Numbers, age and time",
+   "can": "Count, tell the time, say your age",
+   "words": [],
+   "planned": true,
+   "source": "Surv p26-35 [PDF 28-37]; MM p65 [PDF 77]"
+  },
+  {
+   "id": "u04",
+   "part": "a1",
+   "title": "Family",
+   "can": "Talk about your family",
+   "words": [],
+   "planned": true,
+   "source": "Surv p75-83 [PDF 77-85]"
+  },
+  {
+   "id": "u05",
+   "part": "a1",
+   "title": "Getting around",
+   "can": "Take a taxi and ask the way",
+   "words": [],
+   "planned": true,
+   "source": "Surv p41-47 [PDF 43-49]"
+  }
+ ]
+}

@@ -448,3 +448,30 @@ transform 90ms var(--ease)}
   border-radius:3px;font:500 14px/1.2 Geologica,sans-serif;color:var(--ink);cursor:pointer}
 .nextbadge{margin-top:8px}
 .nextbadge .wline{padding:0}
+
+/* A rest day: a missed day covered by one earned with 7 lessons. A gold
+   hatch — a fill, never type — distinct from done (blue), today (red hatch)
+   and a plain miss. Never drawn as done (INSTRUMENT, week strip). */
+.week .bar.rest,.month i.rest{background:repeating-linear-gradient(135deg,var(--gold) 0 3px,var(--gold-wash) 3px 7px)}
+
+/* ---- Today, lean (R3): one gold panel — why, the unit, the streak ------- */
+.top.lean{padding-bottom:6px;border-bottom:0}
+.purpose{display:block;width:100%;text-align:left;font:500 15px/1.45 Geologica,sans-serif;color:var(--ink);
+  background:none;border:0;padding:0 0 10px;cursor:pointer}
+.purpose.empty{color:var(--muted);font-size:13.5px}
+.unitline{display:block;width:100%;text-align:left;background:none;border:0;padding:8px 0;cursor:pointer;
+  border-top:1px solid var(--rule2);color:var(--ink)}
+.unitline .mn{font-size:14px;font-weight:600}
+.unitline .meter{margin-top:6px}
+.streakline{border-top:1px solid var(--rule2);padding-top:8px;font-size:14px;font-weight:600}
+
+/* ---- Progress: the path ------------------------------------------------- */
+.unitrow{display:flex;justify-content:space-between;align-items:baseline;width:100%;gap:10px;
+  background:none;border:0;border-top:1px solid var(--rule2);padding:9px 0;cursor:pointer;
+  font:500 14px/1.3 Geologica,sans-serif;color:var(--ink);text-align:left}
+.unitrow .n{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.unitrow.planned{cursor:default;color:var(--muted)}
+.unitsheet{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 10px}
+.wstate{font-size:12.5px;padding:3px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--panel2)}
+.wstate.familiar{border-color:var(--blue-soft)}
+.wstate.new{color:var(--muted)}

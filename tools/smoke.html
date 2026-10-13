@@ -69,8 +69,8 @@ try {
 
   // ---- the laptop, before sync ---------------------------------------------
   await go(f, '../dist/index.html?fake-sync=laptop');
-  await until(() => $(f, '.top .sub'), 'the laptop dashboard');
-  check('laptop: its own progress shows at once', text(f, '.top .sub').startsWith('3 words tracked'));
+  await until(() => $(f, '[data-tracked]'), 'the laptop dashboard');
+  check('laptop: its own progress shows at once', ($(f, '[data-tracked]')?.dataset.tracked === '3'));
   await until(() => text(f, '#app').includes('Export a backup code'), 'the backup reminder');
   check('not synced yet: the backup reminder says sync is the way out',
     text(f, '#app').includes('sign in under settings to sync it'));
@@ -93,7 +93,7 @@ try {
   check('with sync on, an old backup code is no longer a red warning',
     !$(f, '.panel.red') && text(f, '#app').includes('optional while sync is on'));
   tab(f, 'today');
-  await until(() => $(f, '.top .sub'), 'Today');
+  await until(() => $(f, '[data-tracked]'), 'Today');
   check('Today: no backup reminder once synced', !text(f, '#app').includes('Export a backup code'));
   await until(() => $(f, '.syncdot.on'), 'the dot turning blue');
   check('synced: the dot is blue, and says so', $(f, '.syncdot').title === 'Sync: on');
@@ -114,8 +114,8 @@ try {
 
   // ---- the phone joins -------------------------------------------------------
   await go(g, '../dist/index.html?fake-sync=phone');
-  await until(() => $(g, '.top .sub'), 'the phone dashboard');
-  check('phone: its own progress first', text(g, '.top .sub').startsWith('2 words tracked'));
+  await until(() => $(g, '[data-tracked]'), 'the phone dashboard');
+  check('phone: its own progress first', ($(g, '[data-tracked]')?.dataset.tracked === '2'));
   check('phone: red before signing in', !!$(g, '.syncdot.red'));
   tab(g, 'settings');
   await until(() => $(g, '[data-act=sync-sign-in]'), 'the phone sync panel');
@@ -123,11 +123,11 @@ try {
   signIn(g, fred.password);
   await until(() => $(g, '[data-sync=on]'), 'the phone signed in');
   tab(g, 'today');
-  await until(() => text(g, '.top .sub').startsWith('5 words tracked'), 'the combined progress on the phone');
+  await until(() => ($(g, '[data-tracked]')?.dataset.tracked === '5'), 'the combined progress on the phone');
   check('phone: progress from both devices', true);
   await until(() => $(g, '.syncdot.on'), 'the phone dot turning blue');
   check('phone: blue once signed in', true);
-  await until(() => text(f, '.top .sub').startsWith('5 words tracked'), 'the combined progress on the laptop');
+  await until(() => ($(f, '[data-tracked]')?.dataset.tracked === '5'), 'the combined progress on the laptop');
   check('laptop: the phone\'s words appear by themselves', true);
   check('both days are online', online().history.length === 2);
 
@@ -158,7 +158,7 @@ try {
   await until(() => $(g, '[data-sync=off]'), 'signed out');
   check('signing out keeps the progress on the phone', Object.keys(stored('phone').items).length === 5);
   tab(g, 'today');
-  await until(() => $(g, '.top .sub'), 'Today');
+  await until(() => $(g, '[data-tracked]'), 'Today');
   check('signed out: the backup reminder is back', text(g, '#app').includes('Export a backup code'));
   check('signed out: the dot is red again', !!$(g, '.syncdot.red'));
 } catch (e) {

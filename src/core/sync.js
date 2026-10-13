@@ -290,6 +290,16 @@ export function mergeStates(a, b) {
     out.readings[id] = { ...keep, firstDay: first.firstDay, firstRight: first.firstRight, firstWrong: first.firstWrong };
   }
 
+  // Units: a passed record beats an unpassed one, the earlier pass wins, then
+  // more tries, then the later attempt — whole records, never mixed.
+  const unitRec = (x, y) =>
+    !!x.passed !== !!y.passed ? (x.passed ? x : y)
+      : x.passed && x.passed !== y.passed ? (x.passed < y.passed ? x : y)
+      : (x.tries || 0) !== (y.tries || 0) ? ((x.tries || 0) > (y.tries || 0) ? x : y)
+      : (x.last || '') >= (y.last || '') ? x : y;
+  out.units = { ...(b.units || {}) };
+  for (const [u, r] of Object.entries(a.units || {})) out.units[u] = out.units[u] ? unitRec(r, out.units[u]) : r;
+
   out.xp = Math.max(a.xp || 0, b.xp || 0);
   out.createdAt = earlierDay(a.createdAt, b.createdAt) || out.createdAt;
   out.lastDate = laterDay(a.lastDate, b.lastDate) || null;
@@ -304,12 +314,14 @@ const isCounter = p =>
   (p.length === 2 && p[0] === 'main' && p[1] === 'xp') ||
   (p.length === 4 && isYearDoc(p[0]) && p[1] === 'history' && ROW_COUNTERS.includes(p[3])) ||
   (p.length === 4 && p[0] === 'main' && p[1] === 'grammar' && (p[3] === 'right' || p[3] === 'wrong')) ||
-  (p.length === 4 && p[0] === 'main' && p[1] === 'readings' && p[3] === 'reads');
+  (p.length === 4 && p[0] === 'main' && p[1] === 'readings' && p[3] === 'reads') ||
+  (p.length === 4 && p[0] === 'main' && p[1] === 'units' && p[3] === 'tries');
 const isLatest = p =>
   (p.length === 2 && p[0] === 'main' && (p[1] === 'lastDate' || p[1] === 'lastExport')) ||
-  (p.length === 4 && p[0] === 'main' && (p[1] === 'grammar' || p[1] === 'readings') && p[3] === 'last');
+  (p.length === 4 && p[0] === 'main' && (p[1] === 'grammar' || p[1] === 'readings' || p[1] === 'units') && p[3] === 'last');
 const isEarliest = p => (p.length === 2 && p[0] === 'main' && p[1] === 'createdAt') ||
-  (p.length === 4 && p[0] === 'main' && p[1] === 'readings' && p[3] === 'firstDay');
+  (p.length === 4 && p[0] === 'main' && p[1] === 'readings' && p[3] === 'firstDay') ||
+  (p.length === 4 && p[0] === 'main' && p[1] === 'units' && p[3] === 'passed');
 
 /**
  * Changes this device made, re-applied on top of what the database holds
