@@ -138,6 +138,11 @@
     ],
     "answer": 0,
     "line": 4
+   },
+   {
+    "kind": "order",
+    "q": "Put this line back in order",
+    "line": 3
    }
   ],
   "ids": [
@@ -281,6 +286,11 @@
     ],
     "answer": 0,
     "line": 3
+   },
+   {
+    "kind": "order",
+    "q": "Put this line back in order",
+    "line": 3
    }
   ],
   "ids": [
@@ -419,6 +429,11 @@
      "Milk"
     ],
     "answer": 0,
+    "line": 3
+   },
+   {
+    "kind": "order",
+    "q": "Put this line back in order",
     "line": 3
    }
   ],
@@ -570,6 +585,11 @@
     ],
     "answer": 0,
     "line": 4
+   },
+   {
+    "kind": "order",
+    "q": "Put this line back in order",
+    "line": 1
    }
   ],
   "ids": [
@@ -708,6 +728,11 @@
     ],
     "answer": 0,
     "line": 3
+   },
+   {
+    "kind": "order",
+    "q": "Put this line back in order",
+    "line": 1
    }
   ],
   "ids": [
@@ -721,6 +746,473 @@
    213,
    218,
    1001
+  ]
+ },
+ {
+  "id": "r06",
+  "title": "My teacher",
+  "level": 1,
+  "reviewed": false,
+  "src": "Unit 1; format: a short text, questions after it — MM p10-11 [PDF 22-23]; Beg p2-23 [PDF 3-24]",
+  "lines": [
+   {
+    "mn": "Энэ миний багш.",
+    "en": "This is my teacher.",
+    "words": [
+     [
+      "Энэ",
+      206
+     ],
+     [
+      "миний",
+      1007
+     ],
+     [
+      "багш.",
+      1013
+     ]
+    ]
+   },
+   {
+    "mn": "Манай багш монгол хүн.",
+    "en": "Our teacher is Mongolian.",
+    "words": [
+     [
+      "Манай",
+      212
+     ],
+     [
+      "багш",
+      1013
+     ],
+     [
+      "монгол",
+      1008
+     ],
+     [
+      "хүн.",
+      1012
+     ]
+    ]
+   },
+   {
+    "mn": "Тэр их сайн багш.",
+    "en": "She is a very good teacher.",
+    "words": [
+     [
+      "Тэр",
+      207
+     ],
+     [
+      "их",
+      1004
+     ],
+     [
+      "сайн",
+      193
+     ],
+     [
+      "багш.",
+      1013
+     ]
+    ]
+   },
+   {
+    "mn": "Би түүний ангид монгол хэл сурдаг.",
+    "en": "I study Mongolian in her class.",
+    "words": [
+     [
+      "Би",
+      203
+     ],
+     [
+      "түүний",
+      1019
+     ],
+     [
+      "ангид",
+      1026
+     ],
+     [
+      "монгол",
+      1008
+     ],
+     [
+      "хэл",
+      1009
+     ],
+     [
+      "сурдаг.",
+      1010
+     ]
+    ]
+   }
+  ],
+  "questions": [
+   {
+    "q": "Who is this?",
+    "options": [
+     "My teacher",
+     "My friend",
+     "My mother"
+    ],
+    "answer": 0,
+    "line": 0
+   },
+   {
+    "q": "Is the teacher Mongolian?",
+    "options": [
+     "Yes",
+     "No"
+    ],
+    "answer": 0,
+    "line": 1
+   },
+   {
+    "q": "What does he study in her class?",
+    "options": [
+     "Mongolian",
+     "Cooking",
+     "Nothing"
+    ],
+    "answer": 0,
+    "line": 3
+   },
+   {
+    "kind": "order",
+    "q": "Put this line back in order",
+    "line": 3
+   }
+  ],
+  "ids": [
+   193,
+   203,
+   206,
+   207,
+   212,
+   1004,
+   1007,
+   1008,
+   1009,
+   1010,
+   1012,
+   1013,
+   1019,
+   1026
+  ]
+ },
+ {
+  "id": "r07",
+  "title": "Whose bag?",
+  "level": 1,
+  "reviewed": false,
+  "src": "Unit 1; format: a short text, questions after it — MM p10-11 [PDF 22-23]; Beg p2-23 [PDF 3-24]",
+  "lines": [
+   {
+    "mn": "Ширээн дээр цүнх байна.",
+    "en": "There is a bag on the table.",
+    "words": [
+     [
+      "Ширээн",
+      96
+     ],
+     [
+      "дээр",
+      213
+     ],
+     [
+      "цүнх",
+      1030
+     ],
+     [
+      "байна.",
+      201
+     ]
+    ]
+   },
+   {
+    "mn": "Энэ миний цүнх биш.",
+    "en": "This is not my bag.",
+    "words": [
+     [
+      "Энэ",
+      206
+     ],
+     [
+      "миний",
+      1007
+     ],
+     [
+      "цүнх",
+      1030
+     ],
+     [
+      "биш.",
+      1025
+     ]
+    ]
+   },
+   {
+    "mn": "Цүнхэнд дэвтэр, харандаа, бал байна.",
+    "en": "In the bag there is a notebook, a pencil and a pen.",
+    "words": [
+     [
+      "Цүнхэнд",
+      1030
+     ],
+     [
+      "дэвтэр,",
+      1029
+     ],
+     [
+      "харандаа,",
+      1027
+     ],
+     [
+      "бал",
+      1028
+     ],
+     [
+      "байна.",
+      201
+     ]
+    ]
+   },
+   {
+    "mn": "Тийм, энэ түүний цүнх!",
+    "en": "Yes, this is his bag!",
+    "words": [
+     [
+      "Тийм,",
+      1023
+     ],
+     [
+      "энэ",
+      206
+     ],
+     [
+      "түүний",
+      1019
+     ],
+     [
+      "цүнх!",
+      1030
+     ]
+    ]
+   }
+  ],
+  "questions": [
+   {
+    "q": "Where is the bag?",
+    "options": [
+     "On the table",
+     "In the yard",
+     "On the chair"
+    ],
+    "answer": 0,
+    "line": 0
+   },
+   {
+    "q": "Is it the speaker's bag?",
+    "options": [
+     "No",
+     "Yes"
+    ],
+    "answer": 0,
+    "line": 1
+   },
+   {
+    "q": "What is in the bag?",
+    "options": [
+     "A notebook, a pencil and a pen",
+     "A phone",
+     "Bread and milk"
+    ],
+    "answer": 0,
+    "line": 2
+   },
+   {
+    "kind": "order",
+    "q": "Put this line back in order",
+    "line": 2
+   }
+  ],
+  "ids": [
+   96,
+   201,
+   206,
+   213,
+   1007,
+   1019,
+   1023,
+   1025,
+   1027,
+   1028,
+   1029,
+   1030
+  ]
+ },
+ {
+  "id": "r08",
+  "title": "A cold day",
+  "level": 1,
+  "reviewed": false,
+  "src": "Unit 1; format: a short text, questions after it — MM p10-11 [PDF 22-23]; Beg p2-23 [PDF 3-24]",
+  "lines": [
+   {
+    "mn": "Энэ өглөө их хүйтэн байна.",
+    "en": "This morning it is very cold.",
+    "words": [
+     [
+      "Энэ",
+      206
+     ],
+     [
+      "өглөө",
+      237
+     ],
+     [
+      "их",
+      1004
+     ],
+     [
+      "хүйтэн",
+      1005
+     ],
+     [
+      "байна.",
+      201
+     ]
+    ]
+   },
+   {
+    "mn": "Би гэрт байна.",
+    "en": "I am at home.",
+    "words": [
+     [
+      "Би",
+      203
+     ],
+     [
+      "гэрт",
+      1006
+     ],
+     [
+      "байна.",
+      201
+     ]
+    ]
+   },
+   {
+    "mn": "Би цай ууна, дараа нь ном уншина.",
+    "en": "I will drink tea, then I will read a book.",
+    "words": [
+     [
+      "Би",
+      203
+     ],
+     [
+      "цай",
+      153
+     ],
+     [
+      "ууна,",
+      259
+     ],
+     [
+      "дараа нь",
+      1003
+     ],
+     [
+      "ном",
+      171
+     ],
+     [
+      "уншина.",
+      172
+     ]
+    ]
+   },
+   {
+    "mn": "Манай муур бас гэрт байна.",
+    "en": "Our cat is at home too.",
+    "words": [
+     [
+      "Манай",
+      212
+     ],
+     [
+      "муур",
+      161
+     ],
+     [
+      "бас",
+      1001
+     ],
+     [
+      "гэрт",
+      1006
+     ],
+     [
+      "байна.",
+      201
+     ]
+    ]
+   }
+  ],
+  "questions": [
+   {
+    "q": "What is the morning like?",
+    "options": [
+     "Very cold",
+     "Warm",
+     "Wet"
+    ],
+    "answer": 0,
+    "line": 0
+   },
+   {
+    "q": "What does he drink?",
+    "options": [
+     "Tea",
+     "Coffee",
+     "Milk"
+    ],
+    "answer": 0,
+    "line": 2
+   },
+   {
+    "q": "What does he do after the tea?",
+    "options": [
+     "He reads a book",
+     "He cooks",
+     "He sleeps"
+    ],
+    "answer": 0,
+    "line": 2
+   },
+   {
+    "kind": "order",
+    "q": "Put this line back in order",
+    "line": 2
+   }
+  ],
+  "ids": [
+   153,
+   161,
+   171,
+   172,
+   201,
+   203,
+   206,
+   212,
+   237,
+   259,
+   1001,
+   1003,
+   1004,
+   1005,
+   1006
   ]
  }
 ]

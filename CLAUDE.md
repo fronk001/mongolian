@@ -125,6 +125,13 @@ English; questions after the text, one per screen, no English during them; a
 wrong answer underlines the evidence line. The first read scores 1 XP per
 question +1 if right, once; rereads score nothing; reading never calls
 `applyGrade`. `?dev` shows unreviewed passages and skips the coverage gate.
+The **Read tab** (`readingShelf()`) lists every signed-off passage: read
+(first score, read again), ready, or locked with the words it still needs;
+unreviewed ones are only counted. A passage opened there is not a lesson (no
+study day); its first read scores once. A question with `kind: "order"` puts a
+line back in order from its own words (exact, no decoys). `taps` counts
+glosses asked for on words the scheduler rated known (R ≥ 0.8) — evidence for
+tuning `READ_COVERAGE`, never a penalty; it adds up offline.
 
 ## Path
 

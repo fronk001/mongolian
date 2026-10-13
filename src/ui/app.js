@@ -7,7 +7,7 @@ import { buildChoices, shuffle, makeRng, hashSeed } from '../core/choices.js';
 import { xpForAnswer, earnedBadges, stepCount, levelFor } from '../core/goals.js';
 import { gradeDrill, applyGrammarGrade, topicMastery } from '../core/grammar.js';
 import { afterAnswer, retryIndex, retryItem } from '../core/ladder.js';
-import { pickReading, recordReading } from '../core/readings.js';
+import { pickReading, recordReading, readingShelf } from '../core/readings.js';
 import { pathState, checkpointDue, buildCheckpoint, startCheckpoint, finishCheckpoint, creditHomeUnits, unitLabel, PASS_RIGHT } from '../core/path.js';
 import { streakState, byBadgeId } from '../core/goals.js';
 import { makeTilePools, bankFor, acceptedFor, minTiles, gradeBuild, orderDiff, tokensOf } from '../core/tiles.js';
@@ -287,7 +287,15 @@ function todaySession() {
   return s;
 }
 
-const blankRd = () => ({ phase: 'read', qi: 0, picked: null, right: 0, wrong: 0, word: null, en: new Set() });
+const blankRd = () => ({ phase: 'read', qi: 0, picked: null, right: 0, wrong: 0, word: null, en: new Set(), taps: 0, tiles: null });
+
+/** An "order" question gets the line's own words as blocks, shuffled. */
+function setupRdQuestion() {
+  const r = current().reading, q = r.questions[S.rd.qi];
+  S.rd.tiles = q && q.kind === 'order'
+    ? { bank: shuffle(tokensOf(r.lines[q.line].mn).map(t => ({ t })), makeRng(hashSeed(`${r.id}:${S.rd.qi}`))), placed: [] }
+    : null;
+}
 
 /**
  * Direction for a word card. Decided by the scheduler, which seeds it on the
@@ -352,6 +360,7 @@ function render({ keep = false } = {}) {
     const path = UNITS.length ? pathState(P, UNITS, WORDS) : null;
     if (S.tab === 'progress') body = V.viewProgress(P, st, { ...ctx, path, open: S.open, drillable: POOL.length, byId: BYID });
     else if (S.tab === 'grammar') body = V.viewGrammarList(GRAMMAR, P);
+    else if (S.tab === 'read') body = V.viewReadShelf(readingShelf(P, READINGS, WORDS, { dev: DEV }));
     else if (S.tab === 'achievements') { S.tab = 'progress'; render(); return; }
     else if (S.tab === 'settings') body = settingsPage();
     else body = V.viewToday(P, st, todaySession(), { ...ctx, path, checkpointToday: !!checkpointDue(P, UNITS, WORDS) });
@@ -530,6 +539,8 @@ function finish() {
   // Practising today's mistakes after Done is not a lesson: nothing is
   // recorded, and it ends where it started.
   if (S.session.mistakesRound) { S.screen = 'home'; S.session = null; render(); return; }
+  // A passage opened from the Read tab is not a lesson: no study day, back to the shelf.
+  if (S.session.shelf) { save(P); S.screen = 'home'; S.tab = 'read'; S.session = null; render(); return; }
   const today = dayKey();
   P.lastDate = today;
   const st = stats(P, { words: WORDS });
@@ -681,10 +692,38 @@ document.addEventListener('click', e => {
     // First tap: the word's meaning. Second tap on it: the line's English.
     const l = +t.getAttribute('data-l'), k = +t.getAttribute('data-k');
     if (S.rd.word && S.rd.word[0] === l && S.rd.word[1] === k) { S.rd.en.add(l); S.rd.word = null; }
-    else S.rd.word = [l, k];
+    else {
+      S.rd.word = [l, k];
+      // Logged, never penalised: a gloss asked for on a word the scheduler
+      // thought he knew is evidence for tuning the unlock threshold.
+      const id = (current().reading.lines[l].words || [])[k]?.[1];
+      if (id != null && P.items[id] && retrievabilityFor(id) >= 0.8) S.rd.taps++;
+    }
     render({ keep: true });
   }
-  else if (act === 'rd-q') { S.rd.phase = 'q'; S.rd.word = null; render(); }
+  else if (act === 'rd-q') { S.rd.phase = 'q'; S.rd.word = null; setupRdQuestion(); render(); }
+  else if (act === 'rd-tile') {
+    const i = +t.getAttribute('data-i');
+    if (!S.rd.tiles.placed.includes(i)) S.rd.tiles.placed.push(i);
+    render({ keep: true });
+  }
+  else if (act === 'rd-tile-return') { S.rd.tiles.placed.splice(+t.getAttribute('data-k'), 1); render({ keep: true }); }
+  else if (act === 'rd-order-check') {
+    const r = current().reading, q = r.questions[S.rd.qi];
+    const ok = gradeBuild(S.rd.tiles.placed.map(i => S.rd.tiles.bank[i].t), [r.lines[q.line].mn]).ok;
+    S.rd.picked = ok ? 1 : 0;
+    if (ok) S.rd.right++; else S.rd.wrong++;
+    cue(ok, false);
+    render();
+  }
+  else if (act === 'read-open') {
+    const r = READINGS.find(x => x.id === t.getAttribute('data-id'));
+    if (!r) return;
+    S.session = { shelf: true, items: [{ kind: 'reading', reading: r }] };
+    S.i = 0; S.screen = 'run'; S.rd = null; S.fb = null; S.picked = null;
+    S.summary = blankSummary();
+    render();
+  }
   else if (act === 'rd-pick') {
     if (S.rd.picked !== null) return;
     const q = current().reading.questions[S.rd.qi];
@@ -697,14 +736,14 @@ document.addEventListener('click', e => {
   else if (act === 'rd-next') {
     const r = current().reading;
     S.rd.picked = null;
-    if (S.rd.qi + 1 < r.questions.length) S.rd.qi++; else S.rd.phase = 'end';
+    if (S.rd.qi + 1 < r.questions.length) { S.rd.qi++; setupRdQuestion(); } else S.rd.phase = 'end';
     render();
   }
   else if (act === 'rd-done') {
     // The first read of a passage scores, once: 1 per question, +1 if right.
     // Rereads score nothing. Never applyGrade: reading is not a recall test.
     const r = current().reading;
-    if (recordReading(P, r.id, S.rd.right, S.rd.wrong)) {
+    if (recordReading(P, r.id, S.rd.right, S.rd.wrong, dayKey(), S.rd.taps)) {
       const xp = r.questions.length + S.rd.right;
       S.summary.xp += xp;
       P.xp = (P.xp || 0) + xp;
@@ -967,7 +1006,7 @@ document.addEventListener('keydown', e => {
 
   if (e.key === 'Enter' && !e.shiftKey) {
     const order = ['submit', 'submit-tiles', 'check-word', 'grammar-check', 'grammar-build-check',
-      'card-next', 'grade', 'retry-next', 'rd-q', 'rd-next', 'rd-done', 'grammar-continue', 'deck-learn', 'next'];
+      'card-next', 'grade', 'retry-next', 'rd-q', 'rd-order-check', 'rd-next', 'rd-done', 'grammar-continue', 'deck-learn', 'next'];
     for (const act of order) {
       const b = document.querySelector(`[data-act="${act}"]`);
       if (b) { e.preventDefault(); b.click(); return; }

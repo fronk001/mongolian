@@ -314,7 +314,7 @@ const isCounter = p =>
   (p.length === 2 && p[0] === 'main' && p[1] === 'xp') ||
   (p.length === 4 && isYearDoc(p[0]) && p[1] === 'history' && ROW_COUNTERS.includes(p[3])) ||
   (p.length === 4 && p[0] === 'main' && p[1] === 'grammar' && (p[3] === 'right' || p[3] === 'wrong')) ||
-  (p.length === 4 && p[0] === 'main' && p[1] === 'readings' && p[3] === 'reads') ||
+  (p.length === 4 && p[0] === 'main' && p[1] === 'readings' && (p[3] === 'reads' || p[3] === 'taps')) ||
   (p.length === 4 && p[0] === 'main' && p[1] === 'units' && p[3] === 'tries');
 const isLatest = p =>
   (p.length === 2 && p[0] === 'main' && (p[1] === 'lastDate' || p[1] === 'lastExport')) ||

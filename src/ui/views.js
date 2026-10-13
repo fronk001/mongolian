@@ -260,6 +260,7 @@ function purposeBand(purpose, editing) {
 const TABS = [
   { id: 'today', label: 'Today', dom: 'red' },
   { id: 'progress', label: 'Progress', dom: 'blue' },
+  { id: 'read', label: 'Read', dom: '' },
   { id: 'grammar', label: 'Grammar', dom: '' },
   { id: 'settings', label: 'Settings', dom: '' }
 ];
@@ -939,6 +940,28 @@ export function viewReading(reading, rd, byId) {
       <div class="panel reading">${reading.lines.map((l, k) => line(l, k)).join('')}${draft}</div>
       <div class="btns"><button class="btn primary" data-act="rd-q">Questions</button></div></div>`;
   }
+  if (rd.phase === 'q' && reading.questions[rd.qi].kind === 'order') {
+    // "Put the line in order": the line's own words as blocks, no decoys,
+    // graded exactly against the line as written.
+    const q = reading.questions[rd.qi];
+    const answered = rd.picked !== null;
+    const right = answered && rd.picked === 1;
+    const placed = rd.tiles.placed;
+    const line = placed.length
+      ? placed.map((i, k) => `<button class="tile-word placed" data-act="rd-tile-return" data-k="${k}"${answered ? ' disabled' : ''}>${esc(rd.tiles.bank[i].t)}</button>`).join('')
+      : `<span class="empty">tap blocks to build</span>`;
+    const bank = rd.tiles.bank.map((b, i) => `<button class="tile-word" data-act="rd-tile" data-i="${i}"${placed.includes(i) || answered ? ' disabled' : ''}>${esc(b.t)}</button>`).join('');
+    return `<div class="sec">${head}
+      <div class="panel${answered ? '' : ' red'}"><div class="prompt en sm">${esc(q.q)}</div></div>
+      <div class="buildline">${line}</div><div class="wordbank">${bank}</div>
+      ${answered ? `<div class="panel ${right ? 'green' : 'red'} reveal">
+          <span class="lab ${right ? 'green' : 'red'}">${right ? 'CORRECT' : 'WRONG'}</span>
+          <div class="reading" style="margin-top:8px">${line && reading.lines[q.line] ? `<div class="rline">${esc(reading.lines[q.line].mn)}</div>` : ''}</div>
+        </div>
+        <div class="btns"><button class="btn ${right ? 'correct' : 'secondary'}" data-act="rd-next">Continue</button></div>`
+      : `<div class="btns"><button class="btn primary" data-act="rd-order-check"${placed.length === rd.tiles.bank.length ? '' : ' disabled'}>Check</button></div>`}
+    </div>`;
+  }
   if (rd.phase === 'q') {
     const q = reading.questions[rd.qi];
     const answered = rd.picked !== null;
@@ -963,4 +986,29 @@ export function viewReading(reading, rd, byId) {
     <div class="panel reading">${reading.lines.map((l, k) => line(l, k, { taps: false, en: true })).join('')}</div>
     <div class="back" style="margin-top:10px">${rd.right} of ${reading.questions.length} right</div>
     <div class="btns"><button class="btn primary" data-act="rd-done">Continue</button></div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   The Read tab: every passage, to read again or to look forward to.
+   Signed-off passages he can read open; the others say which words they
+   still need. Passages still waiting for Luna or Sarnai are counted, not
+   shown (?dev shows them).
+   ══════════════════════════════════════════════════════════════════════ */
+export function viewReadShelf(shelf) {
+  const row = x => {
+    if (x.state === 'read') {
+      return `<button class="unitrow" data-act="read-open" data-id="${esc(x.r.id)}">
+        <span class="mn">✓ ${esc(x.r.title)}</span><span class="n">${x.rec.firstRight} of ${x.r.questions.length} · read again</span></button>`;
+    }
+    if (x.state === 'ready') {
+      return `<button class="unitrow" data-act="read-open" data-id="${esc(x.r.id)}">
+        <span class="mn">${esc(x.r.title)}${x.r.reviewed === false ? ' · draft' : ''}</span><span class="n">Read</span></button>`;
+    }
+    return `<div class="unitrow planned"><span class="mn">${esc(x.r.title)}</span>
+      <span class="n">needs ${x.need.length ? x.need.map(esc).join(', ') : 'more practice'}</span></div>`;
+  };
+  return pageHead('READ') + `<div class="panel" style="margin-top:10px">
+      ${shelf.list.length ? shelf.list.map(row).join('') : '<div class="gl">No passages to read yet.</div>'}
+      ${shelf.waiting ? `<div class="gl" style="margin-top:10px">${shelf.waiting} more waiting for Luna or Sarnai to check</div>` : ''}
+    </div>`;
 }

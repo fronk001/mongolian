@@ -37,7 +37,7 @@ import { blank, migrateV1, encodeCode, importCode, stats, exportAge, recordDay, 
 import { buildSession, applyGrade, scheduledDays, buildPractice } from '../src/core/scheduler.js';
 import { backIn } from '../src/ui/views.js';
 import { afterAnswer, retryIndex, retryItem, RETRY_GAP } from '../src/core/ladder.js';
-import { readingCoverage, pickReading, recordReading, READ_COVERAGE } from '../src/core/readings.js';
+import { readingCoverage, pickReading, recordReading, READ_COVERAGE, readingShelf } from '../src/core/readings.js';
 import { pathState, unitState, wordState, buildCheckpoint, finishCheckpoint, startCheckpoint, creditHomeUnits, checkpointDue, FAMILIAR_S } from '../src/core/path.js';
 import { makeTilePools, bankFor, acceptedFor, minTiles, gradeBuild, orderDiff, tokensOf, DECOYS } from '../src/core/tiles.js';
 import { gradeText, gradeAnswer, acceptedForms } from '../src/core/grade.js';
@@ -817,7 +817,7 @@ section('reading');
   ok('every passage word is tagged with a real lexicon id',
      RD.every(r => r.lines.every(l => (l.words || []).length && l.words.every(([, id]) => ids.has(id)))));
   ok('every question points at a real answer and line',
-     RD.every(r => r.questions.every(q => q.options[q.answer] !== undefined && r.lines[q.line])));
+     RD.every(r => r.questions.every(q => (q.kind === 'order' || q.options[q.answer] !== undefined) && r.lines[q.line])));
   ok('a passage lists every word it contains',
      RD.every(r => r.lines.flatMap(l => l.words.map(([, id]) => id)).every(id => r.ids.includes(id))));
   ok('passages are written for Fred, not copied: unreviewed ones carry the flag',
@@ -835,6 +835,14 @@ section('reading');
   ok('the first read scores, a reread does not', recordReading(q, 'r01', 3, 0, '2026-10-11') === true && recordReading(q, 'r01', 1, 2, '2026-10-12') === false);
   ok('a reread keeps the first score and adds the read', q.readings.r01.firstRight === 3 && q.readings.r01.reads === 2);
   ok('a read passage is not offered again', pickReading(q, rev, W, { today: '2026-10-12' })?.id !== 'r01');
+  const shelf0 = readingShelf(blank(), RD, W);
+  ok('the shelf counts unreviewed passages instead of showing them', shelf0.list.length === 0 && shelf0.waiting === RD.length);
+  const shelf1 = readingShelf(blank(), rev, W);
+  ok('a locked passage names the words it still needs', shelf1.list.every(x => x.state !== 'locked' || x.need.length > 0));
+  const shelf2 = readingShelf(q, rev, W, { today: '2026-10-12' });
+  ok('a read passage shows its first score', shelf2.list.find(x => x.r.id === 'r01').state === 'read');
+  recordReading(q, 'r02', 2, 1, '2026-10-12', 3); recordReading(q, 'r02', 3, 0, '2026-10-13', 1);
+  ok('taps on known words add up across reads', q.readings.r02.taps === 4);
 }
 
 section('path and units');
