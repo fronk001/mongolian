@@ -57,6 +57,16 @@ export function blank() {
   };
 }
 
+/** The earlier firstAt and the later lastAt of two rows for one day. */
+export function sessionTimes(a, b) {
+  const out = {};
+  const first = [a.firstAt, b.firstAt].filter(Number.isFinite);
+  const last = [a.lastAt, b.lastAt].filter(Number.isFinite);
+  if (first.length) out.firstAt = Math.min(...first);
+  if (last.length) out.lastAt = Math.max(...last);
+  return out;
+}
+
 /**
  * Record a finished session against its day.
  *
@@ -66,6 +76,9 @@ export function blank() {
  * exactly the failure mode the streak is designed to avoid.
  */
 export function recordDay(p, entry) {
+  // firstAt / lastAt: when the day's first and last session finished (ms).
+  // Life Hub reads them to tick its Mongolian habit on its own day, which
+  // runs until 04:00, so a lesson at 00:30 counts for the evening before.
   const history = (p.history || []).slice();
   const i = history.findIndex(h => h.date === entry.date);
   if (i >= 0) {
@@ -79,7 +92,8 @@ export function recordDay(p, entry) {
       late: (prev.late || 0) + (entry.late || 0),
       xp: (prev.xp || 0) + (entry.xp || 0),
       ...('right' in entry || 'right' in prev ? { right: (prev.right || 0) + (entry.right || 0) } : {}),
-      ...('fixed' in entry || 'fixed' in prev ? { fixed: (prev.fixed || 0) + (entry.fixed || 0) } : {})
+      ...('fixed' in entry || 'fixed' in prev ? { fixed: (prev.fixed || 0) + (entry.fixed || 0) } : {}),
+      ...sessionTimes(prev, entry)
     };
   } else {
     history.push(entry);

@@ -789,6 +789,26 @@ section('goals and consistency');
   ok('two sessions in a day are still one streak day',
      streak(pd.history, '2026-08-11') === 2);
 
+  // Life Hub ticks its Mongolian habit from these, on its own day (to 04:00).
+  let pt = blank();
+  recordDay(pt, { date: '2026-08-10', reviews: 3, firstAt: 2000, lastAt: 2000 });
+  recordDay(pt, { date: '2026-08-10', reviews: 2, firstAt: 9000, lastAt: 9000 });
+  ok('a day keeps its first and last session time',
+     pt.history[0].firstAt === 2000 && pt.history[0].lastAt === 9000);
+  recordDay(pt, { date: '2026-08-10', reviews: 1 });
+  ok('a session without times keeps the day’s times', pt.history[0].firstAt === 2000 && pt.history[0].lastAt === 9000);
+  const tbase = { '2026': { history: { '2026-08-10': { reviews: 1, firstAt: 5000, lastAt: 5000 } } } };
+  const ttheirs = { '2026': { history: { '2026-08-10': { reviews: 2, firstAt: 3000, lastAt: 8000 } } } };
+  const tmine = { '2026': { history: { '2026-08-10': { reviews: 2, firstAt: 4000, lastAt: 7000 } } } };
+  const tops = rebase(diff(tbase, tmine), ttheirs);
+  ok('offline: the earlier first and the later last session time win',
+     !tops.some(o => o.path[3] === 'firstAt' || o.path[3] === 'lastAt'));
+  const tops2 = rebase(diff(tbase, { '2026': { history: { '2026-08-10': { reviews: 2, firstAt: 1000, lastAt: 9999 } } } }), ttheirs);
+  ok('offline: an earlier first / later last time from this device goes up',
+     tops2.find(o => o.path[3] === 'firstAt').value === 1000 && tops2.find(o => o.path[3] === 'lastAt').value === 9999);
+  ok('session times survive the backup code',
+     importCode(encodeCode(pt)).history[0].lastAt === 9000);
+
   // The lesson-worth readout is what makes a single session feel significant.
   let pw = blank();
   const sw = buildSession(pw, W, S, { today: '2026-08-10' });

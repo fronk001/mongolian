@@ -572,7 +572,9 @@ function finish() {
     xp: S.summary.xp,
     xv: 2,
     right: S.summary.firstRight,
-    fixed: S.summary.fixed
+    fixed: S.summary.fixed,
+    firstAt: Date.now(),
+    lastAt: Date.now()
   });
 
   const had = new Set(P.badges || []);

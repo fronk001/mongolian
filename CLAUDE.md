@@ -311,6 +311,10 @@ merging — while synced, the online copy too (`commit(P, { replace: true })`).
 - `history` — one row **per day**, not per session. `recordDay()` upserts;
   appending twice would make two sessions in a day read as two streak days,
   which rewards re-opening the app instead of doing the work.
+  Since 16 Oct a row also keeps `firstAt` / `lastAt` (ms, first and last finished
+  session that day; earlier/later wins in `recordDay`, `fold`, `rebase`). **Life Hub
+  reads them** (its `core/links.js`) to tick its Mongolian habit on its own day,
+  which runs to 04:00 — don't rename or drop them.
 
 ## Sync
 

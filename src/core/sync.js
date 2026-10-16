@@ -19,7 +19,7 @@
  * FSRS state always travels whole: s, d, due, last and reps only make sense
  * together.
  */
-import { blank } from './progress.js';
+import { blank, sessionTimes } from './progress.js';
 
 const isObj = x => x !== null && typeof x === 'object' && !Array.isArray(x);
 const clone = x => (x === undefined ? undefined : JSON.parse(JSON.stringify(x)));
@@ -60,7 +60,7 @@ export const ROW_COUNTERS = ['reviews', 'newWords', 'onTime', 'late', 'xp', 'rig
 
 /** Two rows for one day, folded the way recordDay() folds a second session into the first. */
 function fold(a, b) {
-  const out = { ...a, ...b };
+  const out = { ...a, ...b, ...sessionTimes(a, b) };
   for (const k of ROW_COUNTERS) if (k in a || k in b) out[k] = (a[k] || 0) + (b[k] || 0);
   return out;
 }
@@ -318,8 +318,10 @@ const isCounter = p =>
   (p.length === 4 && p[0] === 'main' && p[1] === 'units' && p[3] === 'tries');
 const isLatest = p =>
   (p.length === 2 && p[0] === 'main' && (p[1] === 'lastDate' || p[1] === 'lastExport')) ||
+  (p.length === 4 && isYearDoc(p[0]) && p[1] === 'history' && p[3] === 'lastAt') ||
   (p.length === 4 && p[0] === 'main' && (p[1] === 'grammar' || p[1] === 'readings' || p[1] === 'units') && p[3] === 'last');
 const isEarliest = p => (p.length === 2 && p[0] === 'main' && p[1] === 'createdAt') ||
+  (p.length === 4 && isYearDoc(p[0]) && p[1] === 'history' && p[3] === 'firstAt') ||
   (p.length === 4 && p[0] === 'main' && p[1] === 'readings' && p[3] === 'firstDay') ||
   (p.length === 4 && p[0] === 'main' && p[1] === 'units' && p[3] === 'passed');
 
