@@ -13,7 +13,7 @@ needed to fix it.
 
 --propose writes a review file. Nothing is applied to words.json or
 sentences.json: the stem matcher below is a heuristic on an agglutinative
-language, and every proposal needs a human (Luna or Sarnai) to confirm before
+language, and every proposal needs a human (Luna) to confirm before
 it becomes study material.
 """
 import json

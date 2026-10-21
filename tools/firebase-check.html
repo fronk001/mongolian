@@ -37,7 +37,7 @@ try {
   for (const id of [90, 91, 150, 273]) applyGrade(p, id, 3, { today: '2026-09-28' });
   recordDay(p, { date: '2026-09-28', tracked: 4, due: 0, known: 0, reviews: 4, xp: 36 });
   p.history.unshift({ date: '2025-12-30', reviews: 1 }, { tracked: 2 });
-  p.purpose = 'Сарнайн гэр бүлтэй ярих';
+  p.purpose = 'Лунын гэр бүлтэй ярих';
   p.badges = ['first'];
   applyGrammarGrade(p, 'g_byna', true, '2026-09-28');
   const upload = patchesFor([...diff({}, toDocs(p)), { path: ['main', 'seq', 'device1'], value: 1 }], b.DEL);

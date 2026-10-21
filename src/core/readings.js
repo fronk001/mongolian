@@ -40,7 +40,7 @@ export function readingCoverage(reading, p, words, today = dayKey()) {
 /**
  * The passage for today's lesson, or null: the first one not yet read that
  * he can read. `dev` (?dev) shows passages awaiting review and skips the
- * coverage gate, so the pilot can be previewed before Luna or Sarnai sign off.
+ * coverage gate, so the pilot can be previewed before Luna signs off.
  */
 export function pickReading(p, readings, words, { today = dayKey(), dev = false } = {}) {
   for (const r of readings || []) {

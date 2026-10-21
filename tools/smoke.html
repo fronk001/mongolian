@@ -133,9 +133,9 @@ try {
 
   // ---- a change on one shows on the other --------------------------------------
   $(g, '[data-act=purpose]').click();
-  $(g, '#purposebox').value = 'Сарнайн гэр бүлтэй ярих';
+  $(g, '#purposebox').value = 'Лунын гэр бүлтэй ярих';
   $(g, '[data-act=purpose-save]').click();
-  await until(() => text(f, '.panel.gold').includes('Сарнайн гэр бүлтэй ярих'), 'the reason on the laptop');
+  await until(() => text(f, '.panel.gold').includes('Лунын гэр бүлтэй ярих'), 'the reason on the laptop');
   check('a reason written on the phone shows on the laptop', true);
 
   // ---- a lesson on the laptop ----------------------------------------------------

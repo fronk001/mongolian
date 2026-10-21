@@ -13,7 +13,7 @@ correct has to be written down in advance. This script produces `alt.en` and
     py tools/alternatives.py --dry      # print what would change
 
 Everything written here is machine-generated and marked `altReviewed: false`
-on each sentence until Luna or Sarnai confirms it — same convention as the
+on each sentence until Luna confirms it — same convention as the
 `reviewed: false` lexicon entries. The English is mine and is safe; the
 Mongolian is rule-derived and is the part that needs a native eye.
 """

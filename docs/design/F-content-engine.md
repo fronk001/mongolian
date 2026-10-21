@@ -6,7 +6,7 @@
 - a lexicon that grows in a deliberate order;
 - sentence, reading and grammar packs per unit;
 - rule-generated drills that need no new writing;
-- a review pipeline sized to Luna's and Sarnai's real time;
+- a review pipeline sized to Luna's real time;
 - a copyright policy for a public repo;
 - a calendar that keeps material ahead of Fred's pace.
 
@@ -87,7 +87,7 @@ The first build session (§7, F0-F2) releases units 1 and 2: 58 new drillable wo
 - **The next lesson** starts with the new-word deck again, as it did in his first month.
 - **The deck shows 6 words a day** (`dailyNewCap`, unchanged): «нэр», «багш», «найз», «хоёр», «бас», «харин»…
 - **Sessions grow** from about 5 steps to about 20 within a week (simulation, §3.2).
-- **Sentences come back** about a week later, once Sarnai has checked them. In that week the words travel as cards; by their second or third review they appear inside sentences, where the i+1 selector wants them.
+- **Sentences come back** about a week later, once Luna has checked them. In that week the words travel as cards; by their second or third review they appear inside sentences, where the i+1 selector wants them.
 - **Reading** (workstream C) can open its first pack the same week. The 11 glue words it needs (бас, харин, дараа нь …) sit at the head of unit 1.
 
 ### 2.2 The unit card: once per unit, in the lesson
@@ -163,17 +163,17 @@ On Mondays (any day works):
    - drafts the next unit into `content/units/Uxx/`;
    - runs every gate: coverage, the authoring rule, overlap with the books, alternatives, tiles;
    - releases that unit's words (§3.10);
-   - writes two review sheets with time estimates, for example `tools/review-sarnai-U05.html (≈ 18 min)` and `tools/review-luna-U05.html (≈ 14 min)`.
+   - writes review sheets of one sitting each, with time estimates, for example `tools/review-U05-sentences.html (≈ 18 min)` and `tools/review-U05-words.html (≈ 14 min)`.
 3. Fred sends each sheet. When the files come back, he drops them in `content/reviews/` and types `/next-unit apply`.
 4. Claude applies them, releases the reviewed sentences and readings, runs the tests, and commits and pushes (per his standing preference).
 
 **Fred's own time:** about 10 minutes a week, plus forwarding two files. The English checks for reading questions (workstream C) fold into the same session.
 
-### 2.7 Luna and Sarnai: smaller, scoped sheets
+### 2.7 Luna: smaller, scoped sheets
 
-The sheets are the same self-contained file they know (double-click, Зөв / Буруу / Мэдэхгүй, «Дуусгах» downloads a file), with three differences:
+The sheets are the same self-contained file she knows (double-click, Зөв / Буруу / Мэдэхгүй, «Дуусгах» downloads a file), with three differences:
 
-- **Each sheet is for one person** and only holds her kind of item (§3.11).
+- **Each sheet holds one kind of item:** sentences and readings, or words, grammar and tables (§3.11).
 - **Each is sized to one sitting:** the top says *"about 15 minutes"*, computed from her own measured pace last time.
 - **Sentences that share a pattern are grouped** ("These 5 share one pattern — tick any that sound wrong"), which roughly halves the reading time.
 
@@ -232,7 +232,7 @@ The units Fred has already finished (the Booklet's household world) become **H1-
 | U21 | Sending and asking | – | MM p72-83 [84-95] | case tables; causative; ч, л | ≈40 | |
 | U22 | Invitations | – | MM p84-92 [96-104] | voluntative; -лаа; -аад/тэгээд; "but" | ≈35 | |
 | U23 | Why and in order to | – | MM p94-105 [106-117] | руу; гэх; purpose -хаар; because | ≈40 | |
-| U24 | At Sarnai's parents' | – | MM p107-116 [119-128] | conditional -вал; бол; бий/мөн/юм; магадгүй; honorifics | ≈40 | |
+| U24 | At Luna's parents' | – | MM p107-116 [119-128] | conditional -вал; бол; бий/мөн/юм; магадгүй; honorifics | ≈40 | |
 | U25 | Dates and needs | – | MM p118-132 [130-144] | -тал; дуртай vs хэрэгтэй; -уулаа; ordinals; dates | ≈45 | dates |
 | U26 | Wanting, before and after | – | MM p133-146 [145-158] | passive; relative clauses; before/after; 7 ways to want | ≈45 | |
 | U27 | Comparing | – | MM p147-158 [159-170] | -лц-; comparative and superlative; emphatic particles | ≈45 | |
@@ -405,7 +405,7 @@ Glosses are read off those glossaries and the lesson lists, never recalled. `src
 | `forms` | attested irregular forms the matcher accepts exactly, e.g. хорь → ["хорин"], хүн → ["хүмүүс"] |
 | `infl: "none"` | particles and interjections never stem-match |
 | `personal` | Fred-specific words, e.g. голланд, хадам |
-| `reviewedBy` | `"luna"` or `"sarnai"`, set by `--apply` |
+| `reviewedBy` | `"luna"`, set by `--apply` |
 
 **Ids are never reused.**
 
@@ -460,7 +460,7 @@ Glosses are read off those glossaries and the lesson lists, never recalled. `src
 | 25% | **Question → answer pairs** linked by `pair` | "make the question for this answer", Surv p10, 20, 25, 53-54, 61-62, 84, 96, 99 [PDF 12, 22, 27, 55-56, 63-64, 86, 98, 101]; MM's echo answers p33 [PDF 45] | dialogue lines; reading questions |
 | 20% | **Frame + cue substitution** (one `frame` id over 3-6 sentences) | Surv p14-15, 19, 50, 52, 91 [PDF 16-17, 21, 52, 54, 93] | grouped review (§3.11); tile distractors among siblings |
 | 10% | **Contrast** with харин / бас | Surv p50 [PDF 52]; Beg p59 [PDF 60] | connective practice |
-| 5% | **"About me"** sentences (Fred's real answers) | MM "answer as it applies to you", printed 30, 40, 52, 70, 91, 103-104, 115-116 [PDF 42, 52, 64, 82, 103, 115-116, 127-128] | personal strand; Sarnai's favourite review item |
+| 5% | **"About me"** sentences (Fred's real answers) | MM "answer as it applies to you", printed 30, 40, 52, 70, 91, 103-104, 115-116 [PDF 42, 52, 64, 82, 103, 115-116, 127-128] | personal strand; a high-value review item |
 | 5% (stage B-C only) | **Combining** two sentences with a converb or connector, carrying `parts` | MM p90-91, 102-103 [PDF 102-103, 114-115]; key p239-240 [PDF 251-252] | SPLIT rung; B1 complex sentences |
 
 **Accepted answers.**
@@ -487,7 +487,7 @@ Reading owns the reader, `readings.json`, its gates and its first pack (`home-1`
    - U13: Surv p88 [PDF 90].
 2. **A dialogue** in the format of the unit's dialogue page. Examples: U5 Beg p23 [PDF 24]; U10 Beg p83 [PDF 84].
 3. **A retell** of passage 1 in another person or tense (LingQ's three-part form, research-competitors).
-4. **A cast story**: Fred, Sarnai, the cat, Sarnai's parents (C-reading §5.1), using the unit's words at home. This is the personal strand, and nothing in Ling can match it.
+4. **A cast story**: Fred, Luna, the cat, Luna's parents (C-reading §5.1), using the unit's words at home. This is the personal strand, and nothing in Ling can match it.
 5. **A message or letter**, or a Q&A text, in the letter format of Surv p25 [PDF 27].
 
 **Levels.**
@@ -572,7 +572,7 @@ The generators turn **reviewed rule tables** into drills. They never inflect any
 | State | Where | Who sees it |
 |---|---|---|
 | **draft** | `content/units/Uxx/*.json` (not under `src/`, so never built or shipped) | Claude, Fred |
-| **review** | the same files, plus a generated sheet | Luna, Sarnai |
+| **review** | the same files, plus a generated sheet | Luna |
 | **live** | merged into `src/data/*.json` by `release.py` | Fred's app |
 
 **What ships before review** (D1, recommended hybrid):
@@ -601,16 +601,16 @@ The generators turn **reviewed rule tables** into drills. They never inflect any
 
 ### 3.11 The review pipeline
 
-**Roles.** One signature suffices (CLAUDE.md, "pending Luna or Sarnai"). Each item type has a primary reviewer, so neither person sees the other's work by default (D7).
+**Roles.** Luna is the one reviewer and signs everything (CLAUDE.md, "pending Luna"). Her items fall into two kinds of sitting (D7).
 
-| Reviewer | Primary items | Why her |
+| Sitting | Items | Why |
 |---|---|---|
-| **Sarnai** (native, at home, short sittings) | sentence canonicals and their Mongolian alternatives; readings; "how would you say it?" | Naturalness is a native judgement. Her free-text phrasings are the most valuable field (`review-sheet.py:24-26`). Short sittings suit her. |
-| **Luna** (tutor) | lexicon entries and glosses; grammar topics; generator tables and golden vectors; morphology grids; tile pools; unit questions; open questions | These need a grammar authority and match her teaching. They can be done inside a lesson with Fred, if they both like (D7). |
+| **Sentences** (short sittings) | sentence canonicals and their Mongolian alternatives; readings; "how would you say it?" | Naturalness is a native judgement. Her free-text phrasings are the most valuable field (`review-sheet.py:24-26`). Short sittings suit this part. |
+| **Words** | lexicon entries and glosses; grammar topics; generator tables and golden vectors; morphology grids; tile pools; unit questions; open questions | These need a grammar authority. They can be done together with Fred, if they both like (D7). |
 
 **Sheet changes** (`tools/review-sheet.py`):
 
-- `--for sarnai|luna` selects her sections.
+- `--for sentences|words` selects one kind of sitting.
 - `--unit U05` scopes the sheet.
 - `--budget 15` fills the sheet in unit order until the time estimate reaches 15 minutes.
 - **New sections:**
@@ -621,9 +621,8 @@ The generators turn **reviewed rule tables** into drills. They never inflect any
   - «Асуулт» (open questions), e.g. ROADMAP 2c's four.
   - Reading adds the passages section; the learning loop adds tile pools.
 - **Keys** by `sid`, word id, passage id or table row. Never by the text.
-- **Timing.** The sheet records a timestamp per decision. `--apply` turns them into median seconds per item type per reviewer in `content/review-times.json`, and the next `--budget` uses them. The "about N minutes" at the top is then a measured figure.
-- **Provenance.** The sheet asks once "Who is reviewing? Luna / Sarnai". `--apply` writes `reviewedBy`. Return files are committed under `content/reviews/YYYY-MM-DD-<who>.json`, following the precedent of `docs/mongolian-review.json`.
-- **Second look** (optional, D7): `--second-look 10` adds a 10% sample of the other reviewer's approvals from the last round. `--apply` prints disagreements. On by default for the first two rounds, then only if disagreement exceeds 10%.
+- **Timing.** The sheet records a timestamp per decision. `--apply` turns them into median seconds per item type in `content/review-times.json`, and the next `--budget` uses them. The "about N minutes" at the top is then a measured figure.
+- **Provenance.** `--apply` writes `reviewedBy`. Return files are committed under `content/reviews/YYYY-MM-DD-<who>.json`, following the precedent of `docs/mongolian-review.json`.
 - Sheet chrome stays as it is: Mongolian with English, for the reviewers. It is not app chrome.
 
 **Throughput per unit.** These are assumptions until the timing data replaces them.
@@ -635,12 +634,12 @@ The generators turn **reviewed rule tables** into drills. They never inflect any
 | Grammar topic | 1 | 300 | 5 | Luna |
 | Tile pools (same-stem ones, about half) | 32 | 12 | 6 | Luna |
 | Generator rows and golden vectors (U3, U4, U8, U25 only) | 20-40 | 5 | 2-3 | Luna |
-| Sentences: frame-grouped (40%) | 26 | 10 | 4 | Sarnai |
-| Sentences: single, with 1-2 alternatives (60%) | 38 | 20 | 13 | Sarnai |
-| Readings | 5 | 90 | 7.5 | Sarnai |
-| **Total** | | | **≈ 45** | Sarnai ≈ 25, Luna ≈ 18 |
+| Sentences: frame-grouped (40%) | 26 | 10 | 4 | Luna |
+| Sentences: single, with 1-2 alternatives (60%) | 38 | 20 | 13 | Luna |
+| Readings | 5 | 90 | 7.5 | Luna |
+| **Total** | | | **≈ 45** | Luna: sentences ≈ 25, words ≈ 18 |
 
-- At one unit per 1.3-1.5 weeks: **about 30-40 minutes a week**. Sarnai's share is two 10-15-minute sittings; Luna's is one 20-35-minute sitting a fortnight.
+- At one unit per 1.3-1.5 weeks: **about 30-40 minutes a week**, all Luna's: two 10-15-minute sentence sittings a week, and one 20-35-minute word sitting a fortnight.
 - One-off loads on top: Reading's home-1 pack (45-60 min, Luna); the 5 pending grammar topics (≈ 25 min); the first generator tables (≈ 15 min).
 - **Batching rule:** never more than ~30 minutes per sheet. Unfinished items roll into the next sheet. The sheet autosaves, so a sitting can stop at any time.
 - **Rejected work** (Буруу with a rewrite) follows the existing all-rejected-and-rewritten rule (`review-sheet.py:409-424`) at sentence level. Readings and topics produce a hand-edit worklist, as grammar does now.
@@ -657,7 +656,7 @@ This is written into the repo as `docs/CONTENT.md` and linked from CLAUDE.md. It
 > 4. **An automated guard.** `tools/overlap.py <books dir>` must report no run of 5 or more consecutive tokens shared with any book, over every sentence, reading, grammar example and drill in `src/data` and `content/`. `release.py` refuses to release otherwise.
 >    - Formulaic phrases of up to 6 tokens (greetings, «Таны нэр хэн бэ?») are listed in `tools/overlap-allow.txt`, each with a reason.
 >    - A whole-sentence match of 4 tokens is a warning that Fred reads.
-> 5. **The books' characters and settings are not reused.** The app has its own cast (Fred, Sarnai, the cat, Sarnai's parents) and invented minor characters. Personal data stays at first names (Reading's D8).
+> 5. **The books' characters and settings are not reused.** The app has its own cast (Fred, Luna, the cat, Luna's parents) and invented minor characters. Personal data stays at first names (Reading's D8).
 > 6. **Retellings.** The folk tale in MM ch. 11-14 is retold from its plot only, in original A2 Mongolian written or reviewed by Luna. Plot elements may be kept; sentences may not (D9).
 > 7. **Answer keys and translations** (MM printed 221-257 [PDF 233-269]) are used only to check a grammar point's meaning, never as a source of sentences.
 > 8. **Citations** use `printed pN [PDF M]`. A wrong attribution is a bug: `alternatives.py`'s docstring is corrected to Gaunt & Bayarmandakh.
@@ -674,7 +673,7 @@ This is written into the repo as `docs/CONTENT.md` and linked from CLAUDE.md. It
 
 Today is Mon 12 Oct 2026. Fred is at the ceiling.
 
-| Week (Mon) | Words go live (provisional) | Sentences go live (reviewed) | Readings, topics, generators | Luna's sheet | Sarnai's sheet |
+| Week (Mon) | Words go live (provisional) | Sentences go live (reviewed) | Readings, topics, generators | Luna's word sheet (L) | Luna's sentence sheet (S) |
 |---|---|---|---|---|---|
 | W1 · 12 Oct | **U1 + U2** (58 + 5 grammar) after F0-F2 | – | Reading's home-1 drafted | L1: U1-U2 lexicon (63), ROADMAP 2c questions, numbers + weekday tables, 5 grammar topics · **≈ 40 min** | S1: U1 sentences (≈ 85) · ≈ 25 min |
 | W2 · 19 Oct | U3 (35) | U1 | numbers, weekdays topics (tables reviewed) | L2: U3 lexicon, time table, U1 tiles, home-1 part 1 · ≈ 35 | S2: U2 sentences (≈ 48) · ≈ 14 |
@@ -768,7 +767,7 @@ Today is Mon 12 Oct 2026. Fred is at the ceiling.
 | `forms` | string[] | exact matcher aliases, reviewed with the entry |
 | `infl` | `"none"` | particles and interjections |
 | `personal` | true | |
-| `reviewedBy` | `"luna"` / `"sarnai"` | |
+| `reviewedBy` | `"luna"` | |
 
 The existing `reviewed`, `drill` and `note` are unchanged.
 
@@ -855,16 +854,18 @@ These pages are what is borrowed: topic, grammar point and format. Never sentenc
 | U16-U24 | the chapter's grammar pages (§3.1) | the chapter's vocabulary list; En-Mn glossary printed 195-220 [207-232] | the chapter's text (format only) and its exercise b/c dialogues (format only) | MM drill types (books-mm1 `exercise_types`) |
 | U25-U28 | the chapter's grammar pages | same | folk tale retold (plot only) | MM drill types (books-mm2) |
 
-### 5.3 What Luna and Sarnai review, and how much of their time
+### 5.3 What Luna reviews, and how much of her time
 
-| | Luna | Sarnai |
+Together: about 31-35 minutes a week in steady state, about 28 hours over the year.
+
+| | Words, grammar and tables | Sentences and readings |
 |---|---|---|
 | One-off, weeks 1-3 | U1-U5 lexicon (140 entries ≈ 25 min); 5 pending grammar topics (≈ 25 min); generator tables and golden vectors (≈ 15 min); ROADMAP 2c questions (≈ 5 min); Reading's home-1 (45-60 min) | – |
 | Per unit | lexicon, grammar topic, tile pools, unit question, (tables): **≈ 18 min** | sentences and readings: **≈ 25 min** |
 | Per week, steady state | **≈ 13-15 min** (one 25-30-minute sitting a fortnight) | **≈ 18-20 min** (two 10-minute sittings) |
 | Over the year | ≈ 12 hours | ≈ 16 hours |
 | Phase 3 morphology | paradigm grids: ≈ 25 s per word, ≈ 15 min per unit | – |
-| Audio (Sound) | – | records each unit's words and sentences after they pass review (Sound §5.2: 10-15 min per 50 words) |
+| Audio (Sound) | – | if she agrees to record: each unit's words and sentences after they pass review (Sound §5.2: 10-15 min per 50 words) |
 
 ---
 
@@ -1035,19 +1036,19 @@ These pages are what is borrowed: topic, grammar point and format. Never sentenc
 
 | # | Decision | Options | Recommended default |
 |---|---|---|---|
-| **D1** | What may be studied before Luna or Sarnai sign it off | (a) everything ships `reviewed:false` as soon as it is drafted; (b) nothing ships until reviewed; (c) hybrid: lexicon entries and generator tables ship provisionally, while sentences, readings, topics and morphology wait for review (≤ 7-day latency) | **(c)**. Words are facts read off the books' own lists, and in August Luna marked all 73 provisional entries Зөв. Sentences carry a 2-6% error rate, and a wrong accepted answer teaches. (b) would put Fred back at the ceiling every week. |
+| **D1** | What may be studied before Luna signs it off | (a) everything ships `reviewed:false` as soon as it is drafted; (b) nothing ships until reviewed; (c) hybrid: lexicon entries and generator tables ship provisionally, while sentences, readings, topics and morphology wait for review (≤ 7-day latency) | **(c)**. Words are facts read off the books' own lists, and in August Luna marked all 73 provisional entries Зөв. Sentences carry a 2-6% error rate, and a wrong accepted answer teaches. (b) would put Fred back at the ceiling every week. |
 | **D2** | Pace (`dailyNewCap`, already in `P`) | 6 (≈ 22 words/week, ≈ 30-40 min native review/week); 4 (≈ 15/week, ≈ 25 min); 8 | **Keep 6.** Revisit if a review sheet is late twice. Optionally expose it in Settings as 4/6/8, beside word drills (Less text decides the row). |
 | **D3** | Spine order | (a) Beginner Part 1 lessons, with Survival can-dos interleaved, then Modern Mongolian; (b) Survival first, which is more practical in UB; (c) Modern Mongolian only | **(a)**. Its lesson-question titles make the clearest path, and it matches the textbooks' shared grammar order. |
 | **D4** | `drill:false` for new closed-class words with meanings | drillable (connectives, possessives, question words); `drill:false` like the existing pronouns | **Drillable** for new entries (aligned with Reading's D9). Existing entries unchanged. |
-| **D5** | Personal strand (голланд, хадам, Sarnai's family, Fred's own answers) | include, flagged `personal`, first names only; leave out | **Include.** It is the one thing no app can copy, and Sarnai's review makes it right. |
+| **D5** | Personal strand (голланд, хадам, Luna's family, Fred's own answers) | include, flagged `personal`, first names only; leave out | **Include.** It is the one thing no app can copy, and Luna's review makes it right. |
 | **D6** | Generated drills | answers only from reviewed tables and golden vectors; or offered while pending | **Reviewed only** as answers. Before that, the topic shows as pending, like the 5 grammar topics now. Kept outside FSRS (tally in `P.grammar`). |
-| **D7** | Who reviews what, and how | the split in §3.11; Luna's part inside tutoring time; second-look sampling | **Split as §3.11.** Luna's items may be done together in a lesson (useful to Fred too). Second look on for the first two rounds only. |
+| **D7** | How the review is done | sittings by kind (§3.11); word items done together with Fred | **Sittings as §3.11.** Word items may be done together with Fred (useful to him too). No second look: there is one reviewer. |
 | **D8** | Sentences that share a pattern | (a) grouped on one card, each still ticked; (b) "frame-reviewed": siblings of a reviewed frame count as reviewed | **(a)**. It halves the time and keeps "every sentence seen by a native speaker". (b) changes what "reviewed" means. Not recommended. |
 | **D9** | Copyright policy, and the folk tale | adopt `docs/CONTENT.md` and the overlap gate; the tale retold from its plot by or with Luna, or skipped | **Adopt; retell the tale** (stage C), Luna writing or rewriting each episode. |
 | **D10** | Weekday and weekend names | planet names (даваа…) plus бямба/ням, as the lexicon has; the numbered system (нэгдэх өдөр…); хагас сайн / бүтэн сайн өдөр | **Luna decides on sheet L1.** Default: planet names, with the others as accepted alternatives in `alt` and generator `accept` sets. |
 | **D11** | Where a unit starts | a card in the lesson (§2.2); a line on Today; only Gamification's path | **The card**, unless Gamification's path screen already announces it. Then drop the card. |
 | **D12** | Marking provisional (unreviewed) words | no marker in lessons, count on Progress; a small "unchecked" tag on the deck | **No marker.** Less text on study screens; Progress shows "N words awaiting a check" in Numbers. |
-| **D13** | Sheets on Sarnai's phone | laptop file, as now; a hosted, unlinked, non-precached page on Pages (public URL, holding unreleased content) | **Laptop file**, unless she prefers the phone. Then hosted (same reasoning as Sound's D7). |
+| **D13** | Sheets on Luna's phone | laptop file, as now; a hosted, unlinked, non-precached page on Pages (public URL, holding unreleased content) | **Laptop file**, unless she prefers the phone. Then hosted (same reasoning as Sound's D7). |
 | **D14** | Beyond the books (≈ 1,070 → 2,500 words) | decide in spring 2027: Top300 and Peace Corps lists, a Luna-curated frequency list, authentic texts, Let's Read titles once licences are checked | **Decide by March 2027**, when stage B starts, so stage D is drafted before stage C ends. |
 
 ---
@@ -1060,7 +1061,7 @@ These pages are what is borrowed: topic, grammar point and format. Never sentenc
 | **The matcher mis-tags as the lexicon grows** (wrong word scheduled, wrong coverage) | F0 lands before any entry. Gold self-test in CI. Retag diff on every release. `forms` and `infl` for short words. Verb and noun suffix classes. |
 | **Wrong Mongolian is taught** (provisional words; generated forms) | Words are copied from the books' lists, not invented, and checked by the Cyrillic validator. Generators compose reviewed rows only (D6). Golden vectors fail tests on drift. Rejected words are deleted with ids retired; misspellings are corrected in place. |
 | **Copyright exposure on a public site** | Policy (§3.12); the blocking 5-gram overlap gate with its log; original cast; citations; no book text in the repo. |
-| **Claude-written Mongolian sounds unnatural** | Sarnai is the primary sentence reviewer, and her "how would you say it" box promotes her phrasing (existing rule). Reuse reviewed constructions. Per-unit rejection rate tracked from return files: if > 15%, slow down and ask Luna to write the unit's triplets herself. |
+| **Claude-written Mongolian sounds unnatural** | Luna reviews every sentence, and her "how would you say it" box promotes her phrasing (existing rule). Reuse reviewed constructions. Per-unit rejection rate tracked from return files: if > 15%, slow down and ask Luna to write the unit's triplets herself. |
 | **The textbooks' world is not Fred's** | Personal strand (D5); cast stories (§3.7); units reorderable before release. |
 | **Tests pinned to corpus size break** (runway test, trajectory) | Updated in the same change (§6.2). The release gate runs the suite. |
 | **Rewrites orphan keyed data** (alternatives, tiles, audio, review results) | `sid` everywhere. `release.py` prints orphans. Sound records only reviewed spellings. |
@@ -1087,10 +1088,10 @@ These pages are what is borrowed: topic, grammar point and format. Never sentenc
 **What this engine gives Fred that Ling cannot:**
 
 - **A syllabus to B1 grammar built on his own textbooks.** 28 units follow Beginner Part 1, Survival and Modern Mongolian chapter by chapter, each cited to printed pages. Ling stops where his goal starts.
-- **About 1,070 words, ordered for him.** Textbook frequency (the top 100 in his first six weeks), his own life (Sarnai's family, the Netherlands, the in-laws' visit unit), and a path that says honestly where the books end and stage D begins.
-- **Every Mongolian line checked by a native speaker or his tutor, with provenance.** Ling's Mongolian is unreviewed for him. Here every item says who signed it and which page it was modelled on.
+- **About 1,070 words, ordered for him.** Textbook frequency (the top 100 in his first six weeks), his own life (Luna's family, the Netherlands, the family-visit unit), and a path that says honestly where the books end and stage D begins.
+- **Every Mongolian line checked by a native speaker, with provenance.** Ling's Mongolian is unreviewed for him. Here every item says who signed it and which page it was modelled on.
 - **Never runs dry.** A measured buffer (≥ 14 days), a weekly release, and a runway he can see. Ling's fixed course ends. This one is fed at his own measured pace.
 - **At least two contexts per word, at i+1.** Sentences are written so the selector always has a sentence where exactly one thing is new. That is spacing plus context, where Ling repeats isolated items.
 - **Unlimited, correct, rule-generated practice** for numbers, prices, time, days, family relations and dates, built from reviewed tables so no generated form can be wrong. Ling has fixed lessons only.
 - **The bridge back to the books.** As the lexicon grows, `--books` tells him which pages of his own textbooks he can now read on paper: 35-52 passages at ≥ 90% after the first 100-150 lemmas (content-fit). No app does this, and it turns his shelf into graded readers.
-- **Original writing on his own life.** Reading's cast stories and the "about me" sentences are about Fred, Sarnai and their cat, reviewed by Sarnai. Ling's dialogues are the same in every language.
+- **Original writing on his own life.** Reading's cast stories and the "about me" sentences are about Fred, Luna and the cat, reviewed by Luna. Ling's dialogues are the same in every language.

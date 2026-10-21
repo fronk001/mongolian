@@ -43,7 +43,7 @@ never declared), sentences were retagged with every word they contain
 sentences fully covered. Closed-class grammar is marked `drill:false`: it
 counts toward comprehensibility but is never queued as a flashcard.
 
-All 73 new entries are `reviewed:false` pending Luna or Sarnai —
+All 73 new entries are `reviewed:false` pending Luna —
 `py tools/extend-lexicon.py --sheet`.
 
 ### 2b. More sentences — the remaining constraint
@@ -86,7 +86,7 @@ tokens, 160/164 sentences fully covered, down from 94% and 162.
 
 ---
 
-## 3. Shadowing with Sarnai's recordings
+## 3. Shadowing with Luna's recordings
 
 Research consistently puts shadowing ahead of dictation, and it specifically
 helps lower-proficiency learners perceive word boundaries in connected speech —

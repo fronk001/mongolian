@@ -1047,7 +1047,7 @@ section('backup survives the redesign fields');
      Array.isArray(b.badges) && b.purpose === '' && b.wordDrills === 8);
 
   const rich = Object.assign(blank(), {
-    mcMode: false, purpose: 'Сарнайн гэр бүлтэй ярих', goalWords: 3000,
+    mcMode: false, purpose: 'Лунын гэр бүлтэй ярих', goalWords: 3000,
     xp: 2340, badges: ['week7', 'known25'], wordDrills: 0
   });
   const back = importCode(encodeCode(rich));
@@ -1057,7 +1057,7 @@ section('backup survives the redesign fields');
   ok('mcMode:false survives a round-trip', back.mcMode === false,
      'a difficulty preference must not silently flip back on');
   ok('purpose survives a round-trip, Cyrillic intact',
-     back.purpose === 'Сарнайн гэр бүлтэй ярих');
+     back.purpose === 'Лунын гэр бүлтэй ярих');
   ok('goal, xp and badges survive', back.goalWords === 3000 && back.xp === 2340 &&
      back.badges.join() === 'week7,known25');
 
@@ -1120,7 +1120,7 @@ section('backup survives the redesign fields');
 
   const rec = study(blank(), '2026-09-20', 14);
   rec.history.unshift({ date: '2025-12-30', tracked: 3, due: 1, known: 0, reviews: 4, newWords: 3, onTime: 4, late: 0, xp: 30 });
-  rec.purpose = 'Сарнайн гэр бүлтэй ярих';
+  rec.purpose = 'Лунын гэр бүлтэй ярих';
   rec.mcMode = false;
   rec.wordDrills = 0;
   rec.badges = ['first', 'week7'];
@@ -1229,7 +1229,7 @@ section('backup survives the redesign fields');
   grade(laptop, onlyL, 3, '2026-10-04');
   recordDay(laptop, { date: '2026-10-04', tracked: 40, reviews: 2, xp: 18 });
   laptop.lastDate = '2026-10-04';
-  laptop.purpose = 'Сарнай';
+  laptop.purpose = 'Луна';
   const phone = grade(clone(rec), Number(shared), 1, '2026-10-05');
   const onlyP = W.find(w => w.drill !== false && !rec.items[w.id] && w.id !== onlyL).id;
   grade(phone, onlyP, 3, '2026-10-05');
@@ -1251,7 +1251,7 @@ section('backup survives the redesign fields');
   ok('badges from either', m.badges.includes('perfect') && m.badges.includes('week7'));
   ok('grammar keeps the count with more attempts', same(m.grammar[G[0].id], phone.grammar[G[0].id]));
   ok('settings come from the copy studied most recently', m.mcMode === true && m.lastDate === '2026-10-05');
-  ok('a reason written on either survives', m.purpose === 'Сарнай');
+  ok('a reason written on either survives', m.purpose === 'Луна');
   ok('it does not matter which device signs in first', same(toDocs(m), toDocs(mergeStates(laptop, phone))));
   ok('a fresh device takes the online copy as it is', same(toDocs(mergeStates(blank(), rec)), docs));
   ok('combining a copy with itself changes nothing', same(toDocs(mergeStates(rec, clone(rec))), docs));

@@ -1,5 +1,5 @@
 """
-Build a review sheet for Luna or Sarnai, and apply what comes back.
+Build a review sheet for Luna, and apply what comes back.
 
     py tools/review-sheet.py             # write tools/review.html
     py tools/review-sheet.py --apply luna-review.json
@@ -21,7 +21,7 @@ What it asks her, and what it deliberately does not:
   * **New sentences** — drafts in `content/drafts/*.json` written for a unit
     (docs/CONTENT.md). A draft reaches the sheet only once the copyright gate
     (`tools/overlap.py`) is clear, and reaches the app only once she says yes.
-  * **Not the English alternatives.** She is a Mongolian tutor; the English is
+  * **Not the English alternatives.** She is a native Mongolian speaker; the English is
     the part that does not need her, and asking would quadruple the work for
     nothing.
 

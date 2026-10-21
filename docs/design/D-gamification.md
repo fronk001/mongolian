@@ -705,7 +705,7 @@ There is no migration code. Everything is derived or defaults.
 ### 5.1 Part 1 "At home": 11 units over the existing lexicon (ready now)
 
 - Built only from the 154 drillable words already in `words.json`, which Luna signed off in August 2026. Checkpoints use the existing 164 sentences, all `altReviewed: true`.
-- **No new Mongolian is written, so Luna and Sarnai spend no time on this part.**
+- **No new Mongolian is written, so Luna spends no time on this part.**
 - Sources: Fred's *Mongolian Booklet Words 90–200* (books-small: 7 words a day, Day 1 = p.2, Days 3–15 two pages each, Day 16 = p.30), and the 43 entries `tools/extend-lexicon.py` added from that booklet's sentences (answer key pp. 31–39).
 
 | id | Title | Can-do | Words (ids) | n | Source | Grammar link |
@@ -777,7 +777,6 @@ The Mongolian goes through the engine's normal `review-sheet.py` pass (Luna). **
 ### 5.3 Native-speaker time for this workstream
 
 - **Luna: 0 minutes.** No Mongolian is written: badge names are English, and the existing `mn` badge labels are already approved.
-- **Sarnai: 0 minutes.**
 - **Fred: about 10 minutes** for unit titles (D9), plus the decisions in §8.
 
 ---

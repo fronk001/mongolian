@@ -88,7 +88,7 @@ those workstreams. Their word ceiling is part of this design.
 ```
                                    Sat 11 Oct  ●        ← date + sync dot (3 words)
 ┌ gold ───────────────────────────────────────────┐
-│ I want to talk with Sarnai's family at Tsagaan  │  ← purpose, 15px; tap = edit
+│ I want to talk with Luna's family at Tsagaan    │  ← purpose, 15px; tap = edit
 │ Sar without switching to English.               │     (data-act="purpose")
 │ [GAMI goal meter, gold fill]  0 of 1 lesson     │  ← ≤ 5 words
 └─────────────────────────────────────────────────┘
@@ -684,7 +684,7 @@ cites pages the way `tools/alternatives.py` does. Printed page numbers:
 and forms tables go through the existing grammar section of
 `tools/review-sheet.py` (`:174-178, 245-251`), one extra line per topic.
 That takes **about 10 minutes of Luna's time**, folded into her next grammar
-pass. Sarnai is not needed.
+pass.
 
 ### 5.3 Nothing else
 

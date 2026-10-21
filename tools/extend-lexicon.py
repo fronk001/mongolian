@@ -9,7 +9,7 @@ Every gloss below was read off the corpus's own aligned English, not recalled
 from memory: each Mongolian sentence in sentences.json ships with its English
 translation, so the meaning of an unlisted token is recoverable from the pairs
 it appears in. They are still machine-written, so every new entry carries
-reviewed:false until Luna or Sarnai signs it off, and --sheet exports them for
+reviewed:false until Luna signs it off, and --sheet exports them for
 that review.
 
 drill:false marks closed-class grammar — copulas, pronouns, postpositions,
@@ -115,7 +115,7 @@ VOCABULARY = [
 FLAGS = [
     ("сороогоч", "sentences.json spells the vacuum verb two ways: "
                  "'Тоос сорогч хаана байна?' vs 'Тоос сороогоч.' — one is "
-                 "likely a typo. Sarnai to confirm which."),
+                 "likely a typo. Luna to confirm which."),
     ("уу", "'уу' is both the yes/no question particle and a form of уух "
            "(to drink). 'Та цай уух уу?' contains both. The matcher cannot "
            "tell them apart and will prefer уух."),
@@ -157,7 +157,7 @@ def main() -> int:
             if mn not in {e["mn"] for e in pending}:
                 lines.append("\t".join(["-", mn, "", "", "", note]))
         out.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        print(f"wrote {out} — {len(pending)} entries for Luna/Sarnai to confirm")
+        print(f"wrote {out} — {len(pending)} entries for Luna to confirm")
         return 0
 
     print(f"{len(added)} new entries, {len(skipped)} already present")

@@ -919,7 +919,7 @@ export function viewDone(summary, st, p, ctx = {}) {
 
 export function viewReading(reading, rd, byId) {
   const head = `<div class="qhead"><span class="tag">READ</span><span class="mono">${esc(reading.title)}</span></div>`;
-  const draft = reading.reviewed === false ? `<div class="gl" style="margin-top:6px">draft — pending Luna or Sarnai</div>` : '';
+  const draft = reading.reviewed === false ? `<div class="gl" style="margin-top:6px">draft — pending Luna</div>` : '';
   const line = (l, k, { taps = true, en = false, mark = false } = {}) => {
     const words = (l.words || l.mn.split(' ').map(t => [t, null])).map(([t, id], j) => taps
       ? `<button class="rw${rd.word && rd.word[0] === k && rd.word[1] === j ? ' on' : ''}" data-act="rw" data-l="${k}" data-k="${j}">${esc(t)}</button>`
@@ -991,7 +991,7 @@ export function viewReading(reading, rd, byId) {
 /* ══════════════════════════════════════════════════════════════════════
    The Read tab: every passage, to read again or to look forward to.
    Signed-off passages he can read open; the others say which words they
-   still need. Passages still waiting for Luna or Sarnai are counted, not
+   still need. Passages still waiting for Luna are counted, not
    shown (?dev shows them).
    ══════════════════════════════════════════════════════════════════════ */
 export function viewReadShelf(shelf) {
@@ -1009,6 +1009,6 @@ export function viewReadShelf(shelf) {
   };
   return pageHead('READ') + `<div class="panel" style="margin-top:10px">
       ${shelf.list.length ? shelf.list.map(row).join('') : '<div class="gl">No passages to read yet.</div>'}
-      ${shelf.waiting ? `<div class="gl" style="margin-top:10px">${shelf.waiting} more waiting for Luna or Sarnai to check</div>` : ''}
+      ${shelf.waiting ? `<div class="gl" style="margin-top:10px">${shelf.waiting} more waiting for Luna to check</div>` : ''}
     </div>`;
 }

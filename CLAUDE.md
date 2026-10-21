@@ -1,8 +1,10 @@
 # Mongolian study app
 
 Personal language app for Fred (target CEFR B1/B2). Mongolian Cyrillic.
-Content is prepared by his tutor Luna; his wife Sarnai is a native speaker who
-will record audio in a later phase.
+Content is prepared and checked by Luna, a native speaker, who may also record
+audio in a later phase. She is the only reviewer: there is no second person,
+and no separate tutor. The repo is public, so the notes call her Luna, a
+native speaker, and nothing more personal.
 
 ## Run
 
@@ -155,7 +157,7 @@ right, of, credited? }`. Streak and rest days come from history alone
 - `drill: false` — closed-class grammar (байна, би, энэ, дээр…). Counts toward
   comprehensibility and is never the i+1 element, but is never introduced as a
   flashcard. Absent means drillable.
-- `reviewed: false` — machine-written, not yet confirmed by Luna or Sarnai.
+- `reviewed: false` — machine-written, not yet confirmed by Luna.
   Export the outstanding ones with `py tools/extend-lexicon.py --sheet`.
 
 Textbook words (ids from 1000, issued from `content/ids.json`, never reused)
@@ -180,7 +182,7 @@ Plus `alt: {en: [...], mn: [...]}` — **every other phrasing that counts as
 correct**, because there is no one to appeal to once the app is live. The
 canonical answer stays in `en`/`mn`; `alt` holds the rest, and grading takes
 the best match across all of them. `altReviewed: false` marks the set as
-machine-generated pending Luna or Sarnai.
+machine-generated pending Luna.
 
 Regenerate with `py tools/alternatives.py`. It is the only thing that should
 write these fields — hand edits there will be overwritten, so put additions in
@@ -216,8 +218,8 @@ Luna is open — `--apply-tags` skips it.
 ## Native-speaker review
 
 Machine-written Mongolian never ships as confirmed. `reviewed: false` on a
-lexicon entry and `altReviewed: false` on a sentence both mean "pending Luna
-or Sarnai". To get it signed off:
+lexicon entry and `altReviewed: false` on a sentence both mean "pending
+Luna". To get it signed off:
 
 ```
 py tools/review-sheet.py                       # -> tools/review.html

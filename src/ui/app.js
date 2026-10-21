@@ -27,7 +27,7 @@ const params = new URLSearchParams(location.search);
 const fake = params.has('fake-sync') ? params.get('fake-sync') || 'laptop' : null;
 const KEY = fake ? `${STORE_KEY}:fake:${fake}` : STORE_KEY;
 let WORDS = [], SENTENCES = [], GRAMMAR = [], READINGS = [], UNITS = [], BYID = {}, POOL = [];
-// ?dev: preview what is waiting for review (reading drafts) before Luna or Sarnai sign off.
+// ?dev: preview what is waiting for review (reading drafts) before Luna signs off.
 const DEV = params.has('dev');
 let TILEPOOL = () => ({ siblings: [], others: [] });   // decoy candidates per sentence, built at boot
 let P = load(localStorage, KEY);

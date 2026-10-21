@@ -516,7 +516,6 @@ Retry metadata lives on the spliced items (`retry`, `rung`, `confusion`, `origin
 | Complex sentence broken into its two simple sentences | Modern Mongolian p138 [PDF 150]; keys p239-240 [PDF 251-252] and p250 [PDF 262] | **deferred** `SPLIT` rung (D10): an optional `parts: [{mn, en}]` field, written by the Content engine, `reviewed:false`. Only 16 current sentences have 5+ tokens, so it matters once B1 content arrives |
 | Letter anagrams | Survival p77 [PDF 79] | deferred word rung (D9) |
 
-**Sarnai:** nothing in this workstream.
 
 ---
 

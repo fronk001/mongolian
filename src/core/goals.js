@@ -245,7 +245,7 @@ export function projectDate(known, target, rate, today) {
 /**
  * Level thresholds in known words, ending exactly on the B1 estimate so the
  * ladder and the goal are the same journey. Deliberately unnamed: naming the
- * levels means writing Mongolian that neither Luna nor Sarnai has checked.
+ * levels means writing Mongolian that Luna has not checked.
  */
 export const LEVELS = [0, 10, 25, 50, 100, 175, 275, 400, 600, 850, 1150, 1500, 1900, 2500];
 

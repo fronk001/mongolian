@@ -17,7 +17,7 @@ Their extracted text lives in `C:\Users\frede\Documents\mongolian-books\`,
 **outside the repo**, with `research\*.json` inventories of every reading
 text, exercise type and grammar sequence. It is never committed.
 
-The tutor's *Booklet, words 90–200* was written for Fred and is the source of
+Luna's *Booklet, words 90–200* was written for Fred and is the source of
 the original 164 sentences; it is not one of "the books" below.
 
 ## Rules
@@ -42,8 +42,8 @@ the original 164 sentences; it is not one of "the books" below.
    with its reason. `--selftest` runs in CI; the full check needs the books
    and runs locally.
 5. **Drafts stay out of the repo.** New sentences are written in
-   `content/drafts/` (gitignored) and enter `src/data` only after Luna or
-   Sarnai has said yes on a review sheet and the gate is clear. Baby
+   `content/drafts/` (gitignored) and enter `src/data` only after Luna
+   has said yes on a review sheet and the gate is clear. Baby
    paragraphs are the exception: they live in `src/data/readings.json` with
    `reviewed: false` (the gate already clear), so `?dev` can preview them, and
    the app never shows one to the learner until it is signed off.
@@ -53,4 +53,4 @@ the original 164 sentences; it is not one of "the books" below.
    alternative orders and generated answers wait for a native speaker.
 7. **Ids are never reused** (`content/ids.json`). A rejected word is deleted
    and its id stays spent; a corrected spelling or gloss keeps its id.
-8. **Real names**: first names only (Фред, Сарнай) in published content.
+8. **Real names**: first names only (Фред, Луна) in published content.

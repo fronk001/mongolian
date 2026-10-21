@@ -282,5 +282,5 @@ yet», «rate needs two days of history» — and never prints a zero in place o
 an unknown.
 
 **Machine-written Mongolian** — level and badge names, new chrome — follows
-the lexicon's `reviewed: false` convention and is pending Luna or Sarnai. See
+the lexicon's `reviewed: false` convention and is pending Luna. See
 `BADGES` in `src/core/goals.js`.

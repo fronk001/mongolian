@@ -20,7 +20,7 @@
 - **Later:**
   - **R4:** the Read tab.
   - **R5:** the weekly content routine, grammar inside lessons, and conversation practice.
-  - **R6:** Sarnai's voice.
+  - **R6:** Luna's voice, if she agrees to record.
 - **Pace.** Dates assume 5 sessions a week; at 2-3 a week, double them.
 - **Always:**
   - one FSRS grade per word per lesson;
@@ -53,10 +53,11 @@ The new Today mock is shown beside his June prototype's home screen when he answ
   - steps per lesson.
 
   If more than 30 drillable words are still unintroduced, session 3 goes before session 2.
-- **Ask the reviewers.** One message each:
-  - **Sarnai:** will she check sentences and passages (about 20-30 minutes a week)? May her recorded voice be published?
-  - **Luna:** the four open ROADMAP questions; could she take sentences if needed?
-  - The pilot passages go to whoever answers first.
+- **Ask Luna.** One message:
+  - the four open ROADMAP questions;
+  - will she also check sentences and passages (about 20-30 minutes a week more)?
+  - will she record for R6, and may her recorded voice be published?
+  - The pilot passages go to her too.
 - **Move the textbooks.** Claude copies the extracted textbook text from the temporary session folder to `C:\Users\frede\Documents\mongolian-books\`, outside the repo, and notes the path in CLAUDE.md.
 
 ## What we learned
@@ -152,9 +153,8 @@ The new Today mock is shown beside his June prototype's home screen when he answ
 - **Settings:** *Sound effects On / Soft / Off*, set per device.
 - **Choosing a set.** Fred picks one of three sets on his iPhone at `?dev=sounds`. A richer set can be rendered as WAV files with Python's `wave` module.
 - **From R6:**
-  - Sarnai's recording plays after each verdict, with its own switch.
+  - Luna's recording plays after each verdict, with its own switch.
   - New drills: listen and choose, dictation, and *Hear the difference*. That last covers long and short vowels, words that sound alike, and front and back vowels.
-  - Luna is the second voice.
 
 **How it works.**
 
@@ -174,7 +174,7 @@ The new Today mock is shown beside his June prototype's home screen when he answ
 
 **What Fred sees.**
 
-- Most lessons end with a short passage about Fred, Sarnai, the cat and Sarnai's parents. It is set in 22px, with no English under it.
+- Most lessons end with a short passage about Fred, Luna, the cat and Luna's parents. It is set in 22px, with no English under it.
 - One tap gives a word's meaning; a second gives the sentence's English. Taps are never penalised.
 - Two to four questions follow, one per screen:
   - in English at first;
@@ -319,8 +319,8 @@ That is about 1,070 words in total. At about 20 a week, the 2,500-word B1 estima
   - The 90 already reviewed are true.
   - The other 74 are *legacy*: they stay live and go on Luna's first sheet.
   - Only reviewed sentences feed decoys and checkpoints.
-- **Who checks what.** Sarnai: sentences and passages. Luna: words, grammar, tables and decoys.
-- **Fallback.** If Sarnai declines, or takes more than 10 days, Luna takes everything at a cap of 4 new words a day. Words keep flowing.
+- **Who checks what.** Luna checks everything: words, grammar, tables, decoys, sentences and passages.
+- **Fallback.** If that is too much, or a sheet waits more than 10 days, new words drop to a cap of 4 a day. Words keep flowing.
 
 **Safeguards.**
 
@@ -390,7 +390,7 @@ R1 adds no synced fields.
 | S2 | **New words.** Matcher hardening with its self-test. Fred approves a retag of about 7 sentences. Ids never reused. The daily cap. Unit 1-2 words (57), connecting words first. | Tomorrow's deck: бас, харин, хоёр… |
 | S3 | **Mistakes come back (cards).** Grade saved at the verdict. Fix, the end retry, Study. FIX segments in the lesson bar. "I know this" check. | A missed word returns until right |
 | S4 | **Copyright gate.** `overlap.py`, `docs/CONTENT.md`, review-sheet sections for passages and sentences, and a minimal `release.py`. | – |
-| S5 | **Unit 1 sentences** (about 85, two per word), run through the gate and sent to Sarnai. **Unit 3 words** (35) go live. | Number words in the deck |
+| S5 | **Unit 1 sentences** (about 85, two per word), run through the gate and sent to Luna. **Unit 3 words** (35) go live. | Number words in the deck |
 | S6 | **Game, part 1.** Level, B1 date and lifetime XP move into Numbers. Badges named, with have/need. Practice fallback. Lean Done. *Practise today's mistakes*. Grammar XP on the first pass of the day only. | No level 5 or 2071; Start always works |
 
 **Tests.**
@@ -412,7 +412,7 @@ R1 adds no synced fields.
 
 - **Luna (L1, about 30 min):** the open questions, the 57 words and the 74 legacy sentences.
 - **The pilot:** about 10 min.
-- **Sarnai:** the Unit 1 sentences, about 25 min.
+- **Luna, second sitting:** the Unit 1 sentences, about 25 min.
 
 **Exit.** Suites green. A week later, Fred says whether complaints 1, 2 and 4 feel fixed.
 
@@ -424,7 +424,7 @@ R1 adds no synced fields.
 | S8 | **Reader pilot.** Reading is the lesson's last step, using the scheduler's own memory picture. Word, then sentence taps; questions without English; the evidence line; line pairs afterwards. Kept behind `?dev` until the passages are reviewed. | A passage about his home ends the lesson |
 | S9 | **Blocks core.** `tiles.js`, `orderDiff`, `tools/tiles.py`. Decoys only from reviewed sentences, and a reviewed pool is never rewritten. *Right word, wrong ending*. | – |
 | S10 | **Use blocks everywhere.** The sentence ladder, the grammar-drill loop, and build drills graded against the canonical answer until reviewed. The *Sentences* setting. | **Use blocks** under Check |
-| S11 | **Content.** Unit 2 and Unit 3 sentences drafted (about 130 sentences, may take two sittings) and sent to Sarnai. | – |
+| S11 | **Content.** Unit 2 and Unit 3 sentences drafted (about 130 sentences, may take two sittings) and sent to Luna. | – |
 
 **Tests.**
 
@@ -443,7 +443,7 @@ R1 adds no synced fields.
 **Review.**
 
 - **Luna:** first the grammar topics, then the decoys and Unit 3 words. Each takes about 25 minutes.
-- **Sarnai:** the Unit 2-3 sentences, about 40 minutes in two sittings.
+- **Luna, then:** the Unit 2-3 sentences, about 40 minutes in two sittings.
 
 **Exit.** Passages live, and the two-device check passes. Fred says whether complaint 3 feels answered.
 
@@ -477,7 +477,7 @@ R1 adds no synced fields.
 **Review.**
 
 - **Fred:** approves the unit titles (10 min).
-- **Sarnai:** reviews the Unit 4 and *A visit* sentences (about 20 min).
+- **Luna:** reviews the Unit 4 and *A visit* sentences (about 20 min).
 
 **Exit.**
 
@@ -491,17 +491,17 @@ R1 adds no synced fields.
 
 - **S18:** the Read tab and rereads. Locked passages name their words.
 - **S19:** order questions, a retell, Mongolian questions and the tap log.
-- **S20:** Unit 1 readings drafted. Pack 1 goes live as Sarnai reviews it, in two sittings of about 30 minutes.
+- **S20:** Unit 1 readings drafted. Pack 1 goes live as Luna reviews it, in two sittings of about 30 minutes.
 - **Exit:** the shelf opens with the pilot passages, and every locked passage names its words.
 
 **R5: Routine, grammar, conversation (6 sessions, about 10-17 Nov).**
 
 - **S21:** the full `release.py`, `syllabus.py` (which also reports the readable pages of his books), and the runway line.
-- **S22:** per-reviewer sheets and the `/next-unit` skill.
+- **S22:** scoped review sheets and the `/next-unit` skill.
 - **S23:** a grammar topic per unit, with 1-2 tallied grammar items in each lesson. These never touch FSRS.
 - **S24:**
   - *Pick the reply*, built from question-and-answer pairs;
-  - *Say it to Sarnai*;
+  - *Say it to Luna*;
   - *Write two sentences*.
 - **S25 (cuttable):** generated drills.
 - **S26:** evaluation from the review log, plus the beyond-the-books decision.
@@ -510,14 +510,14 @@ R1 adds no synced fields.
   - sentences within 7 days of their words;
   - 10 minutes a week or less of Fred's time.
 
-**R6: Sarnai's voice (5 sessions, from about 18 Nov).**
+**R6: Luna's voice (5 sessions, from about 18 Nov; only if she agrees to record).**
 
 - **S27:** an iPhone spike behind `?audio-test`.
 - **S28:** the recording tool and a 5-minute pilot.
 - **S29: audio build.** `build.py` copies `src/audio` with its own manifest, kept out of the precache. The cache survives updates, Range requests are answered, and `*.m4a` is binary. All of this stays inactive until clips exist.
-- **S30:** ▶ Sarnai after verdicts, at 0.75× if wanted.
+- **S30:** ▶ Luna after verdicts, at 0.75× if wanted.
 - **S31:** listening drills. Dictation never adds a second FSRS grade.
-- **Rules:** no clip is committed before Sarnai answers.
+- **Rules:** no clip is committed before Luna says yes to publishing it.
 - **Exit:** reviewed items play offline on the iPhone.
 
 **R7, later:**
@@ -548,19 +548,19 @@ Every field gets a `blank()` default, a merge rule, a rebase rule, backup-code t
 
 ## Content calendar
 
-| Week of | Words live | Sentences live | Readings | Luna | Sarnai |
-|---|---|---|---|---|---|
-| 12 Oct | Unit 1-2 (57) | – | – | L1, 30 min | pilot, 10 min |
-| 19 Oct | Unit 3 (35) | Unit 1 (85) | pilot (5) | grammar topics, 25 min | Unit 1, 25 min |
-| 26 Oct | – | – | – | decoys and Unit 3 words, 25 min | Units 2-3, 40 min |
-| 2 Nov | Unit 4 + *A visit* | Units 2-3 | – | 15 min | Unit 4 + *A visit*, 20 min |
-| 9 Nov | Unit 5 | Unit 4 + *A visit* | pack 1 as reviewed | 20 min | pack 1, 2 × 30 min |
-| 16 Nov on | a unit about every 9 days | within 7 days of the words | 5 per unit | 15 min a week | 20-30 min a week |
+| Week of | Words live | Sentences live | Readings | Luna |
+|---|---|---|---|---|
+| 12 Oct | Unit 1-2 (57) | – | – | L1, 30 min; pilot, 10 min |
+| 19 Oct | Unit 3 (35) | Unit 1 (85) | pilot (5) | grammar topics, 25 min; Unit 1, 25 min |
+| 26 Oct | – | – | – | decoys and Unit 3 words, 25 min; Units 2-3, 40 min |
+| 2 Nov | Unit 4 + *A visit* | Units 2-3 | – | 15 min; Unit 4 + *A visit*, 20 min |
+| 9 Nov | Unit 5 | Unit 4 + *A visit* | pack 1 as reviewed | 20 min; pack 1, 2 × 30 min |
+| 16 Nov on | a unit about every 9 days | within 7 days of the words | 5 per unit | 35-45 min a week |
 
 - **Catching up.** Units 2-3 sentences arrive about two to three weeks after their words. Until then those words come up as cards. From Unit 4 on, the 7-day rule holds.
 
-- **Recording weeks.** In late November Sarnai records two sittings of about 35 minutes. That week her total is 45-55 minutes.
-- **If she declines,** Luna takes her column and the cap drops to 4.
+- **Recording weeks.** In late November Luna records two sittings of about 35 minutes, if she agrees. That week's sheets stay small.
+- **If the load is too much,** the cap drops to 4 new words a day.
 - **Steady state:** about 22 words, 50 sentences and 4 readings a week, plus 10 minutes of Fred's time.
 
 **Milestones** (simulated; the runway line corrects them):
@@ -597,7 +597,7 @@ Items 1-4 are the four questions. "OK" accepts the rest.
 | 16 | Achievements tab | Folded into Progress |
 | 17 | Live before review | Words and tables from the books, flagged |
 | 18 | 74 legacy sentences, 5 grammar topics | Stay live, go on the first sheets; counted as reviewed if Luna wrote the Booklet |
-| 19 | Reviewers | Sarnai: sentences and passages; Luna: the rest. Fallback: Luna alone at a cap of 4 |
+| 19 | Reviewers | Luna checks everything. Fallback: a cap of 4 new words a day |
 | 20 | New words a day | 6 per calendar day |
 | 21 | Syllabus | Beginner and Survival, then MM; *A visit* after Unit 4 |
 | 22 | Connecting words | Practised as words |
@@ -606,7 +606,7 @@ Items 1-4 are the four questions. "OK" accepts the rest.
 | 25 | Copyright, folk tale | Adopt; retell from a traditional telling |
 | 26 | Generated drills | Answers only from reviewed tables |
 | 27 | Difficulty band | Off until R5 has data |
-| 28 | Recordings | After each verdict, with their own switch; Luna as second voice; no machine voice |
+| 28 | Recordings | After each verdict, with their own switch; Luna's voice, with her consent; no machine voice |
 | 29 | Beyond the books | Decide in R5: a stage D source and a recognition-only track |
 
 ## Rule amendments (for Fred's approval)
@@ -641,12 +641,12 @@ Items 1-4 are the four questions. "OK" accepts the rest.
 - **Type:**
   - labels are sentence-case Geologica, with uppercase mono only in Numbers and Details;
   - reading text is 22px;
-  - the credit chip reads "▶ Sarnai".
+  - the credit chip reads "▶ Luna".
 - **Colour:** gold also covers the current-unit panel and rest squares; unit meters are blue.
 
 **Machine-written Mongolian** (decision 17). Add:
 
-> …and machine-spoken. Single words read off the books' lists, and rule tables, may be studied before sign-off, flagged. Personal words, sentences, passages, grammar topics, alternative orders and generated answers go live only after Luna or Sarnai say yes.
+> …and machine-spoken. Single words read off the books' lists, and rule tables, may be studied before sign-off, flagged. Personal words, sentences, passages, grammar topics, alternative orders and generated answers go live only after Luna says yes.
 
 **Badges and components.**
 
@@ -688,10 +688,10 @@ This is against Ling's general template. No review of its Mongolian course was f
 | Mistakes | retried at the end of the lesson | back easier soon, then at full difficulty | R1-R2 |
 | Blocks | ordering mini-game | other forms of the same word as decoys; only Luna's orders count | R2 |
 | Reading | closing dialogue | passages about his home, unlocked by his memory | R2 |
-| Dialogue | pick-your-reply chatbot | *Pick the reply*, *Say it to Sarnai* | R5; **Ling ahead until then** |
-| Audio | native recordings; unreliable speech scoring | Sarnai's voice and listening drills | R6; **Ling ahead until then** |
+| Dialogue | pick-your-reply chatbot | *Pick the reply*, *Say it to Luna* | R5; **Ling ahead until then** |
+| Audio | native recordings; unreliable speech scoring | Luna's voice and listening drills | R6; **Ling ahead until then** |
 | Game | points, leaderboard, fluency % | one score he can check, one path | R2-R3 |
-| Native check | none known | Luna and Sarnai sign off | R2 |
+| Native check | none known | Luna signs off | R2 |
 
 ## Risks
 
@@ -750,7 +750,7 @@ This is against Ling's general template. No review of its Mongolian course was f
 
 1. **New words come earlier:** R1 session 2. A five-passage reading pilot is drafted in session 1.
 2. **R1 is six numbered sessions,** each saying what Fred will notice. Dates are given at two paces, and content sessions are counted.
-3. **Step 0 added:** measure real progress, ask both reviewers, and move the textbook text somewhere permanent.
+3. **Step 0 added:** measure real progress, ask Luna, and move the textbook text somewhere permanent.
 4. **The game clean-up moves into R1,** and Start is never disabled.
 5. **Four plain questions** replace the 26-item list; the rest default.
 6. **Type first** is the default, which resolves the pedagogy blocker.
@@ -770,9 +770,9 @@ This is against Ling's general template. No review of its Mongolian course was f
 16. **Added:**
     - grammar inside lessons;
     - *Pick the reply*;
-    - *Say it to Sarnai*;
+    - *Say it to Luna*;
     - *A visit*;
-    - two-voice listening drills.
+    - listening drills in Luna's voice.
 17. **Honesty:**
     - the B1 date is stated (about 2029);
     - every section names the evidence for it;

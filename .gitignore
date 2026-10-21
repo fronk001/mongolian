@@ -5,6 +5,6 @@ node_modules/
 __pycache__/
 *.pyc
 
-# Drafts of new Mongolian content: never committed until Luna or Sarnai has
+# Drafts of new Mongolian content: never committed until Luna has
 # reviewed them and the copyright gate passed (docs/CONTENT.md).
 content/drafts/

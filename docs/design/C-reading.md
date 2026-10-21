@@ -57,7 +57,7 @@ READ
 Saturday morning                         ← its English pair, gloss style
 UNREVIEWED                               ← only while reviewed:false (D4)
 
-Өнөөдөр бямба гараг. Сарнай гал тогоонд кофе ууж
+Өнөөдөр бямба гараг. Луна гал тогоонд кофе ууж
 байна. Фред цонх цэвэрлэж байна. Манай муур буйдан
 дээр унтаж байна. Муур сүүнд дуртай.
   ┌──────────────────────┐
@@ -73,7 +73,7 @@ How it behaves:
 
 1. **The whole paragraph appears at once** in 22px Geologica, line-height 1.6 (D10). No English is shown under any line.
 2. **Tap a word.** It gets an ink underline, and a chip opens directly under its sentence with the dictionary form and the English: `буйдан · sofa/couch`.
-   - A name shows `Сарнай · name`.
+   - A name shows `Луна · name`.
    - A word Fred has not learned yet has a dotted underline before anyone taps it, and its chip carries a mono `NEW` tag.
    - A multi-word entry such as «гал тогоонд» is one tap target and shows `гал тогоо · kitchen`.
    - Tapping a different word moves the chip.
@@ -145,7 +145,7 @@ READ                                   4 READY · 13 LOCKED
 
 - A reread is the same R1 screen with one button, **Done**. There are no questions, because they would test memory of the answers rather than comprehension.
 - A reread updates `last` and `reads` (§4.2) but earns nothing (§3.8).
-- Once Sarnai's recordings exist (Sound workstream), R1 gains a **▶ Listen** control and a `SARNAI` credit chip (INSTRUMENT "recording credit chip").
+- Once Luna's recordings exist (Sound workstream), R1 gains a **▶ Listen** control and a `LUNA` credit chip (INSTRUMENT "recording credit chip").
   - Listen plays each sentence in turn, with the current one underlined.
   - It never autoplays on a first read (§3.11).
 
@@ -234,7 +234,7 @@ Rereads are offered **only from the Read tab** until audio exists.
 - *Justification:*
   - Reading consolidates words already retrieved rather than introducing them, so it comes after the retrieval work (research-science 3a: "Reading is for consolidation and fluency, not for introducing words").
   - One short passage a day is sustainable. It keeps the session about 1.5-2 minutes longer, which is visible in the minutes estimate.
-  - Repeated reading pays off mainly with audio, in rate and decoding (3a, Taguchi/Gorsuch). That is why rereads are not pushed into lessons before Sarnai records.
+  - Repeated reading pays off mainly with audio, in rate and decoding (3a, Taguchi/Gorsuch). That is why rereads are not pushed into lessons before Luna records.
 - **Interface with the Learning loop:** retries it splices into the session go *before* the reading item. The reading stays last.
 
 ### 3.5 Glosses and translation
@@ -330,7 +330,7 @@ What *is* recorded is a per-passage tally of first-read answers (§4.2) and XP (
 ### 3.10 The retell variant (LingQ style)
 
 - A retell is its own passage with `retellOf: "<id>"`. It unlocks only after its source is completed.
-- It tells the same events from another person's view, for example Sarnai in the first person. It can also use another tense.
+- It tells the same events from another person's view, for example Luna in the first person. It can also use another tense.
 - It is **always authored and reviewed, never generated**. CLAUDE.md: never permute or transform Mongolian automatically.
 - It has 2 questions about what is the same and what is different.
 - *Justification:* LingQ Mini Stories use story → same story retold from another perspective, person or tense → questions (competitors). The retell recycles the same structures with one grammatical change, a morphology drill hidden in a story.
@@ -371,18 +371,18 @@ An array of passages. Field rules:
   "pack": "home-1",
   "level": 1,
   "title": { "mn": "Бямба гарагийн өглөө", "en": "Saturday morning" },
-  "names": ["Сарнай", "Фред"],
+  "names": ["Луна", "Фред"],
   "grammar": ["-ж байна", "locative -нд", "-нд дуртай"],
   "introduces": [],
   "source": "Modelled on MM ch.2 reading + Q&A, printed p10-11 (PDF 22-23): format of a who-is-doing-what paragraph followed by short wh-/yes-no questions. Original text.",
   "reviewed": false,
   "sentences": [
     { "mn": "Өнөөдөр бямба гараг.", "en": "Today is Saturday.", "w": [227, 240, 239] },
-    { "mn": "Сарнай гал тогоонд кофе ууж байна.", "en": "Sarnai is drinking coffee in the kitchen.",
+    { "mn": "Луна гал тогоонд кофе ууж байна.", "en": "Luna is drinking coffee in the kitchen.",
       "w": [0, 233, 233, 154, 259, 201] }
   ],
   "questions": [
-    { "id": "r001q1", "kind": "tf", "q": "Sarnai is cleaning the window.", "answer": false,
+    { "id": "r001q1", "kind": "tf", "q": "Luna is cleaning the window.", "answer": false,
       "ids": [132], "lines": [2] }
   ]
 }
@@ -394,11 +394,11 @@ An array of passages. Field rules:
 | `order` | An integer, in gaps of 10 so passages can be inserted. Ladder position. |
 | `pack`, `level` | The pack slug; level 1-4 (§3.3). |
 | `title` | `{mn, en}`: content pair. Not counted in coverage. |
-| `names` | Base forms. A token equal to a name, or to a name plus a listed suffix (`Сарнайн`, `Фредтэй`), is a name: `w` holds `0` and it is excluded from coverage. |
+| `names` | Base forms. A token equal to a name, or to a name plus a listed suffix (`Лунын`, `Фредтэй`), is a name: `w` holds `0` and it is excluded from coverage. |
 | `grammar` | English/metalanguage tags. Used by Content engine and Gamification to map passages onto units. Never displayed. |
 | `introduces` | Lexicon ids first used here (§3.9). |
 | `source` | A citation in the form "Modelled on <book>, <section>, printed pX (PDF pY): <what was borrowed>. Original text." It must contain "Original text." |
-| `reviewed` | A boolean. `false` until Luna or Sarnai sign off. |
+| `reviewed` | A boolean. `false` until Luna signs off. |
 | `reviewedHash` | Present only when `reviewed:true`. It is `hashSeed(reviewText(passage))`, FNV-1a 32-bit as in `choices.js:35-42`. If the Mongolian is edited after sign-off, the test fails until the passage is re-reviewed or set back to `reviewed:false`. |
 | `partial` | `true` if any token is unresolved (`w` contains `null`). Never ready. Written only by the tool. |
 | `retellOf`, `retired` | Optional (§3.10, §3.12). |
@@ -510,9 +510,9 @@ Tests for all of this are in §6.4.
 
 - **Recurring cast:**
   - **Fred** («Фред»): learning Mongolian, cleans windows, reads, plants trees.
-  - **Sarnai** («Сарнай»): coffee, garden, takes the cat to the vet.
+  - **Luna** («Луна»; genitive «Лунын», by MM p13 [PDF 25], spelling for Luna to confirm): coffee, garden, takes the cat to the vet.
   - **The cat** («муур», «манай муур»): sleeps on things it should not, likes milk.
-  - **Sarnai's mother and father** («Сарнайн ээж аав»): visit for dinner.
+  - **Luna's mother and father** («Лунын ээж аав»): they live in Mongolia. They come for dinner when they visit, and Fred and Luna visit them there.
   - **Their home:** «байшин», then «гэр» once it is in the lexicon. It has a living room, kitchen, balcony and garden.
 - This is Fred's real life, as the Booklet's themes already reflect (house, chores, food, cat, books, garden). The lexicon was built for exactly this world, which is why the passages fit it.
 - Names are first names only, with no places, workplaces or surnames. The file is public (D8).
@@ -544,7 +544,7 @@ Each brief gives the cast, the grammar target, the lexicon it leans on (ids), ne
 **Level 1**
 
 **r001 · Saturday morning** («Бямба гарагийн өглөө»), order 10. Written in §5.4.
-- Cast: Fred, Sarnai, the cat.
+- Cast: Fred, Luna, the cat.
 - Grammar: `-ж байна`; locative `-нд`; `-нд дуртай`.
 - Lexicon: өнөөдөр 227, бямба 240, гараг 239, гал тогоо 233, кофе 154, уух 259, цонх цэвэрлэх 132, манай 212, муур 161, буйдан 99, дээр 213, унтах 257, сүү 152, дуртай 256, байна 201.
 - New: none. Size: 20 tokens + 2 names.
@@ -560,7 +560,7 @@ Each brief gives the cast, the grammar target, the lexicon it leans on (ids), ne
 - Model: MM ch.1 text, printed p1 (PDF 13): first-person description of one's flat and room. Topic and predicate-adjective grammar only.
 
 **r003 · Where are you?** («Чи хаана байна?»), order 30. A baby dialogue with `who` labels.
-- Cast: Sarnai calls across the house; Fred answers.
+- Cast: Luna calls across the house; Fred answers.
 - Grammar: би/чи; хаана/юу questions; вэ dropped after байна (Beg L5 rule, printed 52); `-ж байна`.
 - Lexicon: чи 204, би 203, хаана 218, юу 220, гал тогоо 233, хоол хийх 129, оройн хоол 144, муур 161, энд 217, загас 146, идэх 258.
 - New: none. Size: about 26 tokens.
@@ -568,32 +568,32 @@ Each brief gives the cast, the grammar target, the lexicon it leans on (ids), ne
 - Model: Beg L4 phone check-in dialogue, printed 35, and the L5 where-are-you dialogue, printed 49. The format is short what-are-you-doing / where-are-you turns.
 
 **r004 · Where is the cat?** («Муур хаана байна?»), order 40.
-- Cast: the cat, Sarnai.
+- Cast: the cat, Luna.
 - Grammar: locative `-нд`; «ширээн дээр»; accusative «муурыг» (grammar topic `g_accusative`); habitual `-даг` once.
 - Lexicon: муур 161, хаана 218, одоо 226, өглөө 237, хивс 104, гал тогоо 233, ширээ 96, дээр 213, муу 194, шал 91, тавих 269, унтах 257.
 - New: none. Size: about 24 tokens.
-- Questions: `mc` "Where is the cat now?" (on the table / on the carpet / in the garden); `tf` "Sarnai puts the cat on the floor." (T).
+- Questions: `mc` "Where is the cat now?" (on the table / on the carpet / in the garden); `tf` "Luna puts the cat on the floor." (T).
 - Note: one line plays on муу/муур ("bad cat") as a read-carefully moment. Luna confirms it is natural or cuts it.
 - Model: Beg L5 «байна» + dative-locative for where things are, printed 49-51.
 
 **r005 · The cat's breakfast** («Муурын өглөөний хоол»), order 50.
-- Cast: Sarnai, Fred, the cat.
+- Cast: Luna, Fred, the cat.
 - Grammar: habitual `-даг` (`g_habitual`); бүр "every"; dative recipient «мууранд».
 - Lexicon: өглөө 237, бүр 224, муур 161, хоол өгөх 169, загас 146, идэх 258, цай 153, кофе 154, уух 259, сүү 152.
 - New: **бас** "also" (once).
 - Size: about 26 tokens.
-- Questions: `mc` "Who drinks coffee?" (Sarnai / Fred / the cat); `tf` "The cat eats meat." (F).
+- Questions: `mc` "Who drinks coffee?" (Luna / Fred / the cat); `tf` "The cat eats meat." (F).
 - Model: MM ch.4 herder's daily routine in the habitual, printed p32 (PDF 44). Fred's own Phase3 "The cat" sample is a starting draft, since it is his prototype and not a textbook.
 
 **Level 2**
 
 **r006 · Laundry day** («Хувцас угаах өдөр»), order 60.
-- Cast: Fred, Sarnai, the cat.
-- Grammar: compound chore verbs in `-ж байна`; хуурай/нойтон; «Фред Сарнай хоёр» "Fred and Sarnai".
+- Cast: Fred, Luna, the cat.
+- Grammar: compound chore verbs in `-ж байна`; хуурай/нойтон; «Фред Луна хоёр» "Fred and Luna".
 - Lexicon: бямба 240, байшин 234, хувцас угаах 127, аяга угаах 123, угаалгын машин 109, хувцас 249, нойтон 140, хуурай 139, муур 161, дээр 213, унтах 257.
 - New: **хоёр** "two; X Y хоёр = X and Y" (once).
 - Size: about 32 tokens.
-- Questions: `tf` "Sarnai is doing the laundry." (F); `mc` "Where is the cat sleeping?" (on the dry clothes / on the wet clothes / in the washing machine); `mc` "What is Sarnai doing?" (washing the dishes / ironing / mopping).
+- Questions: `tf` "Luna is doing the laundry." (F); `mc` "Where is the cat sleeping?" (on the dry clothes / on the wet clothes / in the washing machine); `mc` "What is Luna doing?" (washing the dishes / ironing / mopping).
 - Model: MM ch.3 text, printed p21 (PDF 33), for the «аав ээж хоёр» construction. Beg L6 chore-verb set, printed 64 (table 66-67), for the topic.
 
 **r007 · Fred's morning** («Фредийн өглөө»), order 70.
@@ -605,26 +605,26 @@ Each brief gives the cast, the grammar target, the lexicon it leans on (ids), ne
 - Questions: `mc` "What does Fred eat for breakfast?" (bread and eggs / fish / rice); `tf` "Fred drinks coffee in the morning." (F); `order` (tea → breakfast → book), which ships with tiles.
 - Model: MM ch.4 routine, printed p32, and its personal questions, printed p40 (PDF 52). Fred's Phase3 "My morning" sample is a starting draft.
 
-**r008 · Sarnai's garden** («Сарнайн цэцэрлэг»), order 80.
-- Cast: Sarnai, Fred, the cat.
+**r008 · Luna's garden** («Лунын цэцэрлэг»), order 80.
+- Cast: Luna, Fred, the cat.
 - Grammar: dative + дуртай («цэцэгт», «модонд»); contrast with харин; habitual vs right now (`-даг` vs `-ж байна`).
 - Lexicon: цэцэрлэг 181, цэцэг 182, мод 184, дуртай 256, орой 238, бүр 224, ургамал 183, усалах 188, тарих 189, одоо 226, муур 161, зүлэг 192, тоглох 165.
 - New: **харин** "but, whereas" (once).
 - Size: about 36 tokens.
-- Questions: `mc` "What does Sarnai like?" (flowers / trees / grass); `mc` "What is Fred doing now?" (planting a tree / watering plants / reading); `tf` "The cat is playing on the lawn." (T).
+- Questions: `mc` "What does Luna like?" (flowers / trees / grass); `mc` "What is Fred doing now?" (planting a tree / watering plants / reading); `tf` "The cat is playing on the lawn." (T).
 - Model: Surv L6 dative + дуртай with the харин contrast (grammar p47-50; the likes/dislikes passage format p55). Garden vocabulary as in Fred's own Booklet, days 14-15.
 
 **r009 · A cold evening** («Хүйтэн орой»), order 90.
-- Cast: Fred, Sarnai, the cat.
+- Cast: Fred, Luna, the cat.
 - Grammar: contrasting adjective predicates (хүйтэн/дулаан); `-ж байна`; хамтдаа.
 - Lexicon: орой 238, тагт 120, зочны өрөө 232, дулаан 113, хамтдаа 229, буйдан 99, цай 153, уух 259, муур 161, хөнжил 103, дээр 213, унтах 257, ном 171, унших 172, чийдэн 106.
 - New: **хүйтэн** "cold" (once in the text; the title is not counted).
 - Size: about 34 tokens.
-- Questions: `tf` "The balcony is warm." (F); `mc` "Where is the cat sleeping?" (on the blanket / on the balcony / on the carpet); `mc` "What are Fred and Sarnai drinking?" (tea / coffee / milk).
+- Questions: `tf` "The balcony is warm." (F); `mc` "Where is the cat sleeping?" (on the blanket / on the balcony / on the carpet); `mc` "What are Fred and Luna drinking?" (tea / coffee / milk).
 - Model: Beg L8 evening-at-home passage, printed 107-108 (PDF 108-109): cold and dark outside, warm and bright inside, with yes/no questions. It is the closest textbook template to a baby paragraph.
 
 **r010 · The new lamp** («Шинэ чийдэн»), order 100.
-- Cast: Fred, Sarnai.
+- Cast: Fred, Luna.
 - Grammar: `-тай` "having" («гэрэлтэй», grammar topic `g_tai`); the first past `-сан` on one verb («авсан»); шинэ/хуучин.
 - Lexicon: зочны өрөө 232, хуучин 198, чийдэн 106, муу 194, шинэ 197, авах 263, одоо 226, өрөө 231, гэрэл 114, гоё 199, дуртай 256.
 - New: none. Size: about 30 tokens.
@@ -634,19 +634,19 @@ Each brief gives the cast, the grammar target, the lexicon it leans on (ids), ne
 **Level 3**
 
 **r011 · Tonight** («Өнөө орой»), order 110.
-- Cast: Fred, Sarnai; Sarnai's parents are coming; the cat.
+- Cast: Fred, Luna; Luna's parents are coming; the cat.
 - Grammar: future `-на` for plans; chores in the future; хоёр recycled.
 - Lexicon: өнөө 228, орой 238, ээж 245, аав 246, манай 212, байшин 234, оройн хоол 144, идэх 258, шал арчих 124, тоос сорох 125, хог хаях 130, хоол хийх 129, муур 161.
 - New: none. Size: about 45 tokens.
 - Questions:
-  - `mc` "Who is coming to dinner?" (Sarnai's parents / Fred's parents / a friend);
+  - `mc` "Who is coming to dinner?" (Luna's parents / Fred's parents / a friend);
   - `mc` "What will Fred do?" (mop the floor / vacuum / cook);
   - `tf` about who cooks;
-  - `mnmc` «Хэн тоос сорох вэ?» (Сарнай / Фред / ээж).
+  - `mnmc` «Хэн тоос сорох вэ?» (Луна / Фред / ээж).
 - Model: Beg L7 weekend-plans dialogue, printed 83, for plans in `-на`; MM ch.1 present/future `-на`, printed p4-5 (PDF 16-17).
 
 **r012 · Sunday at home** («Ням гараг»), order 120.
-- Cast: Fred, Sarnai, the cat.
+- Cast: Fred, Luna, the cat.
 - Grammar: morning → day → evening sequence with дараа нь; habitual; хамтдаа.
 - Lexicon: ням 241, гараг 239, өглөө 237, өдөр 236, орой 238, хамтдаа 229, өглөөний хоол 142, цэцэрлэг 181, ургамал 183, усалах 188, ном 171, унших 172, оройн хоол 144, хийх 267, муур 161, буйдан 99, унтах 257.
 - New: none. It recycles хоёр, бас, дараа нь, and хүйтэн once.
@@ -659,29 +659,29 @@ Each brief gives the cast, the grammar target, the lexicon it leans on (ids), ne
 - Model: Beg L6 Saturday narrative, printed 77-78 (PDF 78-79), for its order-of-events shape, told here in the habitual present; MM ch.4 routine, printed p32.
 
 **r013 · At the library** («Номын санд»), order 130.
-- Cast: Fred, Sarnai.
+- Cast: Fred, Luna.
 - Grammar: «бямба гараг бүр» "every Saturday"; dative of destination; `-нд дуртай`; бас/харин recycled.
 - Lexicon: бямба 240, гараг 239, бүр 224, номын сан 176, явах 268, ном 171, дуртай 256, шинэ 197, авах 263, урт 252, түүх 174, зохиолч 175, унших 172, орой 238.
 - New: **их** "very, a lot" («их дуртай»; once).
 - Size: about 48 tokens.
-- Questions: `mc` "When does Fred go to the library?" (every Saturday / every morning / on Sundays); `tf` "The new book is short." (F); `mc` "What does Sarnai do in the evening?" (she reads too / she writes / she cooks).
+- Questions: `mc` "When does Fred go to the library?" (every Saturday / every morning / on Sundays); `tf` "The new book is short." (F); `mc` "What does Luna do in the evening?" (she reads too / she writes / she cooks).
 - Model: the setting of MM's library-and-books chapters (printed p72-92). Theme only. Format from Surv p55: likes X, also Y, but Z.
 
-**r014 · Sarnai's parents** («Сарнайн ээж аав»), order 140.
-- Cast: Sarnai's mother and father, Fred, Sarnai, the cat.
-- Grammar: genitive with a name («Сарнайн»); parallel actions in `-ж байна`; rooms in the locative; хамтдаа.
+**r014 · Luna's parents** («Лунын ээж аав»), order 140.
+- Cast: Luna's mother and father, Fred, Luna, the cat.
+- Grammar: genitive with a name («Лунын»); parallel actions in `-ж байна`; rooms in the locative; хамтдаа.
 - Lexicon: ээж 245, аав 246, өнөөдөр 227, манай 212, гал тогоо 233, хоол хийх 129, зочны өрөө 232, ярих 270, ширээ 96, хамтдаа 229, оройн хоол 144, идэх 258, цай 153, уух 259, сайхан 200, муур 161.
 - New: **гэр** "home" («манай гэрт»; once).
 - Size: about 55 tokens.
 - Questions:
-  - `mc` "Who is cooking?" (Sarnai's mother / Sarnai / Fred);
-  - `mc` "Where are Fred and Sarnai's father talking?";
+  - `mc` "Who is cooking?" (Luna's mother / Luna / Fred);
+  - `mc` "Where are Fred and Luna's father talking?";
   - `tf` "Everyone eats dinner together." (T);
-  - `mnmc` «Сарнайн ээж хаана байна вэ?» (гал тогоонд / зочны өрөөнд / цэцэрлэгт).
+  - `mnmc` «Лунын ээж хаана байна вэ?» (гал тогоонд / зочны өрөөнд / цэцэрлэгт).
 - Model: MM ch.3 text, printed p21 (PDF 33): a family at home, with the mother cooking in the kitchen, the father in his room, and tea and talk at the table. MM ch.10, printed p107 (PDF 119), gives the cultural frame of a family visit that later packs develop.
 
 **r015 · To the vet** («Эмнэлэг рүү»), order 150.
-- Cast: Sarnai, the cat, Fred.
+- Cast: Luna, the cat, Fred.
 - Grammar: future `-на`; accusative «муурыг»; direction «-рүү», reusing Luna's own reviewed «эмнэлэгрүү авч яв»; negative «хүсэхгүй».
 - Lexicon: өнөөдөр 227, муур 161, эмнэлэг 170, авах 263, явах 268, хайрцаг 116, хүсэх 272, тоглоом 164, тавих 269, дараа 214, загас 146, өгөх 262.
 - New: none. Size: about 45 tokens.
@@ -695,29 +695,29 @@ Each brief gives the cast, the grammar target, the lexicon it leans on (ids), ne
 **Level 4**
 
 **r016 · Last Saturday** («Бямба гарагт»), order 160.
-- Cast: Fred, Sarnai, the cat.
+- Cast: Fred, Luna, the cat.
 - Grammar: past `-сан` across lexicon verbs (цэвэрлэсэн, арчсан, уусан, тоглосон, хийсэн, идсэн); харин; дараа нь; хамтдаа.
 - Lexicon: бямба 240, гараг 239, байшин 234, цэвэрлэх 121, цонх цэвэрлэх 132, шал арчих 124, цэцэрлэг 181, цай 153, уух 259, муур 161, зүлэг 192, дээр 213, тоглох 165, орой 238, оройн хоол 144, хийх 267, идэх 258, хамтдаа 229.
 - New: none. Past tense is the new element, and it recycles хоёр, харин, дараа нь, гэр and хүйтэн.
 - Size: about 65 tokens.
 - Questions:
-  - `mc` "What did Sarnai do?" (mopped the floor / cleaned the windows / cooked dinner);
+  - `mc` "What did Luna do?" (mopped the floor / cleaned the windows / cooked dinner);
   - `order` (cleaning → tea in the garden → dinner);
   - `tf` "The cat played on the lawn." (T);
   - `mnmc` «Фред юу хийсэн бэ?» (цонх цэвэрлэсэн / шал арчсан / хоол хийсэн).
 - Model: Beg L6 past `-сан` and negative past (grammar, printed 65-66; weekend narratives, printed 65 and 77-78); Surv L12 past, p94-98.
 
-**r017 · Sarnai tells it** («Сарнайн түүх»), order 170. Retell of r016 (`retellOf: "r016"`).
-- Cast: Sarnai, first person.
+**r017 · Luna tells it** («Лунын түүх»), order 170. Retell of r016 (`retellOf: "r016"`).
+- Cast: Luna, first person.
 - Grammar: the same events with «би»; «Фред минь» endearment (минь 210); the plain possessive «миний».
 - Lexicon: as r016, plus минь 210, цэвэр 138, одоо 226.
 - New: **миний** "my" (once).
 - Size: about 60 tokens.
-- Questions (2): `tf` "Sarnai cleaned the windows." (F); `mc` "What is clean now?".
+- Questions (2): `tf` "Luna cleaned the windows." (F); `mc` "What is clean now?".
 - Model: LingQ Mini Stories' retell structure (competitors); MM ch.6 possessive particles минь/чинь/нь, printed p62-63 (PDF 74-75).
 
 **r018 · Fred learns Mongolian** («Фред монгол хэл сурч байна»), order 180.
-- Cast: Fred, Sarnai.
+- Cast: Fred, Luna.
 - Grammar: `-ж байна` vs `-даг`; instrumental «хэлээр»; comitative with a name («Фредтэй»).
 - Lexicon: өдөр 236, бүр 224, шинэ 197, үг 179, бичих 178, өгүүлбэр 180, унших 172, ярих 270, ном 171, дуртай 256, plus бас and их recycled.
 - New: **монгол, хэл, сурах** (3, the maximum).
@@ -725,7 +725,7 @@ Each brief gives the cast, the grammar target, the lexicon it leans on (ids), ne
 - Locked on purpose until the deck has introduced its three words. The shelf shows `3 TO GO`, the clearest demonstration that the lock is real.
 - Questions:
   - `mc` "What does Fred write every day?" (new words / letters / a story);
-  - `tf` "Sarnai speaks Mongolian with Fred." (T);
+  - `tf` "Luna speaks Mongolian with Fred." (T);
   - `mc` "What does Fred read?";
   - `mnmc` «Фред юу сурч байна вэ?».
 - Model: Beg L9 "how is your class / is Mongolian hard" dialogue, printed 111, and the L6 story of a foreign learner, printed 76-77; Surv L3 knowing languages, p18-21.
@@ -750,23 +750,23 @@ DRAFT, `reviewed:false`, pending Luna. It uses only `words.json` vocabulary plus
 
 > **Бямба гарагийн өглөө** · *Saturday morning*
 >
-> Өнөөдөр бямба гараг. Сарнай гал тогоонд кофе ууж байна. Фред цонх цэвэрлэж байна. Манай муур буйдан дээр унтаж байна. Муур сүүнд дуртай.
+> Өнөөдөр бямба гараг. Луна гал тогоонд кофе ууж байна. Фред цонх цэвэрлэж байна. Манай муур буйдан дээр унтаж байна. Муур сүүнд дуртай.
 >
-> *Today is Saturday. Sarnai is drinking coffee in the kitchen. Fred is cleaning the windows. Our cat is sleeping on the sofa. The cat likes milk.*
+> *Today is Saturday. Luna is drinking coffee in the kitchen. Fred is cleaning the windows. Our cat is sleeping on the sofa. The cat likes milk.*
 
 Alignment written by the matcher (`w`):
 
 | Sentence | `w` |
 |---|---|
 | 0 | 227 өнөөдөр, 240 бямба, 239 гараг |
-| 1 | 0 Сарнай, 233 гал тогоо ×2, 154 кофе, 259 уух, 201 байна |
+| 1 | 0 Луна, 233 гал тогоо ×2, 154 кофе, 259 уух, 201 байна |
 | 2 | 0 Фред, 132 цонх цэвэрлэх ×2, 201 байна |
 | 3 | 212 манай, 161 муур, 99 буйдан, 213 дээр, 257 унтах, 201 байна |
 | 4 | 161 муур, 152 сүү, 256 дуртай |
 
 Questions:
 
-1. `tf` "Sarnai is cleaning the windows." → **False**. ids [132], line 2.
+1. `tf` "Luna is cleaning the windows." → **False**. ids [132], line 2.
 2. `mc` "Where is the cat sleeping?" → **On the sofa** / On the bed / In the kitchen. ids [99, 213], line 3.
 3. `mc` "What does the cat like?" → **Milk** / Fish / Coffee. ids [152, 256], line 4.
    - "Fish" is the world-knowledge trap and "Coffee" comes from the text, so only reading line 4 gives the answer.
@@ -803,7 +803,7 @@ Connectives are added as **drillable**, not `drill:false`. A `drill:false` word 
 |---|---|---|---|
 | **Luna** | 18 passages (about 710 Mongolian tokens) with their English for meaning; 18 Mongolian titles; the Mongolian text of 6 `mnmc` questions and their options; 11 lexicon entries | `py tools/review-sheet.py`: a new section 5 for passages (Зөв / Буруу / Мэдэхгүй + a rewrite box per passage), plus the existing lexicon section | **45-60 min**, one sitting. A passage is 1-2 minutes to read and judge. |
 | **Fred** | The 58 English questions and options (validity, giveaways); the English translations | Reads `coverage.py --readings --questions` output | about 15 min |
-| **Sarnai** | Later: record 18 passages, about 7 min of audio at an unhurried natural pace | The Sound workstream's recording sheet | about 30 min with retakes |
+| **Luna** | Later, if she agrees to record: 18 passages, about 7 min of audio at an unhurried natural pace | The Sound workstream's recording sheet | about 30 min with retakes |
 
 `--apply` for passages:
 
@@ -832,7 +832,7 @@ brief (this doc) ─► Claude drafts readings.json entries (one session per pac
 |---|---|---|---|
 | `people-1` | Names, who is who, languages, jobs, family | the identity/family core: нэр, хүн, найз, ах/эгч/дүү, эхнэр/нөхөр, ирэх, очих, ажил, багш | Surv L2-L3, L9 (p9-25, p75-81); Beg L1-L2 (printed 2-21); MM ch.2-3 (printed 10-31) |
 | `days-1` | Yesterday and tomorrow, weekends | байх forms, өчигдөр, маргааш, time words | Beg L6-L7 (printed 64-100); Surv L12 (p94-98) |
-| `visit-1` | At Sarnai's parents': greetings, honorifics, food | гуай, бууз, хуушуур, honorific verbs | MM ch.10 (printed 107-116) |
+| `visit-1` | At Luna's parents': greetings, honorifics, food | гуай, бууз, хуушуур, honorific verbs | MM ch.10 (printed 107-116) |
 | `story-1` | *The magic pot*: the MM folk tale retold at A2 in 6-8 serial episodes | the narrative past, plus a vocabulary list per episode | MM ch.11-14 (printed 118-172). Retold, never translated or copied. |
 
 Once about 100-150 textbook lemmas are in the lexicon, 14-32 of the books' own 137 passages reach ≥ 95% (content-fit unlock curve). They still cannot be shipped. A **local-only** `py tools/coverage.py --books <dir> --progress <code>` can then print *which printed pages of his own books Fred can now read*: page numbers and percentages, no text. That is optional increment C5.
@@ -1053,7 +1053,7 @@ Sizes: S = less than 1 focused session, M = 1-2 sessions, L = 3 or more.
   3. C5.
 - **Must land first:** C0, and the test-helper fixes in §6.4 item 1, which the Learning loop also needs.
 - **Unblocks:**
-  - listening practice (DuoRadio style) as soon as Sarnai records passages;
+  - listening practice (DuoRadio style) as soon as Luna records passages;
   - the `story-1` serial;
   - Gamification's "reading" events and unit mapping (`pack`/`grammar` tags);
   - a natural home for the Content engine's new vocabulary to recur in context;
@@ -1101,7 +1101,7 @@ Each decision lists the options; the recommended default is marked **(rec)**.
    - (a) **95% of running words known, at most 3 unknown words (rec).**
    - (b) 98%: fewer passages, more comfortable.
 8. **D8 · Real names in a public file.** `readings.json` is published with the app.
-   - (a) **(rec)** First names «Фред» and «Сарнай», which the repo already names publicly, and no places, workplaces or surnames.
+   - (a) **(rec)** First names «Фред» and «Луна», which the repo already names publicly, and no places, workplaces or surnames.
    - (b) Pseudonyms.
 9. **D9 · Connectives as drillable words.**
    - (a) **(rec)** бас, харин, тэгээд and дараа нь are drillable, so they are introduced and measured.
@@ -1151,9 +1151,9 @@ What this gives Fred that Ling cannot:
    - A passage opens only when at least 95% of its running words are solid in *his* FSRS state.
    - A locked passage says exactly which words stand in the way ("3 TO GO": монгол, хэл, сурах).
    - Ling's texts are the same for everyone, whether or not the words were taught.
-2. **His own life is the story.** Fred, Sarnai, the cat, their house and garden, and Sarnai's parents coming for dinner. The vocabulary is the household lexicon he has been drilling, so every passage recycles words he has worked for. Nothing is generic.
+2. **His own life is the story.** Fred, Luna, the cat, the house and garden, and Luna's parents, who come for dinner and whom Fred and Luna visit in Mongolia. The vocabulary is the household lexicon he has been drilling, so every passage recycles words he has worked for. Nothing is generic.
 3. **Every word is tappable**: dictionary form plus English, then the whole sentence. Ling's reviewers name the lack of word-level translation as a weakness.
 4. **The questions need the text.** Distractors come from the passage, with no world-knowledge giveaways. A wrong answer shows *where in the text* the answer was, which turns a miss into a lesson.
 5. **Grammar follows his own textbooks, page by page:** present, then habitual, future and past, as Beginner Mongolian and Modern Mongolian teach them, with every passage citing the printed page it follows. The ladder runs from 15 words to about 80, which is where his textbooks' passages begin. That is the path toward B1, and Ling stops before it.
-6. **His tutor checks the Mongolian, and his wife will read it aloud.** Luna signs off every passage. Sarnai's recordings later turn the same stories into listening practice, with a credit chip.
+6. **A native speaker checks the Mongolian, and will read it aloud.** Luna signs off every passage, and her recordings later turn the same stories into listening practice, with a credit chip.
 7. **The numbers are honest.** Coverage, `N TO GO`, right/wrong and XP all come from real events, with no leaderboard or invented figures. Reading never corrupts his spaced-repetition schedule.

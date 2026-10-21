@@ -2,7 +2,7 @@
 
 Workstream B of the "make it shine, beat Ling" plan. It answers Fred's feedback point 2. Phase A
 (effects) is about one build session and needs nothing from the other workstreams. Phase B
-(pronunciation) is about four sessions plus roughly 75 minutes of Sarnai's time.
+(pronunciation) is about four sessions plus roughly 75 minutes of Luna's time.
 
 ---
 
@@ -113,7 +113,7 @@ There is no background music, no looping sound and no vibration.
 ### 2.2 Phase B — pronunciation audio
 
 **Speaker button with credit chip.** Wherever a recording of the exact Mongolian on screen exists, a
-small `▶` with a mono credit chip appears: `▶ SARNAI` (+1 word). If no recording exists, there is no
+small `▶` with a mono credit chip appears: `▶ LUNA` (+1 word). If no recording exists, there is no
 button at all; there are never disabled placeholders. The button appears in four places:
 
 - **Deck:** under the Mongolian face.
@@ -144,7 +144,7 @@ after each answer
 - It is off by default, because playing a clip pauses Fred's music or podcast on the iPhone
   (see 3.5).
 
-**Grammar tab: "Hear the difference" topics.** These are listening drills built from Sarnai's
+**Grammar tab: "Hear the difference" topics.** These are listening drills built from Luna's
 minimal-pair recordings. They appear in the same list as the grammar topics, tagged `SOUND`, and
 only once at least six of a topic's pairs have both clips. The rows are:
 
@@ -171,10 +171,10 @@ SOUND                                  3 / 8
 - `Continue` moves on.
 - The done screen is the existing grammar done screen.
 
-**Sarnai's recording page** is a tool on the laptop, not app chrome, so it carries bilingual labels
+**Luna's recording page** is a tool on the laptop, not app chrome, so it carries bilingual labels
 like the review sheet:
 
-- A header shows the speaker name and progress (`Сарнай · Sarnai — 12 / 56`).
+- A header shows the speaker name and progress (`Луна · Luna — 12 / 56`).
 - One item at a time: large Mongolian, small English, and a live level bar while recording.
 - Space starts and stops a take. The take plays back. Enter keeps it, R redoes it, F flags "this
   wording is wrong or unnatural" with an optional note.
@@ -256,7 +256,7 @@ The choices behind these numbers:
 - **`wrong` is not a buzzer.** It has no square or saw wave, no dissonance and nothing under 300 Hz.
 - **Output peaks have headroom.** The largest sum at master On is about 0.29 (the milestone chord
   plus the tail of the last arpeggio note), which is about −11 dBFS. Pronunciation clips are
-  recorded to peak near −3 dBFS (3.7), so effects always sit about 8–10 dB under Sarnai's voice.
+  recorded to peak near −3 dBFS (3.7), so effects always sit about 8–10 dB under Luna's voice.
 - **One tuning pass is allowed.** The builder may move any peak by up to ±6 dB and any duration by
   up to 20% after listening on both devices. The tests pin the ceilings, not the exact values.
 
@@ -377,7 +377,7 @@ textKey(mn) = norm(mn.normalize('NFC').replace(/[«»]/g, ''))
   queue.
 - A word, a minimal-pair item and a one-word sentence with the same text share one clip.
 
-**Which clip plays:** a clip with `ok:true` from a human speaker, in the order Sarnai, then Luna.
+**Which clip plays:** a clip with `ok:true` from a human speaker (today, Luna).
 Machine clips (only if D8 changes) come last, are never autoplayed and never used in listen drills.
 Rejected clips are never played.
 
@@ -386,7 +386,7 @@ Rejected clips are never played.
 - One shared `HTMLAudioElement`, created on first use inside a gesture.
 - `src = ./audio/<file>#t=<start>,<end>` (a W3C media fragment, so the recorder's trim needs no
   re-encoding).
-- `preservesPitch = true` (with the `webkitPreservesPitch` fallback) so `0.75×` keeps Sarnai's
+- `preservesPitch = true` (with the `webkitPreservesPitch` fallback) so `0.75×` keeps Luna's
   pitch.
 - A rejected `play()` promise (NotAllowedError) is swallowed silently.
 
@@ -408,7 +408,7 @@ accepted alternative). A new deck face speaks when it appears. Autoplay is never
 `▶` shows when the clip is cached or `navigator.onLine` is true. A failed play hides the button for
 the rest of that screen.
 
-### 3.7 Recording quality rules (Sarnai's page)
+### 3.7 Recording quality rules (Luna's page)
 
 **Capture settings.** `getUserMedia({audio:{channelCount:1, echoCancellation:false,
 noiseSuppression:false, autoGainControl:false}})`, then
@@ -568,10 +568,10 @@ map, and `diff()` sends them per key.
   "v": 1,
   "clips": {
     "хоол": [
-      { "f": "3fa9c0d1e2b4.m4a", "by": "sarnai", "t": [0.21, 0.94],
+      { "f": "3fa9c0d1e2b4.m4a", "by": "luna", "t": [0.21, 0.94],
         "w": "02479986420000000000000000000000", "ok": true, "d": "2026-10-20" }
     ],
-    "муур орон дээр унтдаг": [ { "f": "…", "by": "sarnai", "t": [0.18, 2.31], "w": "…", "ok": true, "d": "…" } ]
+    "муур орон дээр унтдаг": [ { "f": "…", "by": "luna", "t": [0.18, 2.31], "w": "…", "ok": true, "d": "…" } ]
   }
 }
 ```
@@ -579,11 +579,11 @@ map, and `diff()` sends them per key.
 The fields:
 
 - `f` is the content-hash file name.
-- `by` is the speaker id (`sarnai`, `luna`, or `tts:<voice>` if D8 ever changes).
+- `by` is the speaker id (`luna`, or `tts:<voice>` if D8 ever changes).
 - `t` is the trim in seconds.
 - `w` is the 32-digit waveform.
 - `ok` is the review state. Human takes kept by the speaker are `true`; machine clips are always
-  `false` until Sarnai confirms them.
+  `false` until Luna confirms them.
 - `d` is the day recorded.
 
 **Boot.** `boot()` fetches `audio.json` and `listening.json` with `.catch(() => default)`. Neither is
@@ -596,17 +596,17 @@ allowed to blank the app, unlike the core data files (`app.js:656-660`).
 ### 5.1 Minimal pairs (new file `src/data/listening.json`, about 28 pairs, 56 clips)
 
 These are original selections that follow the contrast categories the books teach. They are not
-copies of any book's list or order. Every pair must be two real, common words, which Sarnai confirms
+copies of any book's list or order. Every pair must be two real, common words, which Luna confirms
 while recording (the F flag drops a pair). Most English glosses come from the lexicon or the books'
 glossaries. Machine-written glosses ship `reviewed:false` and go through review-sheet.py's grammar
 section like any topic.
 
-| Topic | Modelled on (printed pages) | Size | Example pairs (final list chosen by the builder, confirmed by Sarnai) |
+| Topic | Modelled on (printed pages) | Size | Example pairs (final list chosen by the builder, confirmed by Luna) |
 |---|---|---|---|
 | `snd_length` "Long and short vowels" | Survival p5 (long-vowel rule) and p7 (vowel table); Modern Mongolian pp. ix–x (short / long / diphthong / soft-sign sets); Peace Corps p4 (§4) | 8 | хол/хоол, ул/уул, өр/өөр, цас/цаас |
 | `snd_verbs` "Verbs that sound alike" | Beginner p30 (Ex. 9, word-level items only; its sentence items are not used) | 8 | ав/яв, ир/ор |
 | `snd_adj` "Adjectives that sound alike" | Beginner p105 (Ex. 3) | 6 | залхуу/залуу, сайн/сайхан |
-| `snd_front` "Front and back vowels" | Modern Mongolian p3 (vowel harmony groups) and p4 (front and back г/х, н before г/х); Survival p7 | 6 | ус/үс, and others confirmed by Sarnai |
+| `snd_front` "Front and back vowels" | Modern Mongolian p3 (vowel harmony groups) and p4 (front and back г/х, н before г/х); Survival p7 | 6 | ус/үс, and others confirmed by Luna |
 
 Each topic's `summary` is 2 English sentences of about 25 words, written for this app, with a
 `sourceCite` in the grammar.json style.
@@ -616,7 +616,7 @@ Each topic's `summary` is 2 English sentences of about 25 words, written for thi
 
 ### 5.2 Recording order and why
 
-Sarnai's time is the scarce resource, so the plan is built around one short pilot and two sittings.
+Luna's time is the scarce resource, so the plan is built around one short pilot and two sittings.
 
 | Sitting | What | Clips | Her time | Why this order |
 |---|---|---|---|---|
@@ -636,21 +636,20 @@ Recording them now would waste takes, because text keys would orphan them later.
 
 **Recorder time per item:** about 7–9 s for words, 10–12 s for sentences, plus about 15% retakes.
 
-**Sarnai's flags** go to `tools/recordings/flags.json`. They are routed as a worklist to Luna or to
-alternatives.py's `HAND` table, the same way review-sheet's "add your own" box is the most valuable
+**Luna's flags** go to `tools/recordings/flags.json`. They become a worklist of content fixes and additions
+to alternatives.py's `HAND` table, the same way review-sheet's "add your own" box is the most valuable
 field.
 
 ### 5.3 Review
 
-- The **effects contain no Mongolian**, so they need nothing from Luna or Sarnai.
-- **Sarnai's own kept takes** are the native sign-off for their own audio (`ok:true`). Luna is not
-  needed to review them.
+- The **effects contain no Mongolian**, so they need nothing from Luna.
+- **Luna's own kept takes** are the native sign-off for their own audio (`ok:true`). Nobody else
+  needs to review them.
 - **Listen-topic English glosses and summaries** are English, so they need no review. The
-  **Mongolian pair words** are confirmed by Sarnai in sitting 1, using the flag.
+  **Mongolian pair words** are confirmed by Luna in sitting 1, using the flag.
 - **Total native time:**
-  - Sarnai: about 75 minutes for everything that exists today;
-  - Sarnai: about 10–15 minutes per future batch;
-  - Luna: optional 15 minutes.
+  - Luna: about 75 minutes for everything that exists today;
+  - Luna: about 10–15 minutes per future batch.
 
 ### 5.4 TTS stopgap: not recommended now (decision D8)
 
@@ -662,8 +661,8 @@ pre-rendered (research-competitors, "Mongolian text-to-speech availability").
 
 The recommendation is **no**:
 
-1. **The window is about a week.** Sarnai lives with Fred. Once the recorder exists (B1), sittings 1
-   and 2 can happen the same week.
+1. **The window is about a week.** Once the recorder exists (B1), Luna's sittings 1 and 2 can happen
+   the same week.
 2. **It saves her almost nothing.** Under the project's rule, machine-made Mongolian never ships as
    confirmed, so every machine clip needs her to listen and judge it. That is about 30 minutes for
    350 clips, against about 70 minutes to simply record them.
@@ -676,7 +675,7 @@ The recommendation is **no**:
 
 **Revisit it** when the lexicon passes about 600 entries and the unrecorded backlog exceeds two
 sittings. Even then, machine clips are never autoplayed, never used in listen drills, never credited
-to a person, and are replaced the moment Sarnai records the text.
+to a person, and are replaced the moment Luna records the text.
 
 ---
 
@@ -689,7 +688,7 @@ to a person, and are replaced the moment Sarnai records the text.
 | `build.py` | **(first, shared with all workstreams)** Replace `for name in ("views.js","account.js")` (`:66-67`) with every `src/ui/*.js` except `app.js`, and the `:71` regex with `from '\./([\w-]+)\.js'` → `from './ui/\1.js'`. Copy `src/audio/*.m4a` → `dist/audio/`. Exclude `audio/` from `assets` and from the digest (`:124-135`). Inject `__AUDIO__` (sorted list) and inline `src/sw-range.js` at `/*__RANGE__*/`. **Fail the build** if a file named in `audio.json` is missing or its name is not the sha1 prefix of its bytes. Print the audio count and MB separately. |
 | `src/core/feedback.js` (new, DOM-free) | `COMBO_EVERY = 5`; `LEVELS = {on:0.7, soft:0.25, off:0}`; `LEVEL_ORDER`; `CUES` (the table in 3.2 as data: `{notes:[{wave,f,at,attack,end,peak}], filter?, total}`); `verdictCue(run, ok, first) → {cue, run}`; `doneCue(summary) → 'milestone'\|'finish'` (reads `summary.leveledTo`, `summary.newBadges`, `summary.goalCrossed`) |
 | `src/core/prefs.js` (new, DOM-free, takes `storage` like `progress.load`) | `readPrefs(storage, key)` and `writePrefs(storage, key, patch)`, defaults `{sound:'on', autoplay:false}`, every access in try/catch, unknown values coerced to the defaults |
-| `src/core/audio.js` (new, DOM-free) | `textKey(mn)`; `clipFor(manifest, mn, {machine=false})`; `clipUrl(clip)` → `./audio/<f>#t=s,e`; `creditLabel(clip)` → `SARNAI` / `LUNA` / `MACHINE · UNCHECKED`; `playableDrills(topic, manifest)`; `listenTopics(topics, manifest)` (keeps topics with ≥6 playable drills) |
+| `src/core/audio.js` (new, DOM-free) | `textKey(mn)`; `clipFor(manifest, mn, {machine=false})`; `clipUrl(clip)` → `./audio/<f>#t=s,e`; `creditLabel(clip)` → `LUNA` / `MACHINE · UNCHECKED`; `playableDrills(topic, manifest)`; `listenTopics(topics, manifest)` (keeps topics with ≥6 playable drills) |
 | `src/ui/sound.js` (new) | Module state: `ctx, master, voices, lastTick, idleTimer, player, log`. `setupSound({getLevel, debug})`; `unlock()`; `play(name)` (never throws; pushes `name` onto `window.__soundLog` when `debug`, *before* any context check, so headless tests see requests); `renderCue(baseCtx, dest, spec, t0)` (shared by `play` and the tests); `speak(clip, {rate})` and `stopSpeech()` (the `<audio>` player, audioSession switching, waveform progress through rAF); `isSpeaking()` |
 | `src/sw-range.js` (new) | `function parseRange(header, size)` → `{start,end}` \| `null` \| `'unsatisfiable'`, written as a plain function so it can be inlined |
 | `src/sw.js` | `AUDIO_CACHE`, `__AUDIO__`, `/*__RANGE__*/`; `activate` keeps and prunes the audio cache; the `/audio/` fetch branch (3.8); a `message` handler for `'audio-fill'` |
@@ -805,7 +804,7 @@ version into DEPLOY.md:
   level, badge or goal was crossed. No music, no loops.*" Add: "*A verdict may carry one sound
   (`right` / `wrong` / `combo`); tiles tick. Nothing else sounds.*"
 - Replace "not yet built" at `:141` with the speaker-button spec: credit chip in mono uppercase
-  (`SARNAI`, `LUNA`, `MACHINE · UNCHECKED`) and a 32-bar waveform whose played part is blue.
+  (`LUNA`, `MACHINE · UNCHECKED`) and a 32-bar waveform whose played part is blue.
 - Extend "Machine-written Mongolian" (`:226-228`) to machine-*spoken* Mongolian.
 
 **`CLAUDE.md`:**
@@ -838,13 +837,13 @@ version into DEPLOY.md:
 | **A2** iPhone gate | S (Fred, 15 min) | A1 deployed | — |
 | **A3** tile tick / tock, reading-question verdicts, `goalCrossed`, combo label | S (a few lines each) | learning loop (tiles, `item.retry`), reading (question verdicts), gamification (goal definition, D4) | — |
 | **B0** spike: capture 3 AAC clips in headed Edge on the laptop, commit, play on the iPhone (Range plus `#t=`) | S (20 min) | A0 | B1. If Edge AAC fails: try `audio/mp4;codecs=opus` (also reported supported) on iPhone Safari; failing that, the hosted route (D7) |
-| **B1** `record.py`, `record.html`, `--apply`, `audio.json`, text-key vectors, pilot sitting 0 | **M (1–2 sessions)** | B0; D7, D9 | Sarnai's sittings |
+| **B1** `record.py`, `record.html`, `--apply`, `audio.json`, text-key vectors, pilot sitting 0 | **M (1–2 sessions)** | B0; D7, D9 | Luna's sittings |
 | **B2** sw.js audio cache, fill and Range; build.py audio; `core/audio.js`; speaker button, chip, waveform, `0.75×`, autoplay; tests and gate | **M (2 sessions)** | B1 (real clips to test with) | audio on deck, cards and sentences; reading audio |
 | **B3** `listening.json` plus the listen drill | S (under 1 session) | B2, sitting 1 | perception training |
-| Sittings 1 and 2 | Sarnai about 70 min, Fred about 30 min to apply and verify | B1 | — |
+| Sittings 1 and 2 | Luna about 70 min, Fred about 30 min to apply and verify | B1 | — |
 
 **Totals.** Phase A is about 1 session plus small hooks. Phase B is about 4 sessions (L) plus about
-75 minutes of Sarnai's time.
+75 minutes of Luna's time.
 
 **Order.** A0 → A1 can land before everything else, because it is the quickest visible answer to
 Fred's complaint and depends on no other design. The verdict sites from the other workstreams call
@@ -852,7 +851,7 @@ the same `verdict()` helper when they land.
 
 **What it unblocks:**
 
-- the reading workstream's listening variant (DuoRadio-style true/false over Sarnai's per-line
+- the reading workstream's listening variant (DuoRadio-style true/false over Luna's per-line
   clips);
 - ROADMAP 3 shadowing;
 - ROADMAP 5 conversation rehearsal, which "needs … audio to be worth building".
@@ -891,9 +890,9 @@ the same `verdict()` helper when they land.
 | D4 | **Combo** | (a) sound plus the label `CORRECT · 5 IN A ROW`; (b) sound only; (c) no combo | **(a)**. It is real, 3 words, and shown only on those answers |
 | D5 | **Tile tick** | on / off | **On**. It confirms each placement, stays at −12 dB relative to verdicts, and follows the level |
 | D6 | **Play recordings automatically** | off / on by default | **Off**. On the iPhone a clip pauses music or podcasts. It is one tap to turn on |
-| D7 | **Where Sarnai records** | (a) Fred's laptop: `py tools/record.py`, localhost, takes written straight into the repo with no transfer and no cloud; (b) a hosted `record.html` on GitHub Pages, recorded on an iPhone, exported as one file and moved to the laptop by Messages, email or cable; this suits Luna remotely | **(a)**. (b) only if the B0 spike shows Edge cannot make AAC, or for Luna |
+| D7 | **Where Luna records** | (a) Fred's laptop: `py tools/record.py`, localhost, takes written straight into the repo with no transfer and no cloud; (b) a hosted `record.html` on GitHub Pages, recorded on an iPhone, exported as one file and moved to the laptop by Messages, email or cable; this suits recording on her phone | **(a)**. (b) only if the B0 spike shows Edge cannot make AAC, or if Luna prefers her phone |
 | D8 | **TTS stopgap** (Azure mn-MN, flagged) | (a) no; (b) only beyond about 600 words, when the backlog exceeds 2 sittings; (c) now, for everything | **(a) now, (b) later** (see 5.4) |
-| D9 | **Publishing Sarnai's voice** on the public GitHub Pages site, credited by first name | (a) with her explicit consent: chip `SARNAI`; (b) consent but anonymous: chip `NATIVE`; (c) no publishing: Phase B stops at the laptop | **Ask her before B1** and default to her choice. Anyone with the URL can download the clips |
+| D9 | **Publishing Luna's voice** on the public GitHub Pages site, credited by first name | (a) with her explicit consent: chip `LUNA`; (b) consent but anonymous: chip `NATIVE`; (c) no publishing: Phase B stops at the laptop | **Ask her before B1** and default to her choice. Anyone with the URL can download the clips |
 | D10 | **Second voice** (Luna) | yes, for pairs and the top 50 words / no | **Yes, if she is willing**. Speaker variety helps perception (HVPT) |
 | D11 | **Shadowing** | ungraded `▶` and `0.75×` / graded self-rating feeding FSRS (ROADMAP 3 as written) | **Ungraded**. The evidence is weak, and a second grade would break "one grade per word per session" |
 
@@ -928,17 +927,17 @@ the same `verdict()` helper when they land.
    - The 15 MB background cap.
    - The build fails on a missing or mis-hashed clip.
 7. **Edge cannot actually record AAC with a real microphone** (only `isTypeSupported` was measured).
-   - The B0 spike comes before any of Sarnai's time is booked.
+   - The B0 spike comes before any of Luna's time is booked.
    - Fallbacks: MP4 with Opus (verify it plays on the iPhone), then the hosted iPhone route (D7b).
 8. **Poor recordings** (laptop microphone, room noise, uneven levels; iOS ignores `audio.volume`).
-   - Calibration, per-take clip, quiet and noise prompts, and auto-playback for Sarnai.
+   - Calibration, per-take clip, quiet and noise prompts, and auto-playback for Luna.
    - The 12-clip pilot is verified on the iPhone first.
    - Suggest wired earbuds with a mic, 20–30 cm away.
 9. **Text edits orphan clips.** This is intended (old audio would teach old text).
    - `--apply` lists and removes orphans.
    - test.html fails on an orphan.
    - The ROADMAP 2c items are skipped until settled.
-10. **Sarnai's voice becomes public.** Covered by D9: explicit consent before B1, and raw takes and
+10. **Luna's voice becomes public.** Covered by D9: explicit consent before B1, and raw takes and
     redos are gitignored.
 11. **Sound fatigue or annoyance.**
     - The vocabulary is small and ceilings are pinned in tests (duration, peak, ≥300 Hz).
@@ -961,7 +960,7 @@ the same `verdict()` helper when they land.
     - Tests pin this.
 16. **Accessibility.** Sound never carries meaning alone: verdict colour and the CORRECT/WRONG text
     remain, so a muted or hearing-impaired user loses nothing. The `▶` has an
-    `aria-label="Play recording by Sarnai"`.
+    `aria-label="Play recording by Luna"`.
 
 ---
 
@@ -972,8 +971,8 @@ generic sound effects with mascot celebrations, and has speech scoring that its 
 scores partial phrases at 100% (research-competitors, "Ling: mistakes, review, audio and
 gamification"). This design gives Fred:
 
-- **Fred's wife's voice, on the exact words and sentences he drills.** That is the accent, register
-  and speed of the family he actually talks to, not a studio narrator reading a template. Every
+- **Luna's voice, on the exact words and sentences he drills.** That is the accent, register and
+  speed of the people he actually talks to, not a studio narrator reading a template. Every
   clip's credit chip says whose voice it is.
 - **Perception training on the contrasts Mongolian actually depends on.** Long against short vowels,
   front against back, and verbs and adjectives that sound alike, chosen from his own textbooks'
@@ -987,5 +986,5 @@ gamification"). This design gives Fred:
 - **No fake judgement of his speech.** Listen, slow down to 0.75×, and repeat, without a microphone
   score that Ling's own users say is wrong.
 - **A pipeline that grows with the content.** Every lexicon batch or baby paragraph Luna signs off
-  can be in Sarnai's voice within one 15-minute sitting, with no cloud, no account and no machine
+  can be in Luna's voice within one 15-minute sitting, with no cloud, no account and no machine
   pronunciation.

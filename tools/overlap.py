@@ -32,7 +32,7 @@ from pathlib import Path
 
 N = 5
 DEFAULT_BOOKS = Path.home() / "Documents" / "mongolian-books"
-# The tutor's booklet is the source of the app's own sentences, written for
+# Luna's booklet is the source of the app's own sentences, written for
 # Fred, and the word lists are lists: neither is a book to keep text out of.
 SKIP = ("Booklet", "COMMON")
 CYR = re.compile(r"[а-яёөү]+")
