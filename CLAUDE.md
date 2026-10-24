@@ -52,6 +52,7 @@ src/ui/       app.js views.js account.js *.css             ← DOM lives only he
               prefs.js (per-device settings) sound.js (synthesised cues)
 src/data/     words.json sentences.json                    ← large; avoid reading unless changing content
               readings.json (baby paragraphs; `py tools/readings.py` tags them)
+src/icons/    the home-screen icon, finished PNGs (see "Icons" below)
 build.py      copies files (every ui/*.js), rewrites app.js's imports, fails on
               any unresolved relative import, injects SW precache list
 tools/        serve.py (dev server), run_tests.py (headless), test.html (core suite),
@@ -61,7 +62,28 @@ SYNC.md       Fred's steps to turn sync on
 ```
 
 No bundler and no npm dependencies. Browsers load the ES modules directly;
-the build only copies, concatenates CSS, generates icons, and stamps sw.js.
+the build only copies, concatenates CSS, and stamps sw.js.
+
+### Icons
+
+The home-screen icon is the sapphire "Jewel" icon (24 Oct 2026): a midnight
+square with a sapphire glow and the Soyombo flame, sun and moon, the same
+family as Life Hub, Gym and Portfolio Tracker. It is **artwork, not code** —
+the build no longer draws it. `src/icons/` holds four finished PNGs and
+`build.py` copies the folder to `dist/icons/` as is:
+
+- `icon-192.png`, `icon-512.png` — the manifest's `any` icons; the 512 is also
+  listed as `maskable` (the glyph sits inside the safe zone, so one file serves both).
+- `apple-touch-icon.png` (180×180) — `index.html`'s `apple-touch-icon`, what iOS
+  shows after Add to Home Screen.
+- `favicon-32.png` — the browser tab icon.
+
+They are opaque and square; iOS and Android apply their own mask. To change the
+icon, replace those files — there is nothing to regenerate. The service-worker
+version is a hash of every file in `dist/`, so a new icon invalidates installed
+caches by itself. The icon is deliberately **not** in the Instrument palette;
+the in-app look and `theme_color` / `background_color` are unchanged. A phone
+keeps the old icon until the home-screen shortcut is removed and added again.
 
 ## Rules
 

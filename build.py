@@ -5,7 +5,7 @@ Port of build.mjs. This machine has no Node toolchain, so this is the build
 that actually runs here; see CLAUDE.md.
 
 No bundler. Browsers load ES modules natively, so the build only needs to
-copy files, fix app.js's import paths, concatenate CSS, generate icons, and
+copy files, fix app.js's import paths, concatenate CSS, and
 inject the precache list + version into the service worker.
 
     py build.py
@@ -13,8 +13,6 @@ inject the precache list + version into the service worker.
 import hashlib
 import re
 import shutil
-import struct
-import zlib
 from pathlib import Path
 
 SRC = Path("src")
@@ -87,52 +85,14 @@ if missing:
     raise SystemExit("unresolved imports in dist/:\n  " + "\n  ".join(missing))
 
 # ---- static assets ----------------------------------------------------------
-for sub in ("data", "fonts"):
+# icons/ is the finished home-screen artwork (src/icons/): drawn once, outside the
+# build, and copied as is. The build no longer paints them.
+for sub in ("data", "fonts", "icons"):
     for f in sorted((SRC / sub).iterdir()):
         copy(f, DIST / sub / f.name)
 copy(SRC / "index.html", DIST / "index.html")
 copy(SRC / "manifest.webmanifest", DIST / "manifest.webmanifest")
 write(DIST / ".nojekyll", b"")  # GitHub Pages: don't run Jekyll
-
-
-# ---- icons: flat PNGs in the Instrument palette ------------------------------
-# Paper ground with the flag's red and blue, matching src/ui/base.css. These
-# are the home-screen icon and the PWA splash, so a stale dark palette here
-# shows up as a black tile next to a paper-white app.
-def png(size: int) -> bytes:
-    bg, signal, muted = (0xF4, 0xF2, 0xED), (0xC4, 0x27, 0x2F), (0x01, 0x51, 0x97)
-    bar_y, bar_h = round(size * 0.46), round(size * 0.08)
-    sub_y, sub_h = round(size * 0.60), round(size * 0.04)
-    x0, x1 = round(size * 0.30), round(size * 0.70)
-    x2 = round(size * 0.54)
-
-    raw = bytearray()
-    for y in range(size):
-        raw.append(0)  # filter: none
-        for x in range(size):
-            if bar_y <= y < bar_y + bar_h and x0 <= x < x1:
-                c = signal
-            elif sub_y <= y < sub_y + sub_h and x0 <= x < x2:
-                c = muted
-            else:
-                c = bg
-            raw.extend(c)
-
-    def chunk(kind: bytes, data: bytes) -> bytes:
-        body = kind + data
-        return struct.pack(">I", len(data)) + body + struct.pack(">I", zlib.crc32(body))
-
-    ihdr = struct.pack(">IIBBBBB", size, size, 8, 2, 0, 0, 0)  # 8-bit RGB
-    return (
-        b"\x89PNG\r\n\x1a\n"
-        + chunk(b"IHDR", ihdr)
-        + chunk(b"IDAT", zlib.compress(bytes(raw), 9))
-        + chunk(b"IEND", b"")
-    )
-
-
-for s in (192, 512):
-    write(DIST / "icons" / f"icon-{s}.png", png(s))
 
 # ---- service worker: precache list + content-hash version -------------------
 # Sorted so the manifest and the version hash are reproducible.
