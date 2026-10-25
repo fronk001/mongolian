@@ -8,3 +8,6 @@ __pycache__/
 # Drafts of new Mongolian content: never committed until Luna has
 # reviewed them and the copyright gate passed (docs/CONTENT.md).
 content/drafts/
+# The verb booklet's weeks (tools/booklet.py): same rule, and kept apart from
+# content/drafts because review-sheet.py --apply sends drafts into the app.
+content/booklet/

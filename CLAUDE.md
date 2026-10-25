@@ -58,6 +58,8 @@ build.py      copies files (every ui/*.js), rewrites app.js's imports, fails on
 tools/        serve.py (dev server), run_tests.py (headless), test.html (core suite),
               engine-test.html, smoke.html, firebase-check.html
               mockups*.html — design references for the v3 redesign, not shipped
+              booklet.py — the weekly verb booklet for the practice videos
+              (docs/design/G-booklet.md); weeks live in content/booklet/, gitignored
 SYNC.md       Fred's steps to turn sync on
 ```
 
